@@ -1,16 +1,16 @@
-# Devfile for the dev-agent repository itself.
+# Devfile for the agent-workspace repository itself.
 # Opens this repo as a workspace using the pre-built agent-workspace image.
 
 schemaVersion: 2.2.0
 
 metadata:
-  name: dev-agent
+  name: agent-workspace
 
 projects:
-  - name: dev-agent
+  - name: agent-workspace
     git:
       remotes:
-        origin: "https://github.com/example/dev-agent.git"
+        origin: "https://codeberg.org/r5t/agent-workspace.git"
     checkoutFrom:
       revision: main
     clonePath: "{{.ProjectsRoot}}/{{.ProjectName}}"
@@ -18,7 +18,7 @@ projects:
 components:
   - name: tools
     container:
-      image: "r5t.io/dev/agent-workspace:v0.1.0"
+      image: "codeberg.org/r5t/agent-workspace:v0.1.0"
       mountSources: true
       memoryRequest: "512M"
       memoryLimit: "2Gi"

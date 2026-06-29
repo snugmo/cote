@@ -14,13 +14,13 @@
 schemaVersion: 2.2.0
 
 metadata:
-  name: dev-workspace
+  name: agent-workspace
 
 projects:
   - name: workspace
     git:
       remotes:
-        origin: "https://github.com/example/project.git"
+        origin: "https://codeberg.org/r5t/agent-workspace.git"
     checkoutFrom:
       revision: main
     clonePath: "{{.ProjectsRoot}}/{{.ProjectName}}"
