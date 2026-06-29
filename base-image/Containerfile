@@ -34,14 +34,9 @@ RUN mkdir -p /etc/yum.repos.d && \
         ca-certificates \
         # Misc dev utilities
         tmux less which vim-minimal tar gzip unzip 7zip xz zstd \
+        # Markdown renderer
+        glow \
     && dnf clean all
-
-# =============================================================================
-# Glow (markdown renderer) — requires COPR repo
-# =============================================================================
-RUN dnf copr enable -y atim/glow && \
-    dnf install --nodocs --setopt=tsflags=nodocs -y glow && \
-    dnf clean all
 
 # =============================================================================
 # Node.js (LTS)
