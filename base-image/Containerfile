@@ -99,6 +99,9 @@ RUN npm install -g \
     eslint \
     prettier
 
+# YAML
+RUN npm install -g yaml-language-server
+
 # Go language server
 RUN go install golang.org/x/tools/gopls@latest && \
     go install github.com/nametake/golangci-lint-langserver@latest
