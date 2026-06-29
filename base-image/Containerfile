@@ -39,6 +39,20 @@ RUN mkdir -p /etc/yum.repos.d && \
     && dnf clean all
 
 # =============================================================================
+# Crush CLI (AI coding assistant)
+# =============================================================================
+COPY <<-'EOT' /etc/yum.repos.d/charm.repo
+	[charm]
+	name=Charm
+	baseurl=https://repo.charm.sh/yum/
+	enabled=1
+	gpgcheck=1
+	gpgkey=https://repo.charm.sh/yum/gpg.key
+EOT
+RUN dnf install --nodocs --setopt=tsflags=nodocs -y crush && \
+    dnf clean all
+
+# =============================================================================
 # Node.js (LTS)
 # =============================================================================
 RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
