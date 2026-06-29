@@ -37,6 +37,13 @@ RUN mkdir -p /etc/yum.repos.d && \
     && dnf clean all
 
 # =============================================================================
+# Glow (markdown renderer) — requires COPR repo
+# =============================================================================
+RUN dnf copr enable -y atim/glow && \
+    dnf install --nodocs --setopt=tsflags=nodocs -y glow && \
+    dnf clean all
+
+# =============================================================================
 # Node.js (LTS)
 # =============================================================================
 RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
