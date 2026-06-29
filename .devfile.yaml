@@ -1,0 +1,59 @@
+# Devfile for the dev-agent repository itself.
+# Opens this repo as a workspace using the pre-built agent-workspace image.
+
+schemaVersion: 2.2.0
+
+metadata:
+  name: dev-agent
+
+projects:
+  - name: dev-agent
+    git:
+      remotes:
+        origin: "https://github.com/example/dev-agent.git"
+    checkoutFrom:
+      revision: main
+    clonePath: "{{.ProjectsRoot}}/{{.ProjectName}}"
+
+components:
+  - name: tools
+    container:
+      image: "r5t.io/dev/agent-workspace:v0.1.0"
+      mountSources: true
+      memoryRequest: "512M"
+      memoryLimit: "2Gi"
+      cpuRequest: "500m"
+      cpuLimit: "2"
+      endpoints:
+        - name: ssh
+          port: 22
+          expose: false
+      volumeMounts:
+        - name: tools-cache
+          path: /home/user/.cache
+        - name: tools-local
+          path: /home/user/.local
+      env:
+        - name: GOPATH
+          value: "/go"
+        - name: CARGO_HOME
+          value: "/usr/local/cargo"
+        - name: RUSTUP_HOME
+          value: "/usr/local/rustup"
+        - name: HOME
+          value: "/home/user"
+
+  - name: tools-cache
+    volume:
+      size: 5Gi
+
+  - name: tools-local
+    volume:
+      size: 2Gi
+
+commands:
+  - id: rebuild-base-image
+    exec:
+      component: tools
+      commandLine: "./base-image/build.sh"
+      workingDir: "${PROJECTS_ROOT}/${CURRENT_PROJECT}"
