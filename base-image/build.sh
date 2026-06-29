@@ -25,15 +25,15 @@ fi
 
 FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${TAG}"
 
-echo "=== Dev Workspace Base Image ==="
-echo "Registry:  ${REGISTRY}"
-echo "Image:     ${IMAGE_NAME}"
-echo "Tag:       ${TAG}"
-echo "Full ref:  ${FULL_IMAGE}"
-echo ""
+printf '=== Dev Workspace Base Image ===\n'
+printf 'Registry:  %s\n' "${REGISTRY}"
+printf 'Image:     %s\n' "${IMAGE_NAME}"
+printf 'Tag:       %s\n' "${TAG}"
+printf 'Full ref:  %s\n' "${FULL_IMAGE}"
+printf '\n'
 
 # Build
-echo ">> Building ${FULL_IMAGE} ..."
+printf '>> Building %s ...\n' "${FULL_IMAGE}"
 buildah build \
     --layers \
     --format docker \
@@ -41,16 +41,16 @@ buildah build \
     -f "${SCRIPT_DIR}/Containerfile" \
     "${SCRIPT_DIR}"
 
-echo ">> Build complete: ${FULL_IMAGE}"
+printf '>> Build complete: %s\n' "${FULL_IMAGE}"
 
 # Push (optional)
 if $PUSH; then
-    echo ""
-    echo ">> Pushing ${FULL_IMAGE} ..."
+    printf '\n'
+    printf '>> Pushing %s ...\n' "${FULL_IMAGE}"
     buildah push "${FULL_IMAGE}"
-    echo ">> Push complete."
+    printf '>> Push complete.\n'
 fi
 
-echo ""
-echo ">> Done. To use in a Devfile, reference:"
-echo "    image: ${FULL_IMAGE}"
+printf '\n'
+printf '>> Done. To use in a Devfile, reference:\n'
+printf '    image: %s\n' "${FULL_IMAGE}"
