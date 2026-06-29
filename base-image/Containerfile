@@ -17,15 +17,13 @@ RUN mkdir -p /etc/yum.repos.d && \
         dnf-plugins-core && \
     dnf install --nodocs --setopt=tsflags=nodocs -y \
         # Base shell tools
-        diffutils findutils patch moreutils openssl \
+        diffutils findutils patch moreutils openssl time util-linux procps lsof \
         # Build tools
-        gcc gcc-c++ make cmake meson ninja-build \
+        gcc gcc-c++ clang llvm clang-libs clang-tools-extra gdb make cmake meson ninja-build \
         # Shells & coreutils
-        bash bash-completion fish zsh git curl wget wget2 jq openssh-clients file tree \
+        bash bash-completion fish zsh git git-lfs curl wget wget2 nano sed gawk jq openssh-clients file tree bat \
         # Python ecosystem
         python3 python3-pip python3-devel python3-wheel \
-        # Node.js (via NodeSource or upstream)
-        # Go
         # Rust
         rustup \
         # Language servers & tools
@@ -33,9 +31,15 @@ RUN mkdir -p /etc/yum.repos.d && \
         # SSH / networking
         ca-certificates \
         # Misc dev utilities
-        tmux less which vim-minimal tar gzip unzip 7zip xz zstd \
+        tmux less which vim-minimal tar gzip unzip 7zip xz zstd strace \
+        # Network tools
+        iproute iputils nmap nmap-ncat socat tcpdump net-tools bind-utils \
         # Markdown renderer
         glow \
+        # Image tools
+        timg ImageMagick \
+        # Container tools
+        podman buildah skopeo fuse-overlayfs \
     && dnf clean all
 
 # =============================================================================
