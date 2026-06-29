@@ -1,0 +1,8 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Shell history
+*.history
+.bash_history
+.zsh_history

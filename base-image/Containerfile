@@ -1,0 +1,114 @@
+# Base development environment image for DevWorkspaces Operator
+# Provides universal toolchain: compilers, package managers, shell utils, LSP servers
+# IDEs are excluded — they are added as separate Devfile components (e.g., Eclipse Che plugins)
+
+FROM registry.fedoraproject.org/fedora:44 AS base
+
+# Prevent interactive prompts during package installation
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    FORCE_NONINTERACTIVE=1
+
+# =============================================================================
+# System packages & compilers
+# =============================================================================
+RUN mkdir -p /etc/yum.repos.d && \
+    dnf install --nodocs --setopt=tsflags=nodocs -y \
+        dnf-plugins-core && \
+    dnf install --nodocs --setopt=tsflags=nodocs -y \
+        # Base shell tools
+        diffutils findutils patch moreutils openssl \
+        # Build tools
+        gcc gcc-c++ make cmake meson ninja-build \
+        # Shells & coreutils
+        bash bash-completion fish zsh git curl wget wget2 jq openssh-clients file tree \
+        # Python ecosystem
+        python3 python3-pip python3-devel python3-wheel \
+        # Node.js (via NodeSource or upstream)
+        # Go
+        # Rust
+        rustup \
+        # Language servers & tools
+        ripgrep fd-find the_silver_searcher yq \
+        # SSH / networking
+        ca-certificates \
+        # Misc dev utilities
+        tmux less which vim-minimal tar gzip unzip 7zip xz zstd \
+    && dnf clean all
+
+# =============================================================================
+# Node.js (LTS)
+# =============================================================================
+RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
+    dnf install --nodocs --setopt=tsflags=nodocs -y nodejs && \
+    dnf clean all
+
+# =============================================================================
+# Go
+# =============================================================================
+ARG GO_VERSION=1.26.3
+ENV GO_VERSION=${GO_VERSION} \
+    GOPATH=/go \
+    PATH=/go/bin:/usr/local/go/bin:$PATH
+RUN curl -fsSL "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" | \
+    tar -C /usr/local -xz && \
+    mkdir -p $GOPATH/bin
+
+# =============================================================================
+# Rust & Cargo
+# =============================================================================
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
+RUN rustup-init -y --profile=default --default-toolchain stable && \
+    cargo --version && rustc --version
+
+# =============================================================================
+# Python packages (global dev tools)
+# =============================================================================
+RUN pip3 install --no-cache-dir --break-system-packages \
+    pylint \
+    black \
+    ruff \
+    mypy \
+    pyright
+
+# =============================================================================
+# Language Server Protocols
+# =============================================================================
+# TypeScript / JavaScript
+RUN npm install -g \
+    typescript \
+    typescript-language-server \
+    eslint \
+    prettier
+
+# Go language server
+RUN go install golang.org/x/tools/gopls@latest && \
+    go install github.com/nametake/golangci-lint-langserver@latest
+
+# Python language server
+RUN pip3 install --no-cache-dir --break-system-packages \
+    pyright \
+    ruff-lsp
+
+# =============================================================================
+# Workspace user (DevWorkspaces runs as non-root)
+# =============================================================================
+# DevWorkspaces typically runs as UID 1000
+# Ensure common directories are writable
+RUN useradd -m -u 1000 -s /bin/bash user || true && \
+    mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
+             /go /usr/local/cargo /usr/local/rustup && \
+    chown -R user:user /home/user /go /usr/local/cargo /usr/local/rustup
+
+USER user
+WORKDIR /projects
+
+# =============================================================================
+# Labels
+# =============================================================================
+LABEL name="dev-workspace-base" \
+      description="Base development environment for DevWorkspaces Operator" \
+      maintainer="dev-team" \
+      io.openshift.tags="dev,workspace,toolchain"

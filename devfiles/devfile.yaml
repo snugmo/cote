@@ -1,0 +1,100 @@
+# Generic DevWorkspaces workspace definition
+# References the base dev image and provides extension points for IDEs and
+# project-specific tools.
+#
+# Usage:
+#   1. Build & push the base image:  ./base-image/build.sh push <registry>
+#   2. Update the image reference below to match your registry
+#   3. Apply to your cluster:  kubectl apply -f devfile.yaml
+#   4. Or import via the DevWorkspaces dashboard
+#
+# IDEs (VS Code, Eclipse Che, etc.) should be added as separate components,
+# not baked into the base image. See the `ide` component placeholder below.
+
+schemaVersion: 2.2.0
+
+metadata:
+  name: dev-workspace
+
+projects:
+  - name: workspace
+    git:
+      remotes:
+        origin: "https://github.com/example/project.git"
+    checkoutFrom:
+      revision: main
+    clonePath: "{{.ProjectsRoot}}/{{.ProjectName}}"
+
+components:
+  # ------------------------------------------------------------------
+  # Primary container — base dev toolchain image
+  # ------------------------------------------------------------------
+  - name: tools
+    container:
+      image: "localhost:5000/dev-workspace-base:latest"
+      mountSources: true
+      memoryRequest: "512M"
+      memoryLimit: "2Gi"
+      cpuRequest: "500m"
+      cpuLimit: "2"
+      endpoints:
+        - name: ssh
+          port: 22
+          expose: false
+      volumeMounts:
+        - name: tools-cache
+          path: /home/user/.cache
+        - name: tools-local
+          path: /home/user/.local
+      env:
+        - name: GOPATH
+          value: "/go"
+        - name: CARGO_HOME
+          value: "/usr/local/cargo"
+        - name: RUSTUP_HOME
+          value: "/usr/local/rustup"
+        - name: HOME
+          value: "/home/user"
+
+  # ------------------------------------------------------------------
+  # IDE component placeholder
+  # Uncomment and configure one of the following for your preferred IDE.
+  # IDEs are added as *separate* components, not in the base image.
+  # ------------------------------------------------------------------
+
+  # VS Code (Eclipse Che plugin)
+  # - name: vscode
+  #   container:
+  #     image: "eclipse/che-code-latest:stable"
+  #     memoryLimit: "1Gi"
+  #     endpoints:
+  #       - name: vscode
+  #         port: 3000
+  #         expose: true
+  #         attributes:
+  #           type: main
+
+  # ------------------------------------------------------------------
+  # Persistent volumes
+  # ------------------------------------------------------------------
+  - name: tools-cache
+    volume:
+      size: 5Gi
+
+  - name: tools-local
+    volume:
+      size: 2Gi
+
+commands:
+  # Common developer commands available in the workspace
+  - id: run-tests
+    exec:
+      component: tools
+      commandLine: "echo 'Run tests — customize per project'"
+      workingDir: "${PROJECTS_ROOT}/${CURRENT_PROJECT}"
+
+  - id: rebuild-base-image
+    exec:
+      component: tools
+      commandLine: "buildah build -t dev-workspace-base:latest -f base-image/Containerfile base-image/"
+      workingDir: "${PROJECTS_ROOT}"
