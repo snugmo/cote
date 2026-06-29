@@ -31,7 +31,7 @@ devfiles/
 - **No IDEs** — IDEs are Devfile components, never baked into the base image.
 - Based on `ubi9/ubi-minimal` for minimal attack surface and Red Hat compatibility.
 - Runs as non-root user `developer` (UID 1000) to match DevWorkspaces security defaults.
-- Toolchain includes: GCC, Go, Rust, Node.js 22, Python 3.11, plus LSP servers (gopls, rust-analyzer, typescript-language-server, pyright, ruff-lsp).
+- Toolchain includes: GCC, Go, Rust, Node.js 22, Python 3.11, Crush CLI, plus LSP servers (gopls, rust-analyzer, typescript-language-server, pyright, ruff-lsp).
 - Use `microdnf` for package installs; always `microdnf clean all` after installs to keep layers small.
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 
