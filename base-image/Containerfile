@@ -13,9 +13,9 @@ ENV LANG=C.UTF-8 \
 # System packages & compilers
 # =============================================================================
 RUN mkdir -p /etc/yum.repos.d && \
-    dnf install --nodocs --setopt=tsflags=nodocs -y \
+    dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         dnf-plugins-core && \
-    dnf install --nodocs --setopt=tsflags=nodocs -y \
+    dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         # Base shell tools
         diffutils findutils patch moreutils openssl time util-linux procps lsof \
         # Build tools
@@ -53,14 +53,14 @@ COPY <<-'EOT' /etc/yum.repos.d/charm.repo
 	gpgcheck=1
 	gpgkey=https://repo.charm.sh/yum/gpg.key
 EOT
-RUN dnf install --nodocs --setopt=tsflags=nodocs -y crush && \
+RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y crush && \
     dnf clean all
 
 # =============================================================================
 # Node.js (LTS)
 # =============================================================================
 RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
-    dnf install --nodocs --setopt=tsflags=nodocs -y nodejs && \
+    dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y nodejs && \
     dnf clean all
 
 # =============================================================================
