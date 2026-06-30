@@ -127,6 +127,10 @@ RUN useradd -m -u 1000 -s /bin/bash user || true && \
 
 USER user
 WORKDIR /projects
+# /usr/libexec/podman/catatonit is used to reap zombie processes
+ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
+# Set default command to simply keep the container alive so that we can exec inside it
+CMD ["tail", "-f", "/dev/null"]
 
 # =============================================================================
 # Labels
