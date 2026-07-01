@@ -15,6 +15,10 @@ ENV LANG=C.UTF-8 \
 RUN mkdir -p /etc/yum.repos.d && \
     dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         dnf-plugins-core && \
+    # Reinstall shadow-utils to fix wrong file capabilities on
+    # /usr/bin/newuidmap to enable podman and buildah inside the workspace
+    # container
+    dnf reinstall -y shadow-utils && \
     dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         # Base shell tools
         diffutils findutils patch moreutils openssl time util-linux procps lsof \
