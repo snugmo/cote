@@ -45,6 +45,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Container tools
         podman buildah skopeo fuse-overlayfs \
     && dnf clean all
+ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 # =============================================================================
 # Crush CLI (AI coding assistant)
@@ -124,10 +125,12 @@ RUN pip3 install --no-cache-dir --break-system-packages \
 # =============================================================================
 # DevWorkspaces typically runs as UID 1000
 # Ensure common directories are writable
-RUN useradd -m -u 1000 -s /bin/bash user || true && \
+RUN useradd -m -u 1000 -U -c 'Developer' -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /usr/local/cargo /usr/local/rustup && \
-    chown -R user:user /home/user /go /usr/local/cargo /usr/local/rustup
+    chown -R user:user /home/user /go /usr/local/cargo /usr/local/rustup && \
+    sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
+    usermod --add-subuids 10000-65535 --add-subgids 10000-65535 user
 
 USER user
 WORKDIR /projects
