@@ -31,7 +31,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # SSH / networking
         ca-certificates \
         # Misc dev utilities
-        tmux less which vim-minimal tar gzip unzip 7zip xz zstd strace \
+        tmux less which vim tar gzip unzip 7zip xz zstd strace \
         # Network tools
         iproute iputils nmap nmap-ncat socat tcpdump net-tools bind-utils \
         # Markdown renderer
