@@ -37,7 +37,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Markdown renderer
         glow \
         # Image tools
-        ImageMagick \
+        ImageMagick GraphicsMagick \
         # Container tools
         podman buildah skopeo fuse-overlayfs \
     && dnf clean all
