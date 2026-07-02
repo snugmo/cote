@@ -28,8 +28,8 @@ RUN mkdir -p /etc/yum.repos.d && \
         rustup \
         # Language servers & tools
         ripgrep fd-find the_silver_searcher yq \
-        # SSH / networking
-        ca-certificates \
+        # Identity, encryption, integrity
+        ca-certificates age gnupg2 gpgme sequoia-sop sequoia-sq \
         # Misc dev utilities
         tmux less which vim-minimal tar gzip unzip 7zip xz zstd strace \
         # Network tools
