@@ -31,7 +31,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Identity, encryption, integrity
         ca-certificates age gnupg2 gpgme sequoia-sop sequoia-sq \
         # Misc dev utilities
-        tmux less which vim tar gzip unzip 7zip xz zstd strace m4 xxd \
+        tmux less which vim tar gzip unzip 7zip xz zstd strace m4 xxd flex byacc bison \
         # Network tools
         iproute iputils nmap nmap-ncat socat tcpdump net-tools bind-utils knot-utils grpcurl oidc-agent-cli \
         # Markdown renderer
