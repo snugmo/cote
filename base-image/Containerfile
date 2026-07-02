@@ -31,7 +31,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Identity, encryption, integrity
         ca-certificates age gnupg2 gpgme sequoia-sop sequoia-sq \
         # Misc dev utilities
-        tmux less which vim tar gzip unzip 7zip xz zstd strace m4 xxd flex byacc bison \
+        tmux less which vim tar gzip unzip 7zip xz zstd strace m4 xxd flex byacc bison git-delta git-annex git-filter-repo xdelta xxhash \
         # Network tools
         iproute iputils nmap nmap-ncat socat tcpdump net-tools bind-utils knot-utils grpcurl oidc-agent-cli \
         # Markdown renderer
@@ -42,6 +42,8 @@ RUN mkdir -p /etc/yum.repos.d && \
         podman buildah skopeo fuse-overlayfs \
         # Kubernetes utilities
         kustomize helm kubernetes1.36-client awscli2 opentofu \
+        # Misc extras
+        foot-terminfo kitty-terminfo \
     && dnf clean all
 
 # =============================================================================
