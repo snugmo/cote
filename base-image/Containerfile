@@ -17,7 +17,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         dnf-plugins-core && \
     dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         # Base shell tools
-        diffutils findutils patch moreutils openssl time util-linux procps lsof \
+        diffutils findutils patch moreutils openssl time util-linux procps lsof less which \
         # Build tools
         gcc gcc-c++ clang llvm clang-libs clang-tools-extra gdb make cmake meson ninja-build \
         # Shells & coreutils
