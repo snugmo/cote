@@ -147,6 +147,6 @@ CMD ["tail", "-f", "/dev/null"]
 # Labels
 # =============================================================================
 LABEL name="dev-workspace-base" \
-      description="Base development environment for DevWorkspaces Operator" \
-      maintainer="dev-team" \
+      description="Base development environment for agentic developer workspaces" \
+      maintainer="Joakim Nohlgård" \
       io.openshift.tags="dev,workspace,toolchain"
