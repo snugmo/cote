@@ -136,6 +136,7 @@ RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
     usermod --add-subuids 2000-65000 --add-subgids 2000-65000 user
 
 USER user
+ENV PATH="/home/user/.local/bin:$PATH"
 WORKDIR /projects
 # /usr/libexec/podman/catatonit is used to reap zombie processes
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
