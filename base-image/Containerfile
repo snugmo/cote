@@ -33,7 +33,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Misc dev utilities
         tmux less which vim-minimal tar gzip unzip 7zip xz zstd strace \
         # Network tools
-        iproute iputils nmap nmap-ncat socat tcpdump net-tools bind-utils \
+        iproute iputils nmap nmap-ncat socat tcpdump net-tools bind-utils knot-utils grpcurl oidc-agent-cli \
         # Markdown renderer
         glow \
         # Image tools
