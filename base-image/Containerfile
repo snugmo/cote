@@ -40,6 +40,8 @@ RUN mkdir -p /etc/yum.repos.d && \
         timg ImageMagick \
         # Container tools
         podman buildah skopeo fuse-overlayfs \
+        # Kubernetes utilities
+        kustomize helm kubernetes1.36-client awscli2 opentofu \
     && dnf clean all
 
 # =============================================================================
