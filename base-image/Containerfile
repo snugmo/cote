@@ -31,13 +31,13 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Identity, encryption, integrity
         ca-certificates age gnupg2 gpgme sequoia-sop sequoia-sq \
         # Misc dev utilities
-        tmux less which vim tar gzip unzip 7zip xz zstd strace \
+        tmux less which vim tar gzip unzip 7zip xz zstd strace m4 xxd \
         # Network tools
         iproute iputils nmap nmap-ncat socat tcpdump net-tools bind-utils knot-utils grpcurl oidc-agent-cli \
         # Markdown renderer
         glow \
         # Image tools
-        timg ImageMagick \
+        ImageMagick GraphicsMagick \
         # Container tools
         podman buildah skopeo fuse-overlayfs \
         # Kubernetes utilities
