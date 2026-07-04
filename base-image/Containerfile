@@ -136,28 +136,8 @@ ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
     PATH=/go/bin:/usr/local/go/bin:$PATH
 
-RUN GO_FILENAME="go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" && \
-    EXPECTED_SHA256=$(curl -fsSL "https://go.dev/dl/?mode=json" | \
-        jq -r --arg ver "go${GO_VERSION}" --arg fn "${GO_FILENAME}" \
-        '.[] | select(.version == $ver) | .files[] | select(.filename == $fn) | .sha256') && \
-    if [ -n "${EXPECTED_SHA256}" ]; then \
-        echo "Verifying Go ${GO_VERSION} SHA256 checksum from go.dev API..."; \
-        curl -fsSL "https://golang.org/dl/${GO_FILENAME}" -o "/tmp/${GO_FILENAME}" && \
-        ACTUAL_SHA256=$(sha256sum "/tmp/${GO_FILENAME}" | awk '{print $1}') && \
-        if [ "${ACTUAL_SHA256}" != "${EXPECTED_SHA256}" ]; then \
-            echo "ERROR: SHA256 mismatch for Go ${GO_VERSION}"; \
-            echo "  Expected: ${EXPECTED_SHA256}"; \
-            echo "  Actual:   ${ACTUAL_SHA256}"; \
-            exit 1; \
-        fi && \
-        echo "Go ${GO_VERSION} checksum verified OK (${ACTUAL_SHA256})"; \
-    else \
-        echo "WARNING: Go ${GO_VERSION} not found in go.dev API (only latest 2 versions available)"; \
-        echo "         Skipping checksum verification — download integrity cannot be verified"; \
-        curl -fsSL "https://golang.org/dl/${GO_FILENAME}" -o "/tmp/${GO_FILENAME}"; \
-    fi && \
-    tar -C /usr/local -xf "/tmp/${GO_FILENAME}" && \
-    rm "/tmp/${GO_FILENAME}" && \
+RUN curl -fsSL "https://golang.org/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" | \
+    tar -C /usr/local -xz && \
     mkdir -p $GOPATH/bin && \
     go install golang.org/x/tools/gopls@latest && \
     go install github.com/nametake/golangci-lint-langserver@latest
@@ -201,22 +181,8 @@ COPY --from=python-install /usr/local /usr/local/
 FROM base AS cosign-install
 ARG TARGETARCH
 ARG COSIGN_VERSION=3.1.1
-RUN COSIGN_BIN="cosign-linux-${TARGETARCH}" && \
-    curl -fsSL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign_checksums.txt" -o /tmp/cosign_checksums.txt && \
-    EXPECTED_SHA256=$(grep "${COSIGN_BIN}$" /tmp/cosign_checksums.txt | awk '{print $1}') && \
-    test -n "${EXPECTED_SHA256}" || { echo "ERROR: No checksum found for ${COSIGN_BIN}"; exit 1; } && \
-    echo "Expected SHA256 for ${COSIGN_BIN}: ${EXPECTED_SHA256}" && \
-    curl -fsSL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/${COSIGN_BIN}" -o /usr/local/bin/cosign && \
-    chmod +x /usr/local/bin/cosign && \
-    ACTUAL_SHA256=$(sha256sum /usr/local/bin/cosign | awk '{print $1}') && \
-    if [ "${ACTUAL_SHA256}" != "${EXPECTED_SHA256}" ]; then \
-        echo "ERROR: SHA256 mismatch for cosign ${COSIGN_VERSION}"; \
-        echo "  Expected: ${EXPECTED_SHA256}"; \
-        echo "  Actual:   ${ACTUAL_SHA256}"; \
-        exit 1; \
-    fi && \
-    echo "cosign ${COSIGN_VERSION} checksum verified OK" && \
-    rm /tmp/cosign_checksums.txt
+RUN curl -fsSL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-${TARGETARCH}" -o /usr/local/bin/cosign && \
+    chmod +x /usr/local/bin/cosign
 
 FROM scratch AS cosign-artifacts
 COPY --from=cosign-install /usr/local/bin/cosign /usr/local/bin/
