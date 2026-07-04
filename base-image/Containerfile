@@ -114,10 +114,16 @@ COPY --from=nodejs-install /etc/yum.repos.d/nodesource-nsolid.repo /etc/yum.repo
 # BUN — install
 # =============================================================================
 FROM base AS bun-install
-RUN curl -fsSL https://bun.sh/install | BUN_INSTALL=/bun bash -
+RUN curl -fsSL https://bun.sh/install | BUN_INSTALL=/bun bash - && \
+    SHELL=bash /bun/bin/bun completions > /etc/bash_completion.d/bun && \
+    SHELL=fish /bun/bin/bun completions > /usr/share/fish/vendor_completions.d/bun.fish && \
+    SHELL=zsh /bun/bin/bun completions > /usr/share/zsh/site-functions/_bun
 
 FROM scratch AS bun-artifacts
 COPY --from=bun-install /bun/ /usr/local/
+COPY --from=bun-install /etc/bash_completion.d/bun /etc/bash_completion.d/
+COPY --from=bun-install /usr/share/fish/vendor_completions.d/bun.fish /usr/share/fish/vendor_completions.d/
+COPY --from=bun-install /usr/share/zsh/site-functions/_bun /usr/share/zsh/site-functions/
 
 # =============================================================================
 # GO — install
