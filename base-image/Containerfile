@@ -19,23 +19,29 @@ RUN mkdir -p /etc/yum.repos.d && \
     dnf reinstall -y shadow-utils && \
     dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         # Base shell tools
-        diffutils findutils patch moreutils openssl time util-linux procps lsof less which \
+        diffutils findutils lsof moreutils openssl patch procps time util-linux which \
         # Build tools
-        gcc gcc-c++ clang llvm clang-libs clang-tools-extra gdb make cmake meson ninja-build \
-        # Shells & coreutils
-        bash bash-completion fish zsh git git-lfs curl wget wget2 nano sed gawk jq openssh-clients file tree bat \
+        bison byacc clang clang-libs clang-tools-extra cmake flex gcc gcc-c++ gdb llvm make meson m4 ninja-build xxd \
+        # Shells & editors
+        bash bash-completion bash-color-prompt fish nano vim vim-default-editor zsh \
+        # Version control & collaboration
+        git git-annex git-delta git-filter-repo git-lfs \
+        # HTTP & download tools
+        curl openssh-clients wget wget2 \
+        # Text processing & utilities
+        bat file gawk jq less sed strace tree \
         # Python ecosystem
-        python3 python3-pip python3-devel python3-wheel \
+        python3 python3-devel python3-pip python3-wheel \
         # Rust
         rustup \
-        # Language servers & tools
-        ripgrep fd-find the_silver_searcher yq \
+        # Language servers & search tools
+        fd-find ripgrep the_silver_searcher yq \
         # Identity, encryption, integrity
-        ca-certificates age gnupg2 gpgme sequoia-sop sequoia-sq \
+        age ca-certificates gnupg2 gpgme sequoia-sop sequoia-sq \
         # Misc dev utilities
-        tmux less which vim tar gzip unzip 7zip xz zstd strace m4 xxd flex byacc bison git-delta git-annex git-filter-repo xdelta xxhash \
+        7zip gzip tar tmux unzip xdelta xz xxhash zstd \
         # Network tools
-        iproute iputils nmap nmap-ncat socat tcpdump net-tools bind-utils knot-utils grpcurl oidc-agent-cli \
+        bind-utils grpcurl iproute iputils knot-utils net-tools nmap nmap-ncat oidc-agent-cli socat tcpdump \
         # Markdown renderer
         glow \
         # Image tools
