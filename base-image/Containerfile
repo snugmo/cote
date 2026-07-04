@@ -1,7 +1,13 @@
 # Base development environment image for DevWorkspaces Operator
 # Provides universal toolchain: compilers, package managers, shell utils, LSP servers
 # IDEs are excluded — they are added as separate Devfile components (e.g., Eclipse Che plugins)
+#
+# Build strategy: parallel stages with COPY --link for independent layer caching.
+# Changing one toolchain (e.g., Go version) only rebuilds that stage.
 
+# =============================================================================
+# BASE — system packages only (rarely changes)
+# =============================================================================
 FROM registry.fedoraproject.org/fedora:44 AS base
 
 # Prevent interactive prompts during package installation
@@ -9,9 +15,6 @@ ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     FORCE_NONINTERACTIVE=1
 
-# =============================================================================
-# System packages & compilers
-# =============================================================================
 RUN mkdir -p /etc/yum.repos.d && \
     dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         dnf-plugins-core && \
@@ -55,8 +58,9 @@ RUN mkdir -p /etc/yum.repos.d && \
     && dnf clean all
 
 # =============================================================================
-# Crush CLI (AI coding assistant)
+# CRUSH — AI coding assistant
 # =============================================================================
+FROM base AS crush
 COPY <<-'EOT' /etc/yum.repos.d/charm.repo
 	[charm]
 	name=Charm
@@ -69,77 +73,115 @@ RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodoc
     dnf clean all
 
 # =============================================================================
-# Node.js (LTS)
+# NODEJS — Node.js runtime + npm global packages
 # =============================================================================
+FROM crush AS nodejs
 RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
     dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y nodejs && \
     dnf clean all
 
+RUN npm install -g \
+    typescript \
+    typescript-language-server \
+    eslint \
+    prettier \
+    yaml-language-server
+
 # =============================================================================
-# Bun (JS/TS runtime)
+# BUN — Bun JS/TS runtime
 # =============================================================================
+FROM crush AS bun
 RUN curl -fsSL https://bun.sh/install | bash - && \
     cp /root/.bun/bin/bun /usr/local/bin/ && \
     cp /root/.bun/bin/bunx /usr/local/bin/
 
 # =============================================================================
-# Go
+# GO — Go runtime + language servers
 # =============================================================================
+FROM crush AS go
 ARG GO_VERSION=1.26.3
 ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
     PATH=/go/bin:/usr/local/go/bin:$PATH
+
 RUN curl -fsSL "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" | \
     tar -C /usr/local -xz && \
-    mkdir -p $GOPATH/bin
+    mkdir -p $GOPATH/bin && \
+    go install golang.org/x/tools/gopls@latest && \
+    go install github.com/nametake/golangci-lint-langserver@latest
 
 # =============================================================================
-# Rust & Cargo
+# RUST — Rust toolchain + rust-analyzer
 # =============================================================================
+FROM crush AS rust
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH
+
 RUN rustup-init -y --profile=default --default-toolchain stable && \
     rustup component add rust-analyzer && \
     cargo --version && rustc --version
 
 # =============================================================================
-# Python packages (global dev tools)
+# PYTHON — Python packages (formatters, linters, LSP servers)
 # =============================================================================
+FROM crush AS python
 RUN pip3 install --no-cache-dir --break-system-packages \
     pylint \
     black \
     ruff \
     mypy \
-    pyright
-
-# =============================================================================
-# Language Server Protocols
-# =============================================================================
-# TypeScript / JavaScript
-RUN npm install -g \
-    typescript \
-    typescript-language-server \
-    eslint \
-    prettier
-
-# YAML
-RUN npm install -g yaml-language-server
-
-# Go language server
-RUN go install golang.org/x/tools/gopls@latest && \
-    go install github.com/nametake/golangci-lint-langserver@latest
-
-# Python language server
-RUN pip3 install --no-cache-dir --break-system-packages \
     pyright \
     ruff-lsp
 
 # =============================================================================
+# FINAL — assemble all toolchains into workspace image
+# =============================================================================
+FROM base AS final
+
+# Copy Crush CLI
+COPY --link --from=crush /usr/bin/crush /usr/bin/
+COPY --link --from=crush /etc/yum.repos.d/charm.repo /etc/yum.repos.d/
+
+# Copy Node.js + npm packages
+COPY --link --from=nodejs /usr/bin/node /usr/bin/
+COPY --link --from=nodejs /usr/bin/npm /usr/bin/
+COPY --link --from=nodejs /usr/bin/npx /usr/bin/
+COPY --link --from=nodejs /usr/lib/node_modules /usr/lib/node_modules/
+COPY --link --from=nodejs /usr/lib64/node_modules /usr/lib64/node_modules/
+COPY --link --from=nodejs /usr/share/node /usr/share/node/
+
+# Copy Bun
+COPY --link --from=bun /usr/local/bin/bun /usr/local/bin/
+COPY --link --from=bun /usr/local/bin/bunx /usr/local/bin/
+
+# Copy Go
+ARG GO_VERSION=1.26.3
+ENV GO_VERSION=${GO_VERSION} \
+    GOPATH=/go \
+    PATH=/go/bin:/usr/local/go/bin:$PATH
+COPY --link --from=go /usr/local/go /usr/local/go/
+COPY --link --from=go /go/bin /go/bin/
+
+# Copy Rust
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
+COPY --link --from=rust /usr/local/rustup /usr/local/rustup/
+COPY --link --from=rust /usr/local/cargo /usr/local/cargo/
+
+# Copy Python packages
+COPY --link --from=python /usr/lib64/python3*/site-packages /usr/lib64/python3*/site-packages/
+COPY --link --from=python /usr/bin/pylint /usr/bin/
+COPY --link --from=python /usr/bin/black /usr/bin/
+COPY --link --from=python /usr/bin/ruff /usr/bin/
+COPY --link --from=python /usr/bin/mypy /usr/bin/
+COPY --link --from=python /usr/bin/pyright /usr/bin/
+COPY --link --from=python /usr/bin/ruff-lsp /usr/bin/
+
+# =============================================================================
 # Workspace user (DevWorkspaces runs as non-root)
 # =============================================================================
-# DevWorkspaces typically runs as UID 1000
-# Ensure common directories are writable
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /usr/local/cargo /usr/local/rustup && \
@@ -148,22 +190,14 @@ RUN useradd -m -u 1000 -U -s /bin/bash user && \
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
     usermod --add-subuids 2000-65000 --add-subgids 2000-65000 user
-# Set up environment variables to note that this is
-# not starting with usernamespace and default to
-# isolate the filesystem with chroot.
 ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
 WORKDIR /projects
-# /usr/libexec/podman/catatonit is used to reap zombie processes
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
-# Set default command to simply keep the container alive so that we can exec inside it
 CMD ["tail", "-f", "/dev/null"]
 
-# =============================================================================
-# Labels
-# =============================================================================
 LABEL name="dev-workspace-base" \
       description="Base development environment for agentic developer workspaces" \
       maintainer="Joakim Nohlgård" \
