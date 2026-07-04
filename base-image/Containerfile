@@ -135,6 +135,10 @@ RUN useradd -m -u 1000 -U -s /bin/bash user && \
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
     usermod --add-subuids 2000-65000 --add-subgids 2000-65000 user
+# Set up environment variables to note that this is
+# not starting with usernamespace and default to
+# isolate the filesystem with chroot.
+ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
