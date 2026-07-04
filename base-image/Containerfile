@@ -58,24 +58,9 @@ RUN mkdir -p /etc/yum.repos.d && \
     && dnf clean all
 
 # =============================================================================
-# CRUSH — AI coding assistant
-# =============================================================================
-FROM base AS crush
-COPY <<-'EOT' /etc/yum.repos.d/charm.repo
-	[charm]
-	name=Charm
-	baseurl=https://repo.charm.sh/yum/
-	enabled=1
-	gpgcheck=1
-	gpgkey=https://repo.charm.sh/yum/gpg.key
-EOT
-RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y crush && \
-    dnf clean all
-
-# =============================================================================
 # NODEJS — Node.js runtime + npm global packages
 # =============================================================================
-FROM crush AS nodejs
+FROM base AS nodejs
 RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
     dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y nodejs && \
     dnf clean all
@@ -90,7 +75,7 @@ RUN npm install -g \
 # =============================================================================
 # BUN — Bun JS/TS runtime
 # =============================================================================
-FROM crush AS bun
+FROM base AS bun
 RUN curl -fsSL https://bun.sh/install | bash - && \
     cp /root/.bun/bin/bun /usr/local/bin/ && \
     cp /root/.bun/bin/bunx /usr/local/bin/
@@ -98,7 +83,7 @@ RUN curl -fsSL https://bun.sh/install | bash - && \
 # =============================================================================
 # GO — Go runtime + language servers
 # =============================================================================
-FROM crush AS go
+FROM base AS go
 ARG GO_VERSION=1.26.3
 ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
@@ -113,7 +98,7 @@ RUN curl -fsSL "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" | \
 # =============================================================================
 # RUST — Rust toolchain + rust-analyzer
 # =============================================================================
-FROM crush AS rust
+FROM base AS rust
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH
@@ -125,7 +110,7 @@ RUN rustup-init -y --profile=default --default-toolchain stable && \
 # =============================================================================
 # PYTHON — Python packages (formatters, linters, LSP servers)
 # =============================================================================
-FROM crush AS python
+FROM base AS python
 RUN pip3 install --no-cache-dir --break-system-packages \
     pylint \
     black \
@@ -140,8 +125,16 @@ RUN pip3 install --no-cache-dir --break-system-packages \
 FROM base AS final
 
 # Copy Crush CLI
-COPY --link --from=crush /usr/bin/crush /usr/bin/
-COPY --link --from=crush /etc/yum.repos.d/charm.repo /etc/yum.repos.d/
+COPY <<-'EOT' /etc/yum.repos.d/charm.repo
+	[charm]
+	name=Charm
+	baseurl=https://repo.charm.sh/yum/
+	enabled=1
+	gpgcheck=1
+	gpgkey=https://repo.charm.sh/yum/gpg.key
+EOT
+RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y crush && \
+    dnf clean all
 
 # Copy Node.js + npm packages
 COPY --link --from=nodejs /usr/bin/node /usr/bin/
