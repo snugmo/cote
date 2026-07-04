@@ -86,9 +86,12 @@ COPY --from=crush-install /usr/share/man/man1/crush.1.gz /usr/share/man/man1/
 # NODEJS — install
 # =============================================================================
 FROM base AS nodejs-install
-RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
-    dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y nodejs && \
-    dnf clean all && \
+ENV FNM_DIR=/usr/local/fnm \
+    PATH=${FNM_DIR}:$PATH
+
+RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir ${FNM_DIR} && \
+    fnm install 22 && \
+    fnm default 22 && \
     npm install -g \
         typescript \
         typescript-language-server \
@@ -97,19 +100,7 @@ RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
         yaml-language-server
 
 FROM scratch AS nodejs-artifacts
-COPY --from=nodejs-install /usr/bin/node /usr/bin/
-COPY --from=nodejs-install /usr/bin/npm /usr/bin/
-COPY --from=nodejs-install /usr/bin/npx /usr/bin/
-COPY --from=nodejs-install /usr/bin/corepack /usr/bin/
-COPY --from=nodejs-install /usr/bin/tsc /usr/bin/
-COPY --from=nodejs-install /usr/bin/tsserver /usr/bin/
-COPY --from=nodejs-install /usr/bin/eslint /usr/bin/
-COPY --from=nodejs-install /usr/bin/prettier /usr/bin/
-COPY --from=nodejs-install /usr/bin/typescript-language-server /usr/bin/
-COPY --from=nodejs-install /usr/bin/yaml-language-server /usr/bin/
-COPY --from=nodejs-install /usr/lib/node_modules /usr/lib/node_modules/
-COPY --from=nodejs-install /etc/yum.repos.d/nodesource-nodejs.repo /etc/yum.repos.d/
-COPY --from=nodejs-install /etc/yum.repos.d/nodesource-nsolid.repo /etc/yum.repos.d/
+COPY --from=nodejs-install /usr/local/fnm /usr/local/fnm/
 
 # =============================================================================
 # BUN — install
@@ -218,7 +209,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /usr/local/cargo /usr/local/rustup && \
-    chown -R user:user /home/user /go /usr/local/cargo /usr/local/rustup
+    chown -R user:user /home/user /go /usr/local/cargo /usr/local/rustup /usr/local/fnm
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
@@ -226,7 +217,7 @@ RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
 ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 USER user
-ENV PATH="/home/user/.local/bin:$PATH"
+ENV PATH="/usr/local/fnm/bin:/usr/local/fnm:/home/user/.local/bin:$PATH"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
 CMD ["tail", "-f", "/dev/null"]
