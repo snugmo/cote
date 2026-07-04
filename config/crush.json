@@ -1,0 +1,44 @@
+{
+  "options": {
+    "attribution": {
+      "trailer_style": "co-authored-by",
+      "generated_with": true
+    }
+  },
+  "lsp": {
+    "yaml": {
+      "command": "yaml-language-server",
+      "args": ["--stdio"],
+      "filetypes": ["yaml"],
+      "init_options": {
+        "yaml": {
+          "kubernetesVersion": "v1.36.0",
+          "schemaStore": {
+            "enable": true
+          },
+          "kubernetesCRDStore": {
+            "enable": true
+          },
+          "schemas": {
+            "Kubernetes": "**/*.yaml"
+          }
+        }
+      }
+    }
+  },
+  "permissions": {
+    "allowed_tools": [
+      "view",
+      "ls",
+      "grep",
+      "edit"
+    ]
+  },
+  "providers": {
+    "llamacpp": {
+      "name": "llama.cpp",
+      "base_url": "https://llm.r5t.io",
+      "type": "llamacpp"
+    }
+  }
+}
