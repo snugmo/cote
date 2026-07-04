@@ -76,6 +76,10 @@ RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodoc
 FROM scratch AS crush-artifacts
 COPY --from=crush-install /usr/bin/crush /usr/bin/
 COPY --from=crush-install /etc/yum.repos.d/charm.repo /etc/yum.repos.d/
+COPY --from=crush-install /etc/bash_completion.d/crush /etc/bash_completion.d/
+COPY --from=crush-install /usr/share/fish/vendor_completions.d/crush.fish /usr/share/fish/vendor_completions.d/
+COPY --from=crush-install /usr/share/zsh/site-functions/_crush /usr/share/zsh/site-functions/
+COPY --from=crush-install /usr/share/man/man1/crush.1.gz /usr/share/man/man1/
 
 # =============================================================================
 # NODEJS — install
@@ -95,7 +99,16 @@ FROM scratch AS nodejs-artifacts
 COPY --from=nodejs-install /usr/bin/node /usr/bin/
 COPY --from=nodejs-install /usr/bin/npm /usr/bin/
 COPY --from=nodejs-install /usr/bin/npx /usr/bin/
+COPY --from=nodejs-install /usr/bin/corepack /usr/bin/
+COPY --from=nodejs-install /usr/bin/tsc /usr/bin/
+COPY --from=nodejs-install /usr/bin/tsserver /usr/bin/
+COPY --from=nodejs-install /usr/bin/eslint /usr/bin/
+COPY --from=nodejs-install /usr/bin/prettier /usr/bin/
+COPY --from=nodejs-install /usr/bin/typescript-language-server /usr/bin/
+COPY --from=nodejs-install /usr/bin/yaml-language-server /usr/bin/
 COPY --from=nodejs-install /usr/lib/node_modules /usr/lib/node_modules/
+COPY --from=nodejs-install /etc/yum.repos.d/nodesource-nodejs.repo /etc/yum.repos.d/
+COPY --from=nodejs-install /etc/yum.repos.d/nodesource-nsolid.repo /etc/yum.repos.d/
 
 # =============================================================================
 # BUN — install
@@ -123,7 +136,7 @@ RUN curl -fsSL "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" | \
     go install github.com/nametake/golangci-lint-langserver@latest
 
 FROM scratch AS go-artifacts
-COPY --from=go-install /usr/local/go /usr/local/go/
+COPY --from=go-install /usr/local /usr/local/
 COPY --from=go-install /go /go/
 
 # =============================================================================
@@ -138,8 +151,7 @@ RUN rustup-init -y --profile=default --default-toolchain stable && \
     rustup component add rust-analyzer
 
 FROM scratch AS rust-artifacts
-COPY --from=rust-install /usr/local/rustup /usr/local/rustup/
-COPY --from=rust-install /usr/local/cargo /usr/local/cargo/
+COPY --from=rust-install /usr/local /usr/local/
 
 # =============================================================================
 # PYTHON — install
@@ -154,8 +166,7 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     ruff-lsp
 
 FROM scratch AS python-artifacts
-COPY --from=python-install /usr/lib64/python3*/site-packages /usr/lib64/python3*/site-packages/
-COPY --from=python-install /usr/local/bin/ /usr/local/bin/
+COPY --from=python-install /usr/local /usr/local/
 
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
