@@ -2,8 +2,9 @@
 # Provides universal toolchain: compilers, package managers, shell utils, LSP servers
 # IDEs are excluded — they are added as separate Devfile components (e.g., Eclipse Che plugins)
 #
-# Build strategy: parallel stages with COPY --link for independent layer caching.
-# Changing one toolchain (e.g., Go version) only rebuilds that stage.
+# Build strategy: parallel install stages → scratch artifact stages → final assembly.
+# Each toolchain installs to standard paths, then a FROM scratch stage captures
+# only the files needed. Final image assembles via single COPY --link per toolchain.
 
 # =============================================================================
 # BASE — system packages only (rarely changes)
@@ -58,73 +59,9 @@ RUN mkdir -p /etc/yum.repos.d && \
     && dnf clean all
 
 # =============================================================================
-# NODEJS — Node.js runtime + npm global packages
+# CRUSH — install
 # =============================================================================
-FROM base AS nodejs
-RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
-    dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y nodejs && \
-    dnf clean all
-
-RUN npm install -g \
-    typescript \
-    typescript-language-server \
-    eslint \
-    prettier \
-    yaml-language-server
-
-# =============================================================================
-# BUN — Bun JS/TS runtime
-# =============================================================================
-FROM base AS bun
-RUN curl -fsSL https://bun.sh/install | bash - && \
-    cp /root/.bun/bin/bun /usr/local/bin/ && \
-    cp /root/.bun/bin/bunx /usr/local/bin/
-
-# =============================================================================
-# GO — Go runtime + language servers
-# =============================================================================
-FROM base AS go
-ARG GO_VERSION=1.26.3
-ENV GO_VERSION=${GO_VERSION} \
-    GOPATH=/go \
-    PATH=/go/bin:/usr/local/go/bin:$PATH
-
-RUN curl -fsSL "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" | \
-    tar -C /usr/local -xz && \
-    mkdir -p $GOPATH/bin && \
-    go install golang.org/x/tools/gopls@latest && \
-    go install github.com/nametake/golangci-lint-langserver@latest
-
-# =============================================================================
-# RUST — Rust toolchain + rust-analyzer
-# =============================================================================
-FROM base AS rust
-ENV RUSTUP_HOME=/usr/local/rustup \
-    CARGO_HOME=/usr/local/cargo \
-    PATH=/usr/local/cargo/bin:$PATH
-
-RUN rustup-init -y --profile=default --default-toolchain stable && \
-    rustup component add rust-analyzer && \
-    cargo --version && rustc --version
-
-# =============================================================================
-# PYTHON — Python packages (formatters, linters, LSP servers)
-# =============================================================================
-FROM base AS python
-RUN pip3 install --no-cache-dir --break-system-packages \
-    pylint \
-    black \
-    ruff \
-    mypy \
-    pyright \
-    ruff-lsp
-
-# =============================================================================
-# FINAL — assemble all toolchains into workspace image
-# =============================================================================
-FROM base AS final
-
-# Copy Crush CLI
+FROM base AS crush-install
 COPY <<-'EOT' /etc/yum.repos.d/charm.repo
 	[charm]
 	name=Charm
@@ -136,34 +73,113 @@ EOT
 RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y crush && \
     dnf clean all
 
-# Copy Node.js + npm packages
-COPY --link --from=nodejs /usr/bin/node /usr/bin/
-COPY --link --from=nodejs /usr/bin/npm /usr/bin/
-COPY --link --from=nodejs /usr/bin/npx /usr/bin/
-COPY --link --from=nodejs /usr/lib/node_modules /usr/lib/node_modules/
+FROM scratch AS crush-artifacts
+COPY --from=crush-install /usr/bin/crush /usr/bin/
+COPY --from=crush-install /etc/yum.repos.d/charm.repo /etc/yum.repos.d/
 
-# Copy Bun
-COPY --link --from=bun /usr/local/bin/bun /usr/local/bin/
-COPY --link --from=bun /usr/local/bin/bunx /usr/local/bin/
+# =============================================================================
+# NODEJS — install
+# =============================================================================
+FROM base AS nodejs-install
+RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
+    dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y nodejs && \
+    dnf clean all && \
+    npm install -g \
+        typescript \
+        typescript-language-server \
+        eslint \
+        prettier \
+        yaml-language-server
 
-# Copy Go
+FROM scratch AS nodejs-artifacts
+COPY --from=nodejs-install /usr/bin/node /usr/bin/
+COPY --from=nodejs-install /usr/bin/npm /usr/bin/
+COPY --from=nodejs-install /usr/bin/npx /usr/bin/
+COPY --from=nodejs-install /usr/lib/node_modules /usr/lib/node_modules/
+
+# =============================================================================
+# BUN — install
+# =============================================================================
+FROM base AS bun-install
+RUN curl -fsSL https://bun.sh/install | bash -
+
+FROM scratch AS bun-artifacts
+COPY --from=bun-install /root/.bun/bin/bun /usr/local/bin/
+COPY --from=bun-install /root/.bun/bin/bunx /usr/local/bin/
+
+# =============================================================================
+# GO — install
+# =============================================================================
+FROM base AS go-install
 ARG GO_VERSION=1.26.3
 ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
     PATH=/go/bin:/usr/local/go/bin:$PATH
-COPY --link --from=go /usr/local/go /usr/local/go/
-COPY --link --from=go /go/bin /go/bin/
 
-# Copy Rust
+RUN curl -fsSL "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" | \
+    tar -C /usr/local -xz && \
+    mkdir -p $GOPATH/bin && \
+    go install golang.org/x/tools/gopls@latest && \
+    go install github.com/nametake/golangci-lint-langserver@latest
+
+FROM scratch AS go-artifacts
+COPY --from=go-install /usr/local/go /usr/local/go/
+COPY --from=go-install /go /go/
+
+# =============================================================================
+# RUST — install
+# =============================================================================
+FROM base AS rust-install
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH
-COPY --link --from=rust /usr/local/rustup /usr/local/rustup/
-COPY --link --from=rust /usr/local/cargo /usr/local/cargo/
 
-# Copy Python packages
-COPY --link --from=python /usr/lib64/python3*/site-packages /usr/lib64/python3*/site-packages/
-COPY --link --from=python /usr/local/bin/ /usr/local/bin/
+RUN rustup-init -y --profile=default --default-toolchain stable && \
+    rustup component add rust-analyzer
+
+FROM scratch AS rust-artifacts
+COPY --from=rust-install /usr/local/rustup /usr/local/rustup/
+COPY --from=rust-install /usr/local/cargo /usr/local/cargo/
+
+# =============================================================================
+# PYTHON — install
+# =============================================================================
+FROM base AS python-install
+RUN pip3 install --no-cache-dir --break-system-packages \
+    pylint \
+    black \
+    ruff \
+    mypy \
+    pyright \
+    ruff-lsp
+
+FROM scratch AS python-artifacts
+COPY --from=python-install /usr/lib64/python3*/site-packages /usr/lib64/python3*/site-packages/
+COPY --from=python-install /usr/local/bin/ /usr/local/bin/
+
+# =============================================================================
+# FINAL — assemble all toolchains into workspace image
+# =============================================================================
+FROM base AS final
+
+# Assemble toolchains from artifact stages
+COPY --link --from=crush-artifacts / /
+COPY --link --from=nodejs-artifacts / /
+COPY --link --from=bun-artifacts / /
+COPY --link --from=go-artifacts / /
+COPY --link --from=rust-artifacts / /
+COPY --link --from=python-artifacts / /
+
+# Go env
+ARG GO_VERSION=1.26.3
+ENV GO_VERSION=${GO_VERSION} \
+    GOPATH=/go \
+    PATH=/go/bin:/usr/local/go/bin:$PATH
+
+# Rust env
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
 
 # =============================================================================
 # Workspace user (DevWorkspaces runs as non-root)
