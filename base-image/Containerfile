@@ -141,7 +141,6 @@ COPY --link --from=nodejs /usr/bin/node /usr/bin/
 COPY --link --from=nodejs /usr/bin/npm /usr/bin/
 COPY --link --from=nodejs /usr/bin/npx /usr/bin/
 COPY --link --from=nodejs /usr/lib/node_modules /usr/lib/node_modules/
-COPY --link --from=nodejs /usr/lib64/node_modules /usr/lib64/node_modules/
 COPY --link --from=nodejs /usr/share/node /usr/share/node/
 
 # Copy Bun
