@@ -75,3 +75,29 @@ devfiles/
 - **New language/tool**: Add to the base image Containerfile, rebuild, update the Devfile image reference.
 - **New IDE**: Add a commented-out component block in the Devfile (see VS Code example).
 - **Project-specific devfile**: Copy `devfiles/devfile.yaml`, update `projects`, `commands`, and add project-specific env vars or endpoints.
+
+## Development Tips
+
+### Verifying Artifact Stages
+
+The Containerfile uses parallel install stages → scratch artifact stages → final assembly. After changing COPY directives in artifact stages, verify they capture all needed files:
+
+1. **Build each install stage as a tagged image:**
+   ```bash
+   buildah build --isolation chroot --layers --target base -t diff-base -f Containerfile .
+   buildah build --isolation chroot --layers --target nodejs-install -t diff-nodejs -f Containerfile .
+   # ... repeat for each install stage
+   ```
+   `--isolation chroot` is required for nested container builds. `--layers` reuses cached base layers.
+
+2. **Diff each install image against the base:**
+   ```bash
+   BASE=$(podman inspect diff-base --format '{{.Id}}')
+   podman diff diff-nodejs "$BASE" > nodejs_added.txt
+   ```
+   Filter to `^A ` (Added) lines to see only new files. Extract unique directory prefixes with:
+   ```bash
+   grep '^A ' nodejs_added.txt | sed 's/^A //' | awk -F/ '{if(NF>=3) print "/"$2"/"$3; else print $0}' | sort -u
+   ```
+
+3. **Cross-reference** the output against COPY directives in the artifact stages to find missing files.
