@@ -9,6 +9,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+usage() {
+    printf 'Usage:\n'
+    printf '  ./build.sh                          # Build only\n'
+    printf '  ./build.sh push                     # Build and push\n'
+    printf '  ./build.sh push <registry>          # Build and push to registry\n'
+}
+
 # Configurable via environment or defaults
 REGISTRY="${DEV_REGISTRY:-localhost:5000}"
 IMAGE_NAME="${DEV_IMAGE_NAME:-dev-workspace-base}"
@@ -16,11 +23,25 @@ VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirt
 TAG="${VERSION}"
 
 PUSH=false
+if [[ $# -gt 2 ]]; then
+    printf '\nError: Too many arguments. '
+    usage
+    printf '\nAborting.\n'
+    exit 2
+fi
+
 if [[ "${1:-}" == "push" ]]; then
     PUSH=true
     if [[ -n "${2:-}" ]]; then
         REGISTRY="$2"
     fi
+elif [[ -n "${1:-}" ]]; then
+    printf '\n⚠ WARNING: First argument "%s" is not "push".\n' "$1"
+    printf '   Image will be built locally but NOT pushed.\n'
+    printf '   Did you mean:  ./build.sh push %s\n\n' "$1"
+    usage
+    printf '\nAborting.\n'
+    exit 2
 fi
 
 FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${TAG}"
