@@ -174,6 +174,17 @@ FROM scratch AS python-artifacts
 COPY --from=python-install /usr/local /usr/local/
 
 # =============================================================================
+# COSIGN — install
+# =============================================================================
+FROM base AS cosign-install
+ARG COSIGN_VERSION=3.1.1
+RUN curl -fsSL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-amd64" -o /usr/local/bin/cosign && \
+    chmod +x /usr/local/bin/cosign
+
+FROM scratch AS cosign-artifacts
+COPY --from=cosign-install /usr/local/bin/cosign /usr/local/bin/
+
+# =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
 FROM base AS final
@@ -185,6 +196,7 @@ COPY --link --from=bun-artifacts / /
 COPY --link --from=go-artifacts / /
 COPY --link --from=rust-artifacts / /
 COPY --link --from=python-artifacts / /
+COPY --link --from=cosign-artifacts / /
 
 # Go env
 ARG GO_VERSION=1.26.3
