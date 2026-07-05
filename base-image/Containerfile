@@ -66,27 +66,37 @@ RUN curl -fsSL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_V
     chmod +x /usr/local/bin/cosign
 
 # =============================================================================
-# CRUSH — install
+# CRUSH — install from GitHub release with cosign verification
 # =============================================================================
 FROM base AS crush-install
-COPY <<-'EOT' /etc/yum.repos.d/charm.repo
-	[charm]
-	name=Charm
-	baseurl=https://repo.charm.sh/yum/
-	enabled=1
-	gpgcheck=1
-	gpgkey=https://repo.charm.sh/yum/gpg.key
-EOT
-RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y crush && \
-    dnf clean all
+ARG TARGETARCH
+ARG CRUSH_VERSION=0.81.0
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=x86_64 && \
+    curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/crush_${CRUSH_VERSION}_Linux_${ARCH}.tar.gz" -o crush.tar.gz && \
+    curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/checksums.txt" -o checksums.txt && \
+    curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/checksums.txt.sigstore.json" -o checksums.txt.sigstore.json && \
+    cosign verify-blob \
+      --certificate-identity 'https://github.com/charmbracelet/meta/.github/workflows/goreleaser.yml@refs/heads/main' \
+      --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+      --bundle checksums.txt.sigstore.json \
+      checksums.txt && \
+    EXPECTED=$(grep "crush_${CRUSH_VERSION}_Linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
+    echo "${EXPECTED}  crush.tar.gz" | sha256sum -c - && \
+    mkdir -p /opt/crush/bin /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
+    tar -xzf crush.tar.gz -C /opt/crush/bin "crush_${CRUSH_VERSION}_Linux_${ARCH}/crush" && \
+    mv /opt/crush/bin/crush_${CRUSH_VERSION}_Linux_${ARCH}/crush /opt/crush/bin/crush && \
+    rmdir /opt/crush/bin/crush_${CRUSH_VERSION}_Linux_${ARCH} && \
+    tar -xzf crush.tar.gz "crush_${CRUSH_VERSION}_Linux_${ARCH}/completions/crush.bash" -O > /etc/bash_completion.d/crush && \
+    tar -xzf crush.tar.gz "crush_${CRUSH_VERSION}_Linux_${ARCH}/completions/crush.fish" -O > /usr/share/fish/vendor_completions.d/crush.fish && \
+    tar -xzf crush.tar.gz "crush_${CRUSH_VERSION}_Linux_${ARCH}/completions/crush.zsh" -O > /usr/share/zsh/site-functions/_crush && \
+    rm -f crush.tar.gz checksums.txt checksums.txt.sigstore.json
 
 FROM scratch AS crush-artifacts
-COPY --from=crush-install /usr/bin/crush /usr/bin/
-COPY --from=crush-install /etc/yum.repos.d/charm.repo /etc/yum.repos.d/
+COPY --from=crush-install /opt/crush /opt/crush/
 COPY --from=crush-install /etc/bash_completion.d/crush /etc/bash_completion.d/
 COPY --from=crush-install /usr/share/fish/vendor_completions.d/crush.fish /usr/share/fish/vendor_completions.d/
 COPY --from=crush-install /usr/share/zsh/site-functions/_crush /usr/share/zsh/site-functions/
-COPY --from=crush-install /usr/share/man/man1/crush.1.gz /usr/share/man/man1/
 
 # =============================================================================
 # NODEJS — install
@@ -205,7 +215,7 @@ ENV RUSTUP_HOME=/opt/rustup \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun
+    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
@@ -213,7 +223,7 @@ RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
 ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 USER user
-ENV PATH="/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/home/user/.local/bin:$PATH"
+ENV PATH="/opt/crush/bin:/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/home/user/.local/bin:$PATH"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
 CMD ["tail", "-f", "/dev/null"]
