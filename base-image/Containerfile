@@ -59,6 +59,12 @@ RUN mkdir -p /etc/yum.repos.d && \
         foot-terminfo kitty-terminfo \
     && dnf clean all
 
+# Install cosign for signature verification (available to all downstream stages)
+ARG TARGETARCH
+ARG COSIGN_VERSION=3.1.1
+RUN curl -fsSL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-${TARGETARCH}" -o /usr/local/bin/cosign && \
+    chmod +x /usr/local/bin/cosign
+
 # =============================================================================
 # CRUSH — install
 # =============================================================================
@@ -168,18 +174,6 @@ RUN pip3 install --no-cache-dir --break-system-packages \
 FROM scratch AS python-artifacts
 COPY --from=python-install /usr/local /usr/local/
 
-# =============================================================================
-# COSIGN — install
-# =============================================================================
-FROM base AS cosign-install
-ARG TARGETARCH
-ARG COSIGN_VERSION=3.1.1
-RUN mkdir -p /opt/cosign/bin && \
-    curl -fsSL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-${TARGETARCH}" -o /opt/cosign/bin/cosign && \
-    chmod +x /opt/cosign/bin/cosign
-
-FROM scratch AS cosign-artifacts
-COPY --from=cosign-install /opt/cosign /opt/cosign/
 
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
@@ -193,7 +187,6 @@ COPY --link --from=bun-artifacts / /
 COPY --link --from=go-artifacts / /
 COPY --link --from=rust-artifacts / /
 COPY --link --from=python-artifacts / /
-COPY --link --from=cosign-artifacts / /
 
 # Go env
 ARG GO_VERSION=1.26.3
@@ -212,7 +205,7 @@ ENV RUSTUP_HOME=/opt/rustup \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/cosign
+    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
