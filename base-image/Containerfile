@@ -173,7 +173,17 @@ COPY --from=rust-install /opt/cargo /opt/cargo/
 # PYTHON — install
 # =============================================================================
 FROM base AS python-install
-RUN pip3 install --no-cache-dir --break-system-packages \
+ARG TARGETARCH
+ARG UV_VERSION=0.11.26
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=x86_64-unknown-linux-gnu || ARCH=aarch64-unknown-linux-gnu && \
+    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}.tar.gz" -o "uv-${ARCH}.tar.gz" && \
+    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}.tar.gz.sha256" -o uv.sha256 && \
+    sha256sum -c uv.sha256 && \
+    mkdir -p /opt/uv/bin && \
+    tar -xzf "uv-${ARCH}.tar.gz" -C /opt/uv/bin --strip-components=1 && \
+    rm -f "uv-${ARCH}.tar.gz" uv.sha256 && \
+    pip3 install --no-cache-dir --break-system-packages \
     pylint \
     black \
     ruff \
@@ -182,6 +192,7 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     ruff-lsp
 
 FROM scratch AS python-artifacts
+COPY --from=python-install /opt/uv /opt/uv/
 COPY --from=python-install /usr/local /usr/local/
 
 
@@ -215,7 +226,7 @@ ENV RUSTUP_HOME=/opt/rustup \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush
+    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
@@ -223,7 +234,7 @@ RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
 ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 USER user
-ENV PATH="/opt/crush/bin:/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/home/user/.local/bin:$PATH"
+ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/home/user/.local/bin:$PATH"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
 CMD ["tail", "-f", "/dev/null"]
