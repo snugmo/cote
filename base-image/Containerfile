@@ -102,13 +102,21 @@ COPY --from=crush-install /usr/share/zsh/site-functions/_crush /usr/share/zsh/si
 # NODEJS — install
 # =============================================================================
 FROM base AS nodejs-install
+ARG TARGETARCH
+ARG FNM_VERSION=1.39.0
+ARG NODE_VERSION=22
 ENV FNM_DIR=/opt/fnm \
     PATH=${FNM_DIR}:$PATH
 
-RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "${FNM_DIR}" --skip-shell && \
-    fnm install 22 && \
-    fnm default 22 && \
-    source <(fnm env) && \
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "arm64" ] && ARCH=arm64 || ARCH=linux && \
+    mkdir -p "${FNM_DIR}" && \
+    curl -fsSL "https://github.com/Schniz/fnm/releases/download/v${FNM_VERSION}/fnm-${ARCH}.zip" -o fnm.zip && \
+    unzip -q fnm.zip -d "${FNM_DIR}" && \
+    rm -f fnm.zip && \
+    "${FNM_DIR}/fnm" install "${NODE_VERSION}" && \
+    "${FNM_DIR}/fnm" default "${NODE_VERSION}" && \
+    eval "$(${FNM_DIR}/fnm env --shell bash)" && \
     npm install -g \
         typescript \
         typescript-language-server \
