@@ -37,10 +37,6 @@ components:
       memoryLimit: "2Gi"
       cpuRequest: "500m"
       cpuLimit: "2"
-      endpoints:
-        - name: ssh
-          port: 22
-          expose: false
       volumeMounts:
         - name: tools-cache
           path: /home/user/.cache
