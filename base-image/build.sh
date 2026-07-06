@@ -20,7 +20,7 @@ usage() {
 REGISTRY="${DEV_REGISTRY:-localhost:5000}"
 IMAGE_NAME="${DEV_IMAGE_NAME:-dev-workspace-base}"
 VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirty 2>/dev/null || echo 'latest')}"
-TAG="${VERSION}"
+TAG="${VERSION#v}"
 
 PUSH=false
 if [[ $# -gt 2 ]]; then
