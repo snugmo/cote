@@ -45,6 +45,7 @@ devfiles/
 - Uses Devfile schema `2.2.0`.
 - The `tools` container mounts source code and provides the shared toolchain.
 - IDE components are commented out by default — uncomment and configure per-team.
+- Env vars (`GOPATH`, `CARGO_HOME`, `RUSTUP_HOME`, `PATH`) are baked into the image — no `env` block needed in devfiles.
 - Persistent volumes (`tools-cache`, `tools-local`) survive pod restarts for pip/npm/cargo caches.
 - The `image` field in the `tools` component defaults to `localhost:5000/dev-workspace-base:latest` — update it after building.
 - Commands section includes `run-tests` (placeholder) and `rebuild-base-image` (runs buildah inside the workspace).
@@ -52,7 +53,7 @@ devfiles/
 ### Self-hosting Devfile (`.devfile.yaml`)
 
 - Opens this repository itself as a DevWorkspaces workspace.
-- References a pre-built image at `codeberg.org/r5t/agent-workspace:v0.1.0`.
+- References a pre-built image at `codeberg.org/r5t/agent-workspace:0.1.0`.
 - Use this to iterate on the repo configuration inside a live workspace.
 
 ### Build Script (`base-image/build.sh`)

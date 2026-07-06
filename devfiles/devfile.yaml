@@ -46,15 +46,6 @@ components:
           path: /home/user/.cache
         - name: tools-local
           path: /home/user/.local
-      env:
-        - name: GOPATH
-          value: "/go"
-        - name: CARGO_HOME
-          value: "/usr/local/cargo"
-        - name: RUSTUP_HOME
-          value: "/usr/local/rustup"
-        - name: HOME
-          value: "/home/user"
 
   # ------------------------------------------------------------------
   # IDE component placeholder

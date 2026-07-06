@@ -18,7 +18,7 @@ projects:
 components:
   - name: tools
     container:
-      image: "codeberg.org/r5t/agent-workspace:v0.1.0"
+      image: "codeberg.org/r5t/agent-workspace:0.3.0"
       mountSources: true
       memoryRequest: "512M"
       memoryLimit: "2Gi"
@@ -33,15 +33,6 @@ components:
           path: /home/user/.cache
         - name: tools-local
           path: /home/user/.local
-      env:
-        - name: GOPATH
-          value: "/go"
-        - name: CARGO_HOME
-          value: "/usr/local/cargo"
-        - name: RUSTUP_HOME
-          value: "/usr/local/rustup"
-        - name: HOME
-          value: "/home/user"
 
   - name: tools-cache
     volume:
