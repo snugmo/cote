@@ -47,7 +47,7 @@ devfiles/
 - IDE components are commented out by default — uncomment and configure per-team.
 - Env vars (`GOPATH`, `CARGO_HOME`, `RUSTUP_HOME`, `PATH`) are baked into the image — no `env` block needed in devfiles.
 - Persistent volumes (`tools-cache`, `tools-local`) survive pod restarts for pip/npm/cargo caches.
-- The `image` field in the `tools` component defaults to `localhost:5000/dev-workspace-base:latest` — update it after building.
+- The `image` field in the `tools` component defaults to `r5t.io/agentic/dev-workspace-base:latest`.
 - Commands section includes `run-tests` (placeholder) and `rebuild-base-image` (runs buildah inside the workspace).
 
 ### Self-hosting Devfile (`.devfile.yaml`)

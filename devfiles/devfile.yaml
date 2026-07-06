@@ -31,7 +31,7 @@ components:
   # ------------------------------------------------------------------
   - name: tools
     container:
-      image: "localhost:5000/dev-workspace-base:latest"
+      image: "r5t.io/agentic/dev-workspace-base:latest"
       mountSources: true
       memoryRequest: "512M"
       memoryLimit: "2Gi"

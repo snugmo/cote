@@ -18,7 +18,7 @@ projects:
 components:
   - name: tools
     container:
-      image: "codeberg.org/r5t/agent-workspace:0.3.0"
+      image: "r5t.io/agentic/dev-workspace-base:0.3.0"
       mountSources: true
       memoryRequest: "512M"
       memoryLimit: "2Gi"
