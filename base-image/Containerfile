@@ -213,7 +213,7 @@ RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=aarch64 && \
     mkdir -p /opt/forgejo-cli/bin && \
     curl -fsSL "https://codeberg.org/forgejo-contrib/forgejo-cli/releases/download/v${FJ_VERSION}/forgejo-cli-${ARCH}-linux.tar.gz" -o forgejo-cli.tar.gz && \
-    tar -xzf forgejo-cli.tar.gz -C /opt/forgejo-cli/bin --strip-components=1 fj && \
+    tar -xzf forgejo-cli.tar.gz -C /opt/forgejo-cli/bin fj && \
     chmod +x /opt/forgejo-cli/bin/fj && \
     rm -f forgejo-cli.tar.gz
 
