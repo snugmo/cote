@@ -221,6 +221,22 @@ FROM scratch AS forgejo-cli-artifacts
 COPY --from=forgejo-cli-install /opt/forgejo-cli /opt/forgejo-cli/
 
 # =============================================================================
+# GITHUB CLI — install gh from GitHub release
+# =============================================================================
+FROM base AS github-cli-install
+ARG TARGETARCH
+ARG GH_VERSION=2.96.0
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
+    mkdir -p /opt/github-cli && \
+    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${ARCH}.tar.gz" -o gh.tar.gz && \
+    tar -xzf gh.tar.gz -C /opt/github-cli --strip-components=1 && \
+    rm -f gh.tar.gz
+
+FROM scratch AS github-cli-artifacts
+COPY --from=github-cli-install /opt/github-cli /opt/github-cli/
+
+# =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
 FROM base AS final
@@ -233,6 +249,7 @@ COPY --link --from=go-artifacts / /
 COPY --link --from=rust-artifacts / /
 COPY --link --from=python-artifacts / /
 COPY --link --from=forgejo-cli-artifacts / /
+COPY --link --from=github-cli-artifacts / /
 
 # Go env
 ARG GO_VERSION=1.26.3
@@ -251,7 +268,7 @@ ENV RUSTUP_HOME=/opt/rustup \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/forgejo-cli
+    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/forgejo-cli /opt/github-cli
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
@@ -259,7 +276,8 @@ RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
 ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 USER user
-ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/opt/forgejo-cli/bin:/home/user/.local/bin:$PATH"
+ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/opt/forgejo-cli/bin:/opt/github-cli/bin:/home/user/.local/bin:$PATH" \
+    MANPATH="/opt/github-cli/share/man:$MANPATH"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
 CMD ["tail", "-f", "/dev/null"]
