@@ -203,6 +203,22 @@ FROM scratch AS python-artifacts
 COPY --from=python-install /opt/uv /opt/uv/
 COPY --from=python-install /usr/local /usr/local/
 
+# =============================================================================
+# FORGEJO CLI — install fj from Codeberg release
+# =============================================================================
+FROM base AS forgejo-cli-install
+ARG TARGETARCH
+ARG FJ_VERSION=0.5.0
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=aarch64 && \
+    mkdir -p /opt/forgejo-cli/bin && \
+    curl -fsSL "https://codeberg.org/forgejo-contrib/forgejo-cli/releases/download/v${FJ_VERSION}/forgejo-cli-${ARCH}-linux.tar.gz" -o forgejo-cli.tar.gz && \
+    tar -xzf forgejo-cli.tar.gz -C /opt/forgejo-cli/bin --strip-components=1 fj && \
+    chmod +x /opt/forgejo-cli/bin/fj && \
+    rm -f forgejo-cli.tar.gz
+
+FROM scratch AS forgejo-cli-artifacts
+COPY --from=forgejo-cli-install /opt/forgejo-cli /opt/forgejo-cli/
 
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
@@ -216,6 +232,7 @@ COPY --link --from=bun-artifacts / /
 COPY --link --from=go-artifacts / /
 COPY --link --from=rust-artifacts / /
 COPY --link --from=python-artifacts / /
+COPY --link --from=forgejo-cli-artifacts / /
 
 # Go env
 ARG GO_VERSION=1.26.3
@@ -234,7 +251,7 @@ ENV RUSTUP_HOME=/opt/rustup \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv
+    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/forgejo-cli
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
@@ -242,7 +259,7 @@ RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
 ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 USER user
-ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/home/user/.local/bin:$PATH"
+ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/opt/forgejo-cli/bin:/home/user/.local/bin:$PATH"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
 CMD ["tail", "-f", "/dev/null"]
