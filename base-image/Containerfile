@@ -274,7 +274,7 @@ ENV FNM_DIR=/opt/fnm \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/forgejo-cli /opt/github-cli
+    chown -R user:user /home/user /projects /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/forgejo-cli /opt/github-cli
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
