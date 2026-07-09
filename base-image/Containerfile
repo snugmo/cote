@@ -252,7 +252,7 @@ COPY --link --from=forgejo-cli-artifacts / /
 COPY --link --from=github-cli-artifacts / /
 
 # Go env
-ARG GO_VERSION=1.26.3
+ARG GO_VERSION
 ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
     PATH=/go/bin:/opt/go/bin:$PATH
