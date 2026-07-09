@@ -262,6 +262,12 @@ ENV RUSTUP_HOME=/opt/rustup \
     CARGO_HOME=/opt/cargo \
     PATH=/opt/cargo/bin:$PATH
 
+# Node.js (fnm) env
+ARG FNM_VERSION
+ARG NODE_VERSION
+ENV FNM_DIR=/opt/fnm \
+    PATH=/opt/fnm:/opt/fnm/aliases/default/bin:$PATH
+
 # =============================================================================
 # Workspace user (DevWorkspaces runs as non-root)
 # =============================================================================
@@ -276,7 +282,7 @@ RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
 ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
 USER user
-ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/fnm/bin:/opt/fnm:/opt/bun/bin:/opt/forgejo-cli/bin:/opt/github-cli/bin:/home/user/.local/bin:$PATH" \
+ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/bun/bin:/opt/forgejo-cli/bin:/opt/github-cli/bin:/home/user/.local/bin:$PATH" \
     MANPATH="/opt/github-cli/share/man:$MANPATH"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
