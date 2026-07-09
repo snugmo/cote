@@ -70,7 +70,7 @@ RUN curl -fsSL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_V
 # =============================================================================
 FROM base AS crush-install
 ARG TARGETARCH
-ARG CRUSH_VERSION=0.81.0
+ARG CRUSH_VERSION=0.83.0
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=x86_64 && \
     curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/crush_${CRUSH_VERSION}_Linux_${ARCH}.tar.gz" -o crush.tar.gz && \
@@ -104,7 +104,7 @@ COPY --from=crush-install /usr/share/zsh/site-functions/_crush /usr/share/zsh/si
 FROM base AS nodejs-install
 ARG TARGETARCH
 ARG FNM_VERSION=1.39.0
-ARG NODE_VERSION=22
+ARG NODE_VERSION=24
 ENV FNM_DIR=/opt/fnm \
     PATH=${FNM_DIR}:$PATH
 
@@ -147,7 +147,7 @@ COPY --from=bun-install /usr/share/zsh/site-functions/_bun /usr/share/zsh/site-f
 # =============================================================================
 FROM base AS go-install
 ARG TARGETARCH
-ARG GO_VERSION=1.26.3
+ARG GO_VERSION=1.26.5
 ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
     PATH=/go/bin:/opt/go/bin:$PATH
@@ -182,7 +182,7 @@ COPY --from=rust-install /opt/cargo /opt/cargo/
 # =============================================================================
 FROM base AS python-install
 ARG TARGETARCH
-ARG UV_VERSION=0.11.26
+ARG UV_VERSION=0.11.28
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=x86_64-unknown-linux-gnu || ARCH=aarch64-unknown-linux-gnu && \
     curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}.tar.gz" -o "uv-${ARCH}.tar.gz" && \
