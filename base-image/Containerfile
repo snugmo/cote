@@ -237,6 +237,26 @@ FROM scratch AS github-cli-artifacts
 COPY --from=github-cli-install /opt/github-cli /opt/github-cli/
 
 # =============================================================================
+# KUBESEAL — install kubeseal from bitnami/sealed-secrets release
+# =============================================================================
+FROM base AS kubeseal-install
+ARG TARGETARCH
+ARG KUBESEAL_VERSION=0.38.4
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
+    mkdir -p /opt/kubeseal/bin && \
+    curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz" -o kubeseal.tar.gz && \
+    curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz.sig" -o kubeseal.tar.gz.sig && \
+    curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/cosign.pub" -o cosign.pub && \
+    cosign verify-blob --key cosign.pub --signature kubeseal.tar.gz.sig kubeseal.tar.gz && \
+    tar -xzf kubeseal.tar.gz -C /opt/kubeseal/bin kubeseal && \
+    chmod +x /opt/kubeseal/bin/kubeseal && \
+    rm -f kubeseal.tar.gz kubeseal.tar.gz.sig cosign.pub
+
+FROM scratch AS kubeseal-artifacts
+COPY --from=kubeseal-install /opt/kubeseal /opt/kubeseal/
+
+# =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
 FROM base AS final
@@ -250,6 +270,7 @@ COPY --link --from=rust-artifacts / /
 COPY --link --from=python-artifacts / /
 COPY --link --from=forgejo-cli-artifacts / /
 COPY --link --from=github-cli-artifacts / /
+COPY --link --from=kubeseal-artifacts / /
 
 # Go env
 ARG GO_VERSION
@@ -274,7 +295,7 @@ ENV FNM_DIR=/opt/fnm \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /projects /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/forgejo-cli /opt/github-cli
+    chown -R user:user /home/user /projects /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/forgejo-cli /opt/github-cli /opt/kubeseal
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
@@ -300,7 +321,7 @@ COPY <<-'EOT' /etc/containers/containers.conf
 EOT
 
 USER user
-ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/bun/bin:/opt/forgejo-cli/bin:/opt/github-cli/bin:/home/user/.local/bin:$PATH" \
+ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/bun/bin:/opt/forgejo-cli/bin:/opt/github-cli/bin:/opt/kubeseal/bin:/home/user/.local/bin:$PATH" \
     MANPATH="/opt/github-cli/share/man:$MANPATH"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
