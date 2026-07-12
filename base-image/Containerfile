@@ -280,6 +280,24 @@ RUN useradd -m -u 1000 -U -s /bin/bash user && \
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
     usermod --add-subuids 2000-65000 --add-subgids 2000-65000 user
 ENV _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
+COPY <<-'EOT' /etc/containers/containers.conf
+	[containers]
+	netns="host"
+	volumes = [
+	  "/proc:/proc",
+	]
+	default_sysctls = []
+	#userns="host"
+	#ipcns="host"
+	utsns="host"
+	#cgroupns="host"
+	#cgroups="disabled"
+	log_driver = "k8s-file"
+	[engine]
+	cgroup_manager = "cgroupfs"
+	events_logger="file"
+	runtime="crun"
+EOT
 
 USER user
 ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/bun/bin:/opt/forgejo-cli/bin:/opt/github-cli/bin:/home/user/.local/bin:$PATH" \
