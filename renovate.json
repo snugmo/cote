@@ -1,0 +1,201 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "schedule": [
+    "on monday before 10am"
+  ],
+  "automerge": false,
+  "prConcurrentLimit": 5,
+  "labels": [
+    "dependencies"
+  ],
+  "dockerfile": {
+    "enabled": true,
+    "fileMatch": [
+      "base-image/Containerfile"
+    ]
+  },
+  "customManagers": [
+    {
+      "description": "Track cosign version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+COSIGN_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "sigstore/cosign",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track Crush CLI version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+CRUSH_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "charmbracelet/crush",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track fnm version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+FNM_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "Schniz/fnm",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track Go version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+GO_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "golang/go",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "regex:^go(?<version>.+)$"
+    },
+    {
+      "description": "Track uv version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+UV_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "astral-sh/uv",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track forgejo-cli version in Containerfile ARG (Codeberg)",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+FJ_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "forgejo-contrib/forgejo-cli",
+      "registryUrlsTemplate": ["https://codeberg.org"],
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "description": "Track GitHub CLI version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+GH_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "cli/cli",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track kubeseal version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+KUBESEAL_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "bitnami/sealed-secrets",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track kubectl-linstor version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+KUBECTL_LINSTOR_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "piraeusdatastore/kubectl-linstor",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track CloudNative-PG kubectl-cnpg version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+CLOUDNATIVE_PG_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "cloudnative-pg/cloudnative-pg",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track cmctl (cert-manager) version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+CERT_MANAGER_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "cert-manager/cmctl",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track agentgateway (agctl) version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+AGENTGATEWAY_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "agentgateway/agentgateway",
+      "datasourceTemplate": "github-releases"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Group all Containerfile binary updates into a single PR",
+      "matchDatasources": [
+        "github-releases",
+        "git-refs"
+      ],
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "groupName": "base-image binary toolchain",
+      "groupSlug": "base-image-binaries",
+      "automerge": false
+    },
+    {
+      "description": "Auto-merge minor/patch updates for stable tools",
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Pin Node.js major version — only update minor/patch via fnm",
+      "matchPackageNames": [
+        "node/node"
+      ],
+      "enabled": false
+    }
+  ]
+}
