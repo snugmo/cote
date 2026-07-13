@@ -37,6 +37,7 @@ devfiles/
 - **Toolchain includes**: GCC, Clang/LLVM, Go 1.26.3, Rust (via rustup + rust-analyzer), Node.js 22, Python 3, Crush CLI, plus LSP servers (`gopls`, `typescript-language-server`, `pyright`, `ruff-lsp`, `yaml-language-server`).
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 - Go version is controlled by `ARG GO_VERSION=1.26.3` — override at build time if needed.
+- Bun version is controlled by `ARG BUN_VERSION` — downloaded from `oven-sh/bun` GitHub releases with SHA-256 checksum verification.
 - ENTRYPOINT uses `catatonit` (from podman) for zombie process reaping; CMD defaults to `tail -f /dev/null` so the container stays alive for `exec`.
 - Subuid/subgid ranges (2000–65000) are configured on the `user` account to enable **rootless buildah/podman inside the container**.
 

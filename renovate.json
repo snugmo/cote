@@ -153,6 +153,19 @@
       "datasourceTemplate": "github-releases"
     },
     {
+      "description": "Track Bun version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+BUN_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "oven-sh/bun",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "regex:^bun-v(?<version>.+)$"
+    },
+    {
       "description": "Track agentgateway (agctl) version in Containerfile ARG",
       "customType": "regex",
       "fileMatch": [
