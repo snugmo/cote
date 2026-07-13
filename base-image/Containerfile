@@ -277,7 +277,7 @@ FROM scratch AS kubectl-linstor-artifacts
 COPY --from=kubectl-linstor-install /opt/kubectl-linstor /opt/kubectl-linstor/
 
 # =============================================================================
-# CLOUDNATIVE-PG — install kubectl-cnpg plugin
+# CLOUDNATIVE-PG — install kubectl-cnpg plugin with SLSA provenance verification
 # =============================================================================
 FROM base AS cloudnative-pg-install
 ARG TARGETARCH
@@ -286,12 +286,17 @@ RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=arm64 && \
     mkdir -p /opt/cloudnative-pg/bin && \
     curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/kubectl-cnpg_${CLOUDNATIVE_PG_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-cnpg.tar.gz && \
-    curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/cnpg-${CLOUDNATIVE_PG_VERSION}-checksums.txt" -o checksums.txt && \
-    EXPECTED=$(grep "kubectl-cnpg_${CLOUDNATIVE_PG_VERSION}_linux_${ARCH}.tar.gz" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  kubectl-cnpg.tar.gz" | sha256sum -c - && \
+    curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/multiple.intoto.jsonl" -o multiple.intoto.jsonl && \
+    cosign verify-blob-attestation \
+      --bundle multiple.intoto.jsonl \
+      --type slsaprovenance \
+      --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+      --certificate-identity-regexp '^https://github\.com/slsa-framework/slsa-github-generator/' \
+      --certificate-github-workflow-repository cloudnative-pg/cloudnative-pg \
+      kubectl-cnpg.tar.gz && \
     tar -xzf kubectl-cnpg.tar.gz -C /opt/cloudnative-pg/bin kubectl-cnpg && \
     chmod +x /opt/cloudnative-pg/bin/kubectl-cnpg && \
-    rm -f kubectl-cnpg.tar.gz checksums.txt
+    rm -f kubectl-cnpg.tar.gz multiple.intoto.jsonl
 
 FROM scratch AS cloudnative-pg-artifacts
 COPY --from=cloudnative-pg-install /opt/cloudnative-pg /opt/cloudnative-pg/
