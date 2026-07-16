@@ -1,0 +1,55 @@
+# Hermes Agent extension image with ACP support
+# Installs Hermes agent as a coding agent with Agent Communication Protocol (ACP)
+# for IDE integration (VS Code, Zed, JetBrains).
+#
+# Build:
+#   ./build.sh                          # Build only
+#   ./build.sh push <registry>          # Build and push
+#
+# Usage in Devfile:
+#   image: <registry>/dev-workspace-hermes:<tag>
+
+ARG BASE_IMAGE=localhost:5000/dev-workspace-base:latest
+FROM ${BASE_IMAGE}
+
+USER root
+
+ARG HERMES_VERSION=v2026.7.7.2
+
+# Shallow clone Hermes agent repo and install with ACP extra into system Python.
+# Using git clone + editable install instead of pip package (pip installs are
+# explicitly unsupported upstream). Browser tools, setup wizard, and bundled
+# skills are skipped — users configure credentials and browser tools at runtime.
+RUN git clone --depth 1 --branch "${HERMES_VERSION}" \
+      https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent && \
+    cd /opt/hermes-agent && \
+    # Create venv with system Python via uv (already in base image)
+    uv venv .venv --python 3 && \
+    # Install Hermes with ACP extra only (no browser, no matrix, no RL)
+    UV_PROJECT_ENVIRONMENT=.venv uv pip install -e '.[acp]' && \
+    # Create hermes launcher in /usr/local/bin (FHS layout, matches upstream)
+    mkdir -p /usr/local/bin && \
+    cat > /usr/local/bin/hermes << 'EOF'
+#!/usr/bin/env bash
+unset PYTHONPATH
+unset PYTHONHOME
+exec "/opt/hermes-agent/.venv/bin/hermes" "$@"
+EOF && \
+    chmod +x /usr/local/bin/hermes && \
+    # Verify installation
+    hermes --version && \
+    hermes acp --version
+
+# Create Hermes data directory for the workspace user
+RUN mkdir -p /home/user/.hermes/skills && \
+    chown -R user:user /home/user/.hermes
+
+USER user
+
+# Set environment for Hermes
+ENV HERMES_HOME=/home/user/.hermes
+
+LABEL name="dev-workspace-hermes" \
+      description="Dev workspace base with Hermes agent and ACP support for IDE integration" \
+      maintainer="Joakim Nohlgard" \
+      io.openshift.tags="dev,workspace,hermes,acp,agent"

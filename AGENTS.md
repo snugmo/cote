@@ -10,6 +10,11 @@ This repository defines cloud-native development environments for the [DevWorksp
 base-image/
   Containerfile        # Base dev toolchain OCI image (Fedora 44, no IDEs)
   build.sh             # Buildah wrapper with registry/tag config
+extensions/
+  hermes/              # Hermes agent + ACP support extension
+    Containerfile      # Extends base image with Hermes agent
+    build.sh           # Build script for Hermes extension
+    README.md          # Extension documentation
 devfiles/
   devfile.yaml         # Generic workspace template (Devfile schema 2.2.0)
 .devfile.yaml          # Self-hosting devfile — opens this repo as a workspace
@@ -24,6 +29,8 @@ devfiles/
 | Override version | `DEV_VERSION=v1.2.3 ./base-image/build.sh` |
 | Override image name | `DEV_IMAGE_NAME=my-base ./base-image/build.sh` |
 | Override registry | `DEV_REGISTRY=registry.example.com ./base-image/build.sh` |
+| Build Hermes extension | `./extensions/hermes/build.sh` |
+| Build + push Hermes | `./extensions/hermes/build.sh push <registry>` |
 | Apply workspace | `kubectl apply -f devfiles/devfile.yaml` |
 
 ## Key Conventions
@@ -63,6 +70,16 @@ devfiles/
 - Tag defaults to latest git tag via `git describe --tags --always --dirty`, falling back to `latest`.
 - Registry defaults to `localhost:5000` (OpenShift internal registry). Override with `DEV_REGISTRY` or pass as second argument to `push`.
 
+### Extensions (`extensions/`)
+
+Extensions build on top of the base image to add specific capabilities without polluting the base. Each extension has its own `Containerfile`, `build.sh`, and `README.md`.
+
+**Available extensions:**
+
+- **Hermes Agent** (`extensions/hermes/`) — Installs [Hermes Agent](https://hermes-agent.nousresearch.com/) with ACP (Agent Communication Protocol) support for IDE integration. Uses a shallow git clone of the upstream repo (pip installs are unsupported). Works with VS Code (ACP Client extension), Zed (ACP Registry), and JetBrains (ACP plugins).
+
+To use an extension, replace the `tools` container image in your Devfile with the extension image reference.
+
 ## Gotchas
 
 1. **Image pull access**: The Devfile `image` reference must be pullable by the service account running the workspace pods. If using a private registry, configure a `secret` component with image pull credentials.
@@ -71,10 +88,12 @@ devfiles/
 4. **Devfile schema version**: The schema version (`2.2.0`) must match what your DevWorkspaces Operator supports. Check with `kubectl get devworkspace -o yaml` to see the operator's schema.
 5. **Memory limits**: LSP servers (especially rust-analyzer and TypeScript) are memory-intensive. The default `2Gi` limit on the tools container is a minimum — increase for Rust-heavy projects.
 6. **Two devfiles, two purposes**: `devfiles/devfile.yaml` is the reusable template for end users. `.devfile.yaml` is for developing this repo itself. Don't confuse them.
+7. **Hermes credentials**: Hermes agent requires API credentials configured before first use. Run `hermes model` inside the workspace or pre-populate `~/.hermes/.env` via a ConfigMap/Secret.
 
 ## Adding New Components
 
 - **New language/tool**: Add to the base image Containerfile, rebuild, update the Devfile image reference.
+- **New extension**: Create a directory under `extensions/` with a `Containerfile` that extends the base image, a `build.sh` following the same pattern as `base-image/build.sh`, and a `README.md`.
 - **New IDE**: Add a commented-out component block in the Devfile (see VS Code example).
 - **Project-specific devfile**: Copy `devfiles/devfile.yaml`, update `projects`, `commands`, and add project-specific env vars or endpoints.
 
