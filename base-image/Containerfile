@@ -137,9 +137,9 @@ FROM scratch AS nodejs-artifacts
 COPY --from=nodejs-install /opt/fnm /opt/fnm/
 
 # =============================================================================
-# BUN — install from upstream distroless image with completion generation
+# BUN — install from upstream distroless image
 # =============================================================================
-FROM docker.io/oven/bun:distroless AS bun-bin
+FROM docker.io/oven/bun@sha256:c28c51287af70bab8e0b66fc4b6a30cfb92a727ebc88045223adc9f4c9d09307 AS bun-bin
 
 FROM scratch AS bun-artifacts
 COPY --from=bun-bin /usr/local/bin/bun /usr/local/bin/
