@@ -336,6 +336,21 @@ RUN ARCH=$TARGETARCH && \
     rm -f agctl.sha256
 
 # =============================================================================
+# MCP-CLI — install mcp-cli from GitHub release
+# =============================================================================
+FROM downloader AS mcp-cli-install
+ARG TARGETARCH
+ARG MCP_CLI_VERSION=0.3.0
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=x64 || ARCH=arm64 && \
+    curl -fsSL "https://github.com/philschmid/mcp-cli/releases/download/v${MCP_CLI_VERSION}/mcp-cli-linux-${ARCH}" -o /usr/local/bin/mcp-cli && \
+    curl -fsSL "https://github.com/philschmid/mcp-cli/releases/download/v${MCP_CLI_VERSION}/checksums.txt" -o checksums.txt && \
+    EXPECTED=$(grep "mcp-cli-linux-${ARCH}$" checksums.txt | awk '{print $1}') && \
+    echo "${EXPECTED}  /usr/local/bin/mcp-cli" | sha256sum -c - && \
+    chmod +x /usr/local/bin/mcp-cli && \
+    rm -f checksums.txt
+
+# =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
 # =============================================================================
 FROM scratch AS forgejo-cli-artifacts
@@ -355,6 +370,9 @@ COPY --from=cert-manager-install /usr/local/bin/cmctl /usr/local/bin/
 
 FROM scratch AS agentgateway-artifacts
 COPY --from=agentgateway-install /usr/local/bin/agctl /usr/local/bin/
+
+FROM scratch AS mcp-cli-artifacts
+COPY --from=mcp-cli-install /usr/local/bin/mcp-cli /usr/local/bin/
 
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
@@ -376,6 +394,7 @@ COPY --link --from=cloudnative-pg-artifacts / /
 COPY --link --from=cert-manager-artifacts / /
 COPY --link --from=agentgateway-artifacts / /
 COPY --link --from=github-cli-artifacts / /
+COPY --link --from=mcp-cli-artifacts / /
 
 # Generate shell completions for CLI tools
 RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
