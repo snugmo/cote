@@ -186,7 +186,7 @@ COPY --from=rust-install /opt/cargo /opt/cargo/
 # =============================================================================
 FROM downloader AS uv-install
 ARG TARGETARCH
-ARG UV_VERSION=0.11.28
+ARG UV_VERSION=0.11.29
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=x86_64-unknown-linux-gnu || ARCH=aarch64-unknown-linux-gnu && \
     curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}.tar.gz" -o "uv-${ARCH}.tar.gz" && \
