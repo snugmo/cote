@@ -118,6 +118,8 @@ RUN ARCH=$TARGETARCH && \
     "${FNM_DIR}/fnm" default "${NODE_VERSION}" && \
     source <("${FNM_DIR}/fnm" env --shell bash) && \
     npm install -g \
+        bash-language-server \
+        dockerfile-language-server-nodejs \
         typescript \
         typescript-language-server \
         eslint \
