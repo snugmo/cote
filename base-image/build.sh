@@ -56,8 +56,10 @@ printf '\n'
 # Build
 printf '>> Building %s ...\n' "${FULL_IMAGE}"
 buildah build \
+    --isolation chroot \
     --layers \
     --format docker \
+    --storage-opt ignore_chown_errors=true \
     -t "${FULL_IMAGE}" \
     -f "${SCRIPT_DIR}/Containerfile" \
     "${SCRIPT_DIR}"
