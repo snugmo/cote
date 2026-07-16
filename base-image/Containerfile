@@ -351,14 +351,24 @@ RUN ARCH=$TARGETARCH && \
     rm -f agctl.sha256
 
 # =============================================================================
-# EXTRAS — consolidated artifact stage for single-binary tools in /usr/local/bin
+# EXTRAS — artifact stages for single-binary tools in /usr/local/bin
 # =============================================================================
-FROM scratch AS extras-artifacts
+FROM scratch AS forgejo-cli-artifacts
 COPY --from=forgejo-cli-install /usr/local/bin/fj /usr/local/bin/
+
+FROM scratch AS kubeseal-artifacts
 COPY --from=kubeseal-install /usr/local/bin/kubeseal /usr/local/bin/
+
+FROM scratch AS kubectl-linstor-artifacts
 COPY --from=kubectl-linstor-install /usr/local/bin/kubectl-linstor /usr/local/bin/
+
+FROM scratch AS cloudnative-pg-artifacts
 COPY --from=cloudnative-pg-install /usr/local/bin/kubectl-cnpg /usr/local/bin/
+
+FROM scratch AS cert-manager-artifacts
 COPY --from=cert-manager-install /usr/local/bin/cmctl /usr/local/bin/
+
+FROM scratch AS agentgateway-artifacts
 COPY --from=agentgateway-install /usr/local/bin/agctl /usr/local/bin/
 
 # =============================================================================
@@ -373,7 +383,12 @@ COPY --link --from=bun-artifacts / /
 COPY --link --from=go-artifacts / /
 COPY --link --from=rust-artifacts / /
 COPY --link --from=python-artifacts / /
-COPY --link --from=extras-artifacts / /
+COPY --link --from=forgejo-cli-artifacts / /
+COPY --link --from=kubeseal-artifacts / /
+COPY --link --from=kubectl-linstor-artifacts / /
+COPY --link --from=cloudnative-pg-artifacts / /
+COPY --link --from=cert-manager-artifacts / /
+COPY --link --from=agentgateway-artifacts / /
 COPY --link --from=github-cli-artifacts / /
 
 # Generate shell completions for CLI tools
