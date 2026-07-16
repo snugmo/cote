@@ -239,14 +239,10 @@ ARG TARGETARCH
 ARG FJ_VERSION=0.5.0
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=aarch64 && \
-    mkdir -p /opt/forgejo-cli/bin && \
     curl -fsSL "https://codeberg.org/forgejo-contrib/forgejo-cli/releases/download/v${FJ_VERSION}/forgejo-cli-${ARCH}-linux.tar.gz" -o forgejo-cli.tar.gz && \
-    tar -xzf forgejo-cli.tar.gz -C /opt/forgejo-cli/bin fj && \
-    chmod +x /opt/forgejo-cli/bin/fj && \
+    tar -xzf forgejo-cli.tar.gz -C /usr/local/bin fj && \
+    chmod +x /usr/local/bin/fj && \
     rm -f forgejo-cli.tar.gz
-
-FROM scratch AS forgejo-cli-artifacts
-COPY --from=forgejo-cli-install /opt/forgejo-cli /opt/forgejo-cli/
 
 # =============================================================================
 # GITHUB CLI — install gh from GitHub release
@@ -272,17 +268,13 @@ ARG TARGETARCH
 ARG KUBESEAL_VERSION=0.38.4
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
-    mkdir -p /opt/kubeseal/bin && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz" -o kubeseal.tar.gz && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz.sig" -o kubeseal.tar.gz.sig && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/cosign.pub" -o cosign.pub && \
     cosign verify-blob --key cosign.pub --signature kubeseal.tar.gz.sig kubeseal.tar.gz && \
-    tar -xzf kubeseal.tar.gz -C /opt/kubeseal/bin kubeseal && \
-    chmod +x /opt/kubeseal/bin/kubeseal && \
+    tar -xzf kubeseal.tar.gz -C /usr/local/bin kubeseal && \
+    chmod +x /usr/local/bin/kubeseal && \
     rm -f kubeseal.tar.gz kubeseal.tar.gz.sig cosign.pub
-
-FROM scratch AS kubeseal-artifacts
-COPY --from=kubeseal-install /opt/kubeseal /opt/kubeseal/
 
 # =============================================================================
 # KUBECTL-LINSTOR — install Linstor kubectl plugin
@@ -292,17 +284,13 @@ ARG TARGETARCH
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
-    mkdir -p /opt/kubectl-linstor/bin && \
     curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-linstor.tar.gz && \
     curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_${KUBECTL_LINSTOR_VERSION}_checksums.txt" -o checksums.txt && \
     EXPECTED=$(grep "kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" checksums.txt | awk '{print $1}') && \
     echo "${EXPECTED}  kubectl-linstor.tar.gz" | sha256sum -c - && \
-    tar -xzf kubectl-linstor.tar.gz -C /opt/kubectl-linstor/bin kubectl-linstor && \
-    chmod +x /opt/kubectl-linstor/bin/kubectl-linstor && \
+    tar -xzf kubectl-linstor.tar.gz -C /usr/local/bin kubectl-linstor && \
+    chmod +x /usr/local/bin/kubectl-linstor && \
     rm -f kubectl-linstor.tar.gz checksums.txt
-
-FROM scratch AS kubectl-linstor-artifacts
-COPY --from=kubectl-linstor-install /opt/kubectl-linstor /opt/kubectl-linstor/
 
 # =============================================================================
 # CLOUDNATIVE-PG — install kubectl-cnpg plugin with SLSA provenance verification
@@ -312,7 +300,6 @@ ARG TARGETARCH
 ARG CLOUDNATIVE_PG_VERSION=1.30.0
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=arm64 && \
-    mkdir -p /opt/cloudnative-pg/bin && \
     curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/kubectl-cnpg_${CLOUDNATIVE_PG_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-cnpg.tar.gz && \
     curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/multiple.intoto.jsonl" -o multiple.intoto.jsonl && \
     cosign verify-blob-attestation \
@@ -322,12 +309,9 @@ RUN ARCH=$TARGETARCH && \
       --certificate-identity-regexp '^https://github\.com/slsa-framework/slsa-github-generator/' \
       --certificate-github-workflow-repository cloudnative-pg/cloudnative-pg \
       kubectl-cnpg.tar.gz && \
-    tar -xzf kubectl-cnpg.tar.gz -C /opt/cloudnative-pg/bin kubectl-cnpg && \
-    chmod +x /opt/cloudnative-pg/bin/kubectl-cnpg && \
+    tar -xzf kubectl-cnpg.tar.gz -C /usr/local/bin kubectl-cnpg && \
+    chmod +x /usr/local/bin/kubectl-cnpg && \
     rm -f kubectl-cnpg.tar.gz multiple.intoto.jsonl
-
-FROM scratch AS cloudnative-pg-artifacts
-COPY --from=cloudnative-pg-install /opt/cloudnative-pg /opt/cloudnative-pg/
 
 # =============================================================================
 # CERT-MANAGER — install cmctl CLI with cosign verification
@@ -337,7 +321,6 @@ ARG TARGETARCH
 ARG CERT_MANAGER_VERSION=2.5.0
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
-    mkdir -p /opt/cert-manager/bin && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/cmctl_linux_${ARCH}.tar.gz" -o cmctl.tar.gz && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/checksums.txt" -o checksums.txt && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/checksums.txt.cosign.bundle" -o checksums.txt.cosign.bundle && \
@@ -348,12 +331,9 @@ RUN ARCH=$TARGETARCH && \
       checksums.txt && \
     EXPECTED=$(grep "cmctl_linux_${ARCH}.tar.gz" checksums.txt | awk '{print $1}') && \
     echo "${EXPECTED}  cmctl.tar.gz" | sha256sum -c - && \
-    tar -xzf cmctl.tar.gz -C /opt/cert-manager/bin cmctl && \
-    chmod +x /opt/cert-manager/bin/cmctl && \
+    tar -xzf cmctl.tar.gz -C /usr/local/bin cmctl && \
+    chmod +x /usr/local/bin/cmctl && \
     rm -f cmctl.tar.gz checksums.txt checksums.txt.cosign.bundle
-
-FROM scratch AS cert-manager-artifacts
-COPY --from=cert-manager-install /opt/cert-manager /opt/cert-manager/
 
 # =============================================================================
 # AGENTGATEWAY — install agctl CLI
@@ -363,17 +343,23 @@ ARG TARGETARCH
 ARG AGENTGATEWAY_VERSION=1.3.1
 RUN ARCH=$TARGETARCH && \
     [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
-    mkdir -p /opt/agentgateway/bin && \
-    curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}" -o agctl && \
+    curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}" -o /usr/local/bin/agctl && \
     curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}.sha256" -o agctl.sha256 && \
     EXPECTED=$(cat agctl.sha256 | awk '{print $1}') && \
-    echo "${EXPECTED}  agctl" | sha256sum -c - && \
-    mv agctl /opt/agentgateway/bin/agctl && \
-    chmod +x /opt/agentgateway/bin/agctl && \
+    echo "${EXPECTED}  /usr/local/bin/agctl" | sha256sum -c - && \
+    chmod +x /usr/local/bin/agctl && \
     rm -f agctl.sha256
 
-FROM scratch AS agentgateway-artifacts
-COPY --from=agentgateway-install /opt/agentgateway /opt/agentgateway/
+# =============================================================================
+# EXTRAS — consolidated artifact stage for single-binary tools in /usr/local/bin
+# =============================================================================
+FROM scratch AS extras-artifacts
+COPY --from=forgejo-cli-install /usr/local/bin/fj /usr/local/bin/
+COPY --from=kubeseal-install /usr/local/bin/kubeseal /usr/local/bin/
+COPY --from=kubectl-linstor-install /usr/local/bin/kubectl-linstor /usr/local/bin/
+COPY --from=cloudnative-pg-install /usr/local/bin/kubectl-cnpg /usr/local/bin/
+COPY --from=cert-manager-install /usr/local/bin/cmctl /usr/local/bin/
+COPY --from=agentgateway-install /usr/local/bin/agctl /usr/local/bin/
 
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
@@ -387,13 +373,8 @@ COPY --link --from=bun-artifacts / /
 COPY --link --from=go-artifacts / /
 COPY --link --from=rust-artifacts / /
 COPY --link --from=python-artifacts / /
-COPY --link --from=forgejo-cli-artifacts / /
+COPY --link --from=extras-artifacts / /
 COPY --link --from=github-cli-artifacts / /
-COPY --link --from=kubeseal-artifacts / /
-COPY --link --from=kubectl-linstor-artifacts / /
-COPY --link --from=cloudnative-pg-artifacts / /
-COPY --link --from=cert-manager-artifacts / /
-COPY --link --from=agentgateway-artifacts / /
 
 # Go env
 ARG GO_VERSION
@@ -418,7 +399,7 @@ ENV FNM_DIR=/opt/fnm \
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
     mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
              /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /projects /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/forgejo-cli /opt/github-cli /opt/kubeseal /opt/kubectl-linstor /opt/cloudnative-pg /opt/cert-manager /opt/agentgateway
+    chown -R user:user /home/user /projects /go /opt/cargo /opt/rustup /opt/fnm /opt/bun /opt/crush /opt/uv /opt/github-cli
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
@@ -444,7 +425,7 @@ COPY <<-'EOT' /etc/containers/containers.conf
 EOT
 
 USER user
-ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/bun/bin:/opt/forgejo-cli/bin:/opt/github-cli/bin:/opt/kubeseal/bin:/opt/kubectl-linstor/bin:/opt/cloudnative-pg/bin:/opt/cert-manager/bin:/opt/agentgateway/bin:/home/user/.local/bin:$PATH" \
+ENV PATH="/opt/crush/bin:/opt/uv/bin:/opt/bun/bin:/opt/github-cli/bin:/home/user/.local/bin:$PATH" \
     MANPATH="/opt/github-cli/share/man:$MANPATH"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
