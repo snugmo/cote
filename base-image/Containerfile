@@ -376,6 +376,21 @@ COPY --link --from=python-artifacts / /
 COPY --link --from=extras-artifacts / /
 COPY --link --from=github-cli-artifacts / /
 
+# Generate shell completions for CLI tools
+RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
+    # Bash completions
+    for tool in cosign fj kubectl-cnpg cmctl agctl; do \
+      $tool completion bash > "/etc/bash_completion.d/$tool" 2>/dev/null || true; \
+    done && \
+    # Fish completions
+    for tool in cosign fj kubectl-cnpg cmctl agctl; do \
+      $tool completion fish > "/usr/share/fish/vendor_completions.d/${tool}.fish" 2>/dev/null || true; \
+    done && \
+    # Zsh completions
+    for tool in cosign fj cmctl; do \
+      $tool completion zsh > "/usr/share/zsh/site-functions/_$tool" 2>/dev/null || true; \
+    done
+
 # Go env
 ARG GO_VERSION
 ENV GO_VERSION=${GO_VERSION} \
