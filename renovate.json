@@ -176,6 +176,18 @@
       ],
       "depNameTemplate": "agentgateway/agentgateway",
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track mcp-cli version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+MCP_CLI_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "philschmid/mcp-cli",
+      "datasourceTemplate": "github-releases"
     }
   ],
   "packageRules": [
