@@ -397,14 +397,23 @@ RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/sh
     for tool in cosign fj kubectl-cnpg cmctl agctl; do \
       $tool completion bash > "/etc/bash_completion.d/$tool" 2>/dev/null || true; \
     done && \
+    /opt/github-cli/bin/gh completion -s bash > /etc/bash_completion.d/gh 2>/dev/null || true && \
+    /opt/fnm/fnm completions --shell bash > /etc/bash_completion.d/fnm 2>/dev/null || true && \
+    /opt/uv/bin/uv generate-shell-completion bash > /etc/bash_completion.d/uv 2>/dev/null || true && \
     # Fish completions
     for tool in cosign fj kubectl-cnpg cmctl agctl; do \
       $tool completion fish > "/usr/share/fish/vendor_completions.d/${tool}.fish" 2>/dev/null || true; \
     done && \
+    /opt/github-cli/bin/gh completion -s fish > /usr/share/fish/vendor_completions.d/gh.fish 2>/dev/null || true && \
+    /opt/fnm/fnm completions --shell fish > /usr/share/fish/vendor_completions.d/fnm.fish 2>/dev/null || true && \
+    /opt/uv/bin/uv generate-shell-completion fish > /usr/share/fish/vendor_completions.d/uv.fish 2>/dev/null || true && \
     # Zsh completions
-    for tool in cosign fj cmctl; do \
+    for tool in cosign fj kubectl-cnpg cmctl agctl; do \
       $tool completion zsh > "/usr/share/zsh/site-functions/_$tool" 2>/dev/null || true; \
-    done
+    done && \
+    /opt/github-cli/bin/gh completion -s zsh > /usr/share/zsh/site-functions/_gh 2>/dev/null || true && \
+    /opt/fnm/fnm completions --shell zsh > /usr/share/zsh/site-functions/_fnm 2>/dev/null || true && \
+    /opt/uv/bin/uv generate-shell-completion zsh > /usr/share/zsh/site-functions/_uv 2>/dev/null || true
 
 # Go env
 ARG GO_VERSION
