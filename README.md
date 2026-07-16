@@ -4,7 +4,7 @@ Configuration for the [DevWorkspaces Operator](https://devfile.io/) — cloud-na
 
 ## What's Inside
 
-- **`base-image/`** — OCI image with a universal dev toolchain (GCC, Go, Rust, Node.js 22, Python 3, Crush, glow, LSP servers). IDEs are excluded by design.
+- **`base-image/`** — OCI image with a universal dev toolchain (GCC, Go, Rust, Node.js 24, Python 3, Crush, glow, LSP servers). IDEs are excluded by design.
 - **`devfiles/`** — Devfile 2.2.0 workspace template referencing the base image, with extension points for IDEs and project-specific tools.
 
 ## Quick Start
