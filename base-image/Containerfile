@@ -207,7 +207,9 @@ COPY --from=rust-install /opt/cargo /opt/cargo/
 # =============================================================================
 # PYTHON — install
 # =============================================================================
-FROM base AS python-install
+# UV — install from GitHub release
+# =============================================================================
+FROM base AS uv-install
 ARG TARGETARCH
 ARG UV_VERSION=0.11.28
 RUN ARCH=$TARGETARCH && \
@@ -220,8 +222,17 @@ RUN ARCH=$TARGETARCH && \
     cp /tmp/uv /usr/local/bin/ && \
     cp /tmp/uvx /usr/local/bin/ && \
     rm -rf /tmp/uv-* && \
-    rm -f "uv-${ARCH}.tar.gz" uv.sha256 && \
-    pip3 install --no-cache-dir --break-system-packages \
+    rm -f "uv-${ARCH}.tar.gz" uv.sha256
+
+FROM scratch AS uv-artifacts
+COPY --from=uv-install /usr/local/bin/uv /usr/local/bin/
+COPY --from=uv-install /usr/local/bin/uvx /usr/local/bin/
+
+# =============================================================================
+# PYTHON — pip packages (LSP servers, formatters, linters)
+# =============================================================================
+FROM base AS python-install
+RUN pip3 install --no-cache-dir --break-system-packages \
     pylint \
     black \
     ruff \
@@ -230,8 +241,6 @@ RUN ARCH=$TARGETARCH && \
     ruff-lsp
 
 FROM scratch AS python-artifacts
-COPY --from=python-install /usr/local/bin/uv /usr/local/bin/
-COPY --from=python-install /usr/local/bin/uvx /usr/local/bin/
 COPY --from=python-install /usr/local /usr/local/
 
 # =============================================================================
@@ -384,6 +393,7 @@ COPY --link --from=nodejs-artifacts / /
 COPY --link --from=bun-artifacts / /
 COPY --link --from=go-artifacts / /
 COPY --link --from=rust-artifacts / /
+COPY --link --from=uv-artifacts / /
 COPY --link --from=python-artifacts / /
 COPY --link --from=forgejo-cli-artifacts / /
 COPY --link --from=kubeseal-artifacts / /
