@@ -60,6 +60,8 @@ Optional add-on images built on the base:
 
 ## Usage
 
+Build the base image and run it either in Kubernetes via DevWorkspaces Operator or standalone with podman:
+
 ### DevWorkspaces Operator
 
 The recommended way to run these images in Kubernetes:
