@@ -85,8 +85,8 @@ podman run -it --rm localhost:5000/dev-workspace-base:latest
 
 ## Design
 
-- Base image provides compilers, package managers, shell utils, and LSP servers — no IDEs baked in.
-- IDEs and AI agents are added as Devfile components or extension images.
+- Base image provides compilers, package managers, shell utils, and LSP servers — no IDEs baked in, keeping the base lean and portable.
+- IDEs and AI agents are added as separate Devfile components or extension images, chosen per-team or per-project.
 - Extensions keep the base lean while enabling agent-ready workspaces when needed.
 - Workspace containers run as non-root (UID 1000).
 - All binary downloads are verified as far as possible (SHA-256 checksums, cosign signatures, or SLSA provenance) — not all upstreams provide cryptographic signatures.
