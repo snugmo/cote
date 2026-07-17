@@ -78,8 +78,7 @@ COPY --from=cosign-bin /ko-app/cosign /usr/local/bin/cosign
 FROM downloader AS crush-install
 ARG TARGETARCH
 ARG CRUSH_VERSION=0.85.0
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=x86_64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
     curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/crush_${CRUSH_VERSION}_Linux_${ARCH}.tar.gz" -o crush.tar.gz && \
     curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/checksums.txt" -o checksums.txt && \
     curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/checksums.txt.sigstore.json" -o checksums.txt.sigstore.json && \
@@ -115,8 +114,7 @@ ARG NODE_VERSION=24
 ENV FNM_DIR=/opt/fnm \
     PATH=${FNM_DIR}:$PATH
 
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "arm64" ] && ARCH=arm64 || ARCH=linux && \
+RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH=arm64; else ARCH=linux; fi && \
     mkdir -p "${FNM_DIR}" && \
     curl -fsSL "https://github.com/Schniz/fnm/releases/download/v${FNM_VERSION}/fnm-${ARCH}.zip" -o fnm.zip && \
     unzip -q fnm.zip -d "${FNM_DIR}" && \
@@ -188,8 +186,7 @@ COPY --from=rust-install /opt/cargo /opt/cargo/
 FROM downloader AS uv-install
 ARG TARGETARCH
 ARG UV_VERSION=0.11.29
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=x86_64-unknown-linux-gnu || ARCH=aarch64-unknown-linux-gnu && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64-unknown-linux-gnu; else ARCH=aarch64-unknown-linux-gnu; fi && \
     curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}.tar.gz" -o "uv-${ARCH}.tar.gz" && \
     curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}.tar.gz.sha256" -o uv.sha256 && \
     sha256sum -c uv.sha256 && \
@@ -225,8 +222,7 @@ COPY --from=python-install /usr/local /usr/local/
 FROM downloader AS forgejo-cli-install
 ARG TARGETARCH
 ARG FJ_VERSION=0.5.0
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=aarch64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
     curl -fsSL "https://codeberg.org/forgejo-contrib/forgejo-cli/releases/download/v${FJ_VERSION}/forgejo-cli-${ARCH}-linux.tar.gz" -o forgejo-cli.tar.gz && \
     tar -xzf forgejo-cli.tar.gz -C /usr/local/bin fj && \
     chmod +x /usr/local/bin/fj && \
@@ -238,8 +234,7 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS github-cli-install
 ARG TARGETARCH
 ARG GH_VERSION=2.96.0
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${ARCH}.tar.gz" -o gh.tar.gz && \
     tar -xzf gh.tar.gz -C /usr/local/bin --strip-components=2 "gh_${GH_VERSION}_linux_${ARCH}/bin/gh" && \
     rm -f gh.tar.gz
@@ -253,8 +248,7 @@ COPY --from=github-cli-install /usr/local/bin/gh /usr/local/bin/
 FROM downloader AS kubeseal-install
 ARG TARGETARCH
 ARG KUBESEAL_VERSION=0.38.4
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz" -o kubeseal.tar.gz && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz.sig" -o kubeseal.tar.gz.sig && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/cosign.pub" -o cosign.pub && \
@@ -269,8 +263,7 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS kubectl-linstor-install
 ARG TARGETARCH
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-linstor.tar.gz && \
     curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_${KUBECTL_LINSTOR_VERSION}_checksums.txt" -o checksums.txt && \
     EXPECTED=$(grep "kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" checksums.txt | awk '{print $1}') && \
@@ -285,8 +278,7 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS cloudnative-pg-install
 ARG TARGETARCH
 ARG CLOUDNATIVE_PG_VERSION=1.30.0
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=arm64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/kubectl-cnpg_${CLOUDNATIVE_PG_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-cnpg.tar.gz && \
     curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/multiple.intoto.jsonl" -o multiple.intoto.jsonl && \
     cosign verify-blob-attestation \
@@ -306,8 +298,7 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS cert-manager-install
 ARG TARGETARCH
 ARG CERT_MANAGER_VERSION=2.5.0
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/cmctl_linux_${ARCH}.tar.gz" -o cmctl.tar.gz && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/checksums.txt" -o checksums.txt && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/checksums.txt.cosign.bundle" -o checksums.txt.cosign.bundle && \
@@ -328,8 +319,7 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS agentgateway-install
 ARG TARGETARCH
 ARG AGENTGATEWAY_VERSION=1.3.1
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=amd64 || ARCH=arm64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}" -o /usr/local/bin/agctl && \
     curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}.sha256" -o agctl.sha256 && \
     EXPECTED=$(cat agctl.sha256 | awk '{print $1}') && \
@@ -343,8 +333,7 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS mcp-cli-install
 ARG TARGETARCH
 ARG MCP_CLI_VERSION=0.3.0
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=x64 || ARCH=arm64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/philschmid/mcp-cli/releases/download/v${MCP_CLI_VERSION}/mcp-cli-linux-${ARCH}" -o /usr/local/bin/mcp-cli && \
     curl -fsSL "https://github.com/philschmid/mcp-cli/releases/download/v${MCP_CLI_VERSION}/checksums.txt" -o checksums.txt && \
     EXPECTED=$(grep "mcp-cli-linux-${ARCH}$" checksums.txt | awk '{print $1}') && \
@@ -375,9 +364,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 FROM downloader AS helm-ls-install
 ARG TARGETARCH
 ARG HELM_LS_VERSION=0.5.4
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=amd64 && EXPECTED="5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f" || \
-    ARCH=arm64 && EXPECTED="565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c" && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; EXPECTED="5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f"; else ARCH=arm64; EXPECTED="565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c"; fi && \
     curl -fsSL "https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_${ARCH}" -o /usr/local/bin/helm-ls && \
     echo "${EXPECTED}  /usr/local/bin/helm-ls" | sha256sum -c - && \
     chmod +x /usr/local/bin/helm-ls
@@ -388,8 +375,7 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS tofu-ls-install
 ARG TARGETARCH
 ARG TOFU_LS_VERSION=0.5.3
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=arm64 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_${ARCH}.tar.gz" -o tofu-ls.tar.gz && \
     curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_${TOFU_LS_VERSION}_checksums.txt" -o checksums.txt && \
     EXPECTED=$(grep "tofu-ls_Linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
