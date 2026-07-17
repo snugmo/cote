@@ -22,17 +22,17 @@ devfiles/
 
 ## Essential Commands
 
-| Task | Command |
-|------|---------|
-| Build base image | `./base-image/build.sh` |
-| Build + push | `./base-image/build.sh push <registry>` |
-| Override version | `DEV_VERSION=v1.2.3 ./base-image/build.sh` |
-| Override image name | `DEV_IMAGE_NAME=my-base ./base-image/build.sh` |
-| Override registry | `DEV_REGISTRY=registry.example.com ./base-image/build.sh` |
-| Parallel build | `DEV_JOBS=$(nproc) ./base-image/build.sh` |
-| Build Hermes extension | `./extensions/hermes/build.sh` |
-| Build + push Hermes | `./extensions/hermes/build.sh push <registry>` |
-| Apply workspace | `kubectl apply -f devfiles/devfile.yaml` |
+| Task                   | Command                                                   |
+| ---------------------- | --------------------------------------------------------- |
+| Build base image       | `./base-image/build.sh`                                   |
+| Build + push           | `./base-image/build.sh push <registry>`                   |
+| Override version       | `DEV_VERSION=v1.2.3 ./base-image/build.sh`                |
+| Override image name    | `DEV_IMAGE_NAME=my-base ./base-image/build.sh`            |
+| Override registry      | `DEV_REGISTRY=registry.example.com ./base-image/build.sh` |
+| Parallel build         | `DEV_JOBS=$(nproc) ./base-image/build.sh`                 |
+| Build Hermes extension | `./extensions/hermes/build.sh`                            |
+| Build + push Hermes    | `./extensions/hermes/build.sh push <registry>`            |
+| Apply workspace        | `kubectl apply -f devfiles/devfile.yaml`                  |
 
 ## Key Conventions
 
@@ -106,19 +106,24 @@ To use an extension, replace the `tools` container image in your Devfile with th
 The Containerfile uses parallel install stages → scratch artifact stages → final assembly. After changing COPY directives in artifact stages, verify they capture all needed files:
 
 1. **Build each install stage as a tagged image:**
+
    ```bash
    buildah build --isolation chroot --layers --target base -t diff-base -f Containerfile .
    buildah build --isolation chroot --layers --target nodejs-install -t diff-nodejs -f Containerfile .
    # ... repeat for each install stage
    ```
+
    `--isolation chroot` is required for nested container builds. `--layers` reuses cached base layers.
 
 2. **Diff each install image against the base:**
+
    ```bash
    BASE=$(podman inspect diff-base --format '{{.Id}}')
    podman diff diff-nodejs "$BASE" > nodejs_added.txt
    ```
+
    Filter to `^A ` (Added) lines to see only new files. Extract unique directory prefixes with:
+
    ```bash
    grep '^A ' nodejs_added.txt | sed 's/^A //' | awk -F/ '{if(NF>=3) print "/"$2"/"$3; else print $0}' | sort -u
    ```

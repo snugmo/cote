@@ -24,12 +24,12 @@ ACP enables Hermes to run as a stdio-based agent server that IDEs can connect to
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DEV_REGISTRY` | `localhost:5000` | Target registry |
-| `DEV_IMAGE_NAME` | `dev-workspace-hermes` | Image name |
-| `DEV_VERSION` | git tag | Image tag |
-| `DEV_BASE_IMAGE` | auto | Base image reference |
+| Variable         | Default                | Description          |
+| ---------------- | ---------------------- | -------------------- |
+| `DEV_REGISTRY`   | `localhost:5000`       | Target registry      |
+| `DEV_IMAGE_NAME` | `dev-workspace-hermes` | Image name           |
+| `DEV_VERSION`    | git tag                | Image tag            |
+| `DEV_BASE_IMAGE` | auto                   | Base image reference |
 
 ## Usage in Devfile
 
@@ -67,6 +67,7 @@ Hermes uses standard config paths:
 - State: `~/.hermes/state.db`
 
 First-time setup:
+
 ```bash
 hermes model        # interactive provider configuration
 ```
