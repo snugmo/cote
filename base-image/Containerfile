@@ -153,8 +153,9 @@ ENV GO_VERSION=${GO_VERSION} \
     PATH=/go/bin:/opt/go/bin:$PATH
 
 RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" -o go.tar.gz && \
-    curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz.sha256" -o go.sha256 && \
-    sha256sum -c go.sha256 && \
+    curl -fsSL "https://dl.google.com/go/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz.sha256" -o go.sha256 && \
+    EXPECTED=$(cat go.sha256) && \
+    echo "${EXPECTED}  go.tar.gz" | sha256sum -c - && \
     tar -C /opt -xzf go.tar.gz && \
     rm -f go.tar.gz go.sha256
 
