@@ -118,10 +118,12 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH=arm64; else ARCH=linux; fi && \
     mkdir -p "${FNM_DIR}" && \
     curl -fsSL "https://github.com/Schniz/fnm/releases/download/v${FNM_VERSION}/fnm-${ARCH}.zip" -o fnm.zip && \
     unzip -q fnm.zip -d "${FNM_DIR}" && \
-    rm -f fnm.zip && \
-    "${FNM_DIR}/fnm" install "${NODE_VERSION}" && \
-    "${FNM_DIR}/fnm" default "${NODE_VERSION}" && \
-    source <("${FNM_DIR}/fnm" env --shell bash) && \
+    rm -f fnm.zip
+
+RUN "${FNM_DIR}/fnm" install "${NODE_VERSION}" && \
+    "${FNM_DIR}/fnm" default "${NODE_VERSION}"
+
+RUN source <("${FNM_DIR}/fnm" env --shell bash) && \
     npm install -g \
         bash-language-server \
         dockerfile-language-server-nodejs \
