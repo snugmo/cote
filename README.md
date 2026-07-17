@@ -90,6 +90,12 @@ podman run -d --replace --name=dev-workspace \
   r5t.io/agentic/dev-workspace-base:latest
 ```
 
+The container starts with an infinite wait, so `exec` into it for an interactive shell:
+
+```bash
+podman exec -ti -e TERM -e COLORTERM dev-workspace "${SHELL}"
+```
+
 ## Design
 
 - Base image provides compilers, package managers, shell utils, and LSP servers — no IDEs baked in, keeping the base lean and portable.
