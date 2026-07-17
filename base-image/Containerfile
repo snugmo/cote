@@ -358,9 +358,13 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS marksman-install
 ARG TARGETARCH
 ARG MARKSMAN_VERSION=2026-02-08
-RUN ARCH=$TARGETARCH && \
-    [ "$ARCH" = "amd64" ] && ARCH=x64 && EXPECTED="be5098e8213219269c47fc0d916a66fa31ce0602ec967475c722260aabf26087" || \
-    ARCH=arm64 && EXPECTED="db8e124527f7f8048e3e6c91821b9c52ef173d92c01e47d221bf1337afd962fb" && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+      ARCH=x64; \
+      EXPECTED="be5098e8213219269c47fc0d916a66fa31ce0602ec967475c722260aabf26087"; \
+    else \
+      ARCH=arm64; \
+      EXPECTED="db8e124527f7f8048e3e6c91821b9c52ef173d92c01e47d221bf1337afd962fb"; \
+    fi && \
     curl -fsSL "https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-${ARCH}" -o /usr/local/bin/marksman && \
     echo "${EXPECTED}  /usr/local/bin/marksman" | sha256sum -c - && \
     chmod +x /usr/local/bin/marksman
