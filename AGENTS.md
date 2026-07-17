@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository defines cloud-native development environments for the [DevWorkspaces Operator](https://devfile.io/) (successor to Eclipse Che Workspaces). Workspaces are composed from a shared base OCI image plus pluggable IDE and project-specific components.
+OCI-based coding workspaces for [DevWorkspaces Operator](https://devfile.io/) — designed for both human developers and AI coding agents. Workspaces are composed from a shared base OCI image plus pluggable IDE and project-specific components.
 
 ## Structure
 
@@ -38,7 +38,7 @@ devfiles/
 
 ### Base Image (`base-image/Containerfile`)
 
-- **No IDEs** — IDEs are Devfile components, never baked into the base image.
+- **No IDEs** — IDEs and AI agents are Devfile components or extension images, never baked into the base image.
 - Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
@@ -48,6 +48,7 @@ devfiles/
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
 - ENTRYPOINT uses `catatonit` (from podman) for zombie process reaping; CMD defaults to `tail -f /dev/null` so the container stays alive for `exec`.
 - Subuid/subgid ranges (2000–65000) are configured on the `user` account to enable **rootless buildah/podman inside the container**.
+- All binary downloads are verified as far as possible (SHA-256 checksums, cosign signatures, or SLSA provenance) — not all upstreams provide cryptographic signatures.
 
 ### Devfile (`devfiles/devfile.yaml`)
 
@@ -73,7 +74,7 @@ devfiles/
 
 ### Extensions (`extensions/`)
 
-Extensions build on top of the base image to add specific capabilities without polluting the base. Each extension has its own `Containerfile`, `build.sh`, and `README.md`.
+Extensions build on top of the base image to add specific capabilities without polluting the base. Each extension has its own `Containerfile`, `build.sh`, and `README.md`. Extensions keep the base lean while enabling agent-ready workspaces when needed.
 
 **Available extensions:**
 
