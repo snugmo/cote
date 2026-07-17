@@ -20,30 +20,31 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 
 | Server | Languages | File extensions |
 |--------|-----------|-----------------|
-| `gopls` | Go | `.go` |
-| `typescript-language-server` | TypeScript, JavaScript | `.ts`, `.tsx`, `.js`, `.jsx` |
-| `pyright` | Python | `.py` |
-| `ruff-lsp` | Python | `.py` |
-| `yaml-language-server` | YAML | `.yaml`, `.yml` |
-| `bash-language-server` | Bash, Shell | `.sh`, `.bash`, `.zsh`, `.fish` |
-| `dockerfile-language-server` | Dockerfile | `Dockerfile`, `Containerfile`, `.dockerfile` |
-| `clangd` | C, C++, Objective-C | `.c`, `.h`, `.cpp`, `.cc`, `.cxx`, `.hpp`, `.m`, `.mm` |
-| `rust-analyzer` | Rust | `.rs`, `Cargo.toml` |
+| [gopls](https://github.com/golang/tools/tree/master/gopls) | Go | `.go` |
+| [typescript-language-server](https://github.com/typescript-language-server/typescript-language-server) | TypeScript, JavaScript | `.ts`, `.tsx`, `.js`, `.jsx` |
+| [pyright](https://github.com/microsoft/pyright) | Python | `.py` |
+| [ruff-lsp](https://github.com/astral-sh/ruff-lsp) | Python | `.py` |
+| [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) | YAML | `.yaml`, `.yml` |
+| [marksman](https://github.com/artempyanykh/marksman) | Markdown | `.md` |
+| [bash-language-server](https://github.com/bash-lsp/bash-language-server) | Bash, Shell | `.sh`, `.bash`, `.zsh`, `.fish` |
+| [dockerfile-language-server](https://github.com/rcjsuen/dockerfile-language-server) | Dockerfile | `Dockerfile`, `Containerfile`, `.dockerfile` |
+| [clangd](https://github.com/clangd/clangd) | C, C++, Objective-C | `.c`, `.h`, `.cpp`, `.cc`, `.cxx`, `.hpp`, `.m`, `.mm` |
+| [rust-analyzer](https://github.com/rust-lang/rust-analyzer) | Rust | `.rs`, `Cargo.toml` |
 
 **Linters & formatters**:
 
 | Tool | Languages | File extensions |
 |------|-----------|-----------------|
-| `shellcheck` | Bash, Shell | `.sh`, `.bash`, `.zsh`, `.fish` |
-| `shfmt` | Shell (formatter) | `.sh`, `.bash`, `.zsh` |
-| `hadolint` | Dockerfile | `Dockerfile`, `Containerfile`, `.dockerfile` |
-| `golangci-lint` | Go | `.go` |
-| `eslint` | JavaScript, TypeScript | `.js`, `.jsx`, `.ts`, `.tsx` |
-| `prettier` | JavaScript, TypeScript, JSON, YAML, Markdown, CSS | `.js`, `.ts`, `.json`, `.yaml`, `.md`, `.css` |
-| `pylint` | Python | `.py` |
-| `ruff` | Python | `.py` |
-| `mypy` | Python (type checker) | `.py` |
-| `black` | Python (formatter) | `.py` |
+| [shellcheck](https://github.com/koalaman/shellcheck) | Bash, Shell | `.sh`, `.bash`, `.zsh`, `.fish` |
+| [shfmt](https://github.com/mvdan/sh) | Shell (formatter) | `.sh`, `.bash`, `.zsh` |
+| [hadolint](https://github.com/hadolint/hadolint) | Dockerfile | `Dockerfile`, `Containerfile`, `.dockerfile` |
+| [golangci-lint](https://github.com/golangci/golangci-lint) | Go | `.go` |
+| [eslint](https://github.com/eslint/eslint) | JavaScript, TypeScript | `.js`, `.jsx`, `.ts`, `.tsx` |
+| [prettier](https://github.com/prettier/prettier) | JavaScript, TypeScript, JSON, YAML, Markdown, CSS | `.js`, `.ts`, `.json`, `.yaml`, `.md`, `.css` |
+| [pylint](https://github.com/pylint-dev/pylint) | Python | `.py` |
+| [ruff](https://github.com/astral-sh/ruff) | Python | `.py` |
+| [mypy](https://github.com/python/mypy) | Python (type checker) | `.py` |
+| [black](https://github.com/psf/black) | Python (formatter) | `.py` |
 
 **Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal`, `kubectl-cnpg`, `kubectl-linstor`, `cmctl`, `agctl`, `mcp-cli`, `fj`, `gh`.
 
@@ -86,7 +87,7 @@ podman run -it --rm localhost:5000/dev-workspace-base:latest
 - IDEs and AI agents are added as Devfile components or extension images.
 - Extensions keep the base lean while enabling agent-ready workspaces when needed.
 - Workspace containers run as non-root (UID 1000).
-- All binary downloads are verified (SHA-256 checksums, cosign signatures, or SLSA provenance).
+- All binary downloads are verified as far as possible (SHA-256 checksums, cosign signatures, or SLSA provenance) — not all upstreams provide cryptographic signatures.
 
 ## Details
 

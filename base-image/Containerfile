@@ -353,6 +353,19 @@ RUN ARCH=$TARGETARCH && \
     rm -f checksums.txt
 
 # =============================================================================
+# MARKSMAN — install Markdown LSP from GitHub release
+# =============================================================================
+FROM downloader AS marksman-install
+ARG TARGETARCH
+ARG MARKSMAN_VERSION=2026-02-08
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=x64 && EXPECTED="be5098e8213219269c47fc0d916a66fa31ce0602ec967475c722260aabf26087" || \
+    ARCH=arm64 && EXPECTED="db8e124527f7f8048e3e6c91821b9c52ef173d92c01e47d221bf1337afd962fb" && \
+    curl -fsSL "https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-${ARCH}" -o /usr/local/bin/marksman && \
+    echo "${EXPECTED}  /usr/local/bin/marksman" | sha256sum -c - && \
+    chmod +x /usr/local/bin/marksman
+
+# =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
 # =============================================================================
 FROM scratch AS forgejo-cli-artifacts
@@ -376,6 +389,9 @@ COPY --from=agentgateway-install /usr/local/bin/agctl /usr/local/bin/
 FROM scratch AS mcp-cli-artifacts
 COPY --from=mcp-cli-install /usr/local/bin/mcp-cli /usr/local/bin/
 
+FROM scratch AS marksman-artifacts
+COPY --from=marksman-install /usr/local/bin/marksman /usr/local/bin/
+
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
@@ -397,6 +413,7 @@ COPY --link --from=cert-manager-artifacts / /
 COPY --link --from=agentgateway-artifacts / /
 COPY --link --from=github-cli-artifacts / /
 COPY --link --from=mcp-cli-artifacts / /
+COPY --link --from=marksman-artifacts / /
 
 # Generate shell completions for CLI tools
 RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
