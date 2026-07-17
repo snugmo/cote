@@ -90,7 +90,7 @@ podman run -d --replace --name=dev-workspace \
   r5t.io/agentic/dev-workspace-base:latest
 ```
 
-The container starts with an infinite wait, so `exec` into it for an interactive shell:
+By default the container runs `tail -f /dev/null` to stay alive, so `exec` into it to start a shell inside the container namespace:
 
 ```bash
 podman exec -ti -e TERM -e COLORTERM dev-workspace "${SHELL}"
