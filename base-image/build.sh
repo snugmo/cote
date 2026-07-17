@@ -14,12 +14,15 @@ usage() {
     printf '  ./build.sh                          # Build only\n'
     printf '  ./build.sh push                     # Build and push\n'
     printf '  ./build.sh push <registry>          # Build and push to registry\n'
+    printf '\n'
+    printf 'Env vars: DEV_REGISTRY, DEV_IMAGE_NAME, DEV_VERSION, DEV_JOBS\n'
 }
 
 # Configurable via environment or defaults
 REGISTRY="${DEV_REGISTRY:-localhost:5000}"
 IMAGE_NAME="${DEV_IMAGE_NAME:-dev-workspace-base}"
 VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirty 2>/dev/null || echo 'latest')}"
+JOBS="${DEV_JOBS:-}"
 TAG="${VERSION#v}"
 
 PUSH=false
@@ -55,14 +58,18 @@ printf '\n'
 
 # Build
 printf '>> Building %s ...\n' "${FULL_IMAGE}"
-buildah build \
-    --isolation chroot \
-    --layers \
-    --format docker \
-    --storage-opt ignore_chown_errors=true \
-    -t "${FULL_IMAGE}" \
-    -f "${SCRIPT_DIR}/Containerfile" \
-    "${SCRIPT_DIR}"
+BUILD_ARGS=(
+    --isolation chroot
+    --layers
+    --format docker
+    --storage-opt ignore_chown_errors=true
+    -t "${FULL_IMAGE}"
+    -f "${SCRIPT_DIR}/Containerfile"
+)
+if [[ -n "${JOBS}" ]]; then
+    BUILD_ARGS+=(--jobs "${JOBS}")
+fi
+buildah build "${BUILD_ARGS[@]}" "${SCRIPT_DIR}"
 
 printf '>> Build complete: %s\n' "${FULL_IMAGE}"
 
