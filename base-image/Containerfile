@@ -186,15 +186,15 @@ COPY --from=rust-install /opt/cargo /opt/cargo/
 FROM downloader AS uv-install
 ARG TARGETARCH
 ARG UV_VERSION=0.11.29
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64-unknown-linux-gnu; else ARCH=aarch64-unknown-linux-gnu; fi && \
-    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}.tar.gz" -o "uv-${ARCH}.tar.gz" && \
-    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}.tar.gz.sha256" -o uv.sha256 && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
+    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}-unknown-linux-gnu.tar.gz" -o "uv-${ARCH}-unknown-linux-gnu.tar.gz" && \
+    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}-unknown-linux-gnu.tar.gz.sha256" -o uv.sha256 && \
     sha256sum -c uv.sha256 && \
-    tar -xzf "uv-${ARCH}.tar.gz" -C /tmp --strip-components=1 && \
+    tar -xzf "uv-${ARCH}-unknown-linux-gnu.tar.gz" -C /tmp --strip-components=1 && \
     cp /tmp/uv /usr/local/bin/ && \
     cp /tmp/uvx /usr/local/bin/ && \
     rm -rf /tmp/uv-* && \
-    rm -f "uv-${ARCH}.tar.gz" uv.sha256
+    rm -f "uv-${ARCH}-unknown-linux-gnu.tar.gz" uv.sha256
 
 FROM scratch AS uv-artifacts
 COPY --from=uv-install /usr/local/bin/uv /usr/local/bin/
@@ -234,7 +234,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
 FROM downloader AS github-cli-install
 ARG TARGETARCH
 ARG GH_VERSION=2.96.0
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
+RUN ARCH=$TARGETARCH && \
     curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${ARCH}.tar.gz" -o gh.tar.gz && \
     tar -xzf gh.tar.gz -C /usr/local/bin --strip-components=2 "gh_${GH_VERSION}_linux_${ARCH}/bin/gh" && \
     rm -f gh.tar.gz
@@ -248,7 +248,7 @@ COPY --from=github-cli-install /usr/local/bin/gh /usr/local/bin/
 FROM downloader AS kubeseal-install
 ARG TARGETARCH
 ARG KUBESEAL_VERSION=0.38.4
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
+RUN ARCH=$TARGETARCH && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz" -o kubeseal.tar.gz && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz.sig" -o kubeseal.tar.gz.sig && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/cosign.pub" -o cosign.pub && \
@@ -263,7 +263,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
 FROM downloader AS kubectl-linstor-install
 ARG TARGETARCH
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
+RUN ARCH=$TARGETARCH && \
     curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-linstor.tar.gz && \
     curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_${KUBECTL_LINSTOR_VERSION}_checksums.txt" -o checksums.txt && \
     EXPECTED=$(grep "kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" checksums.txt | awk '{print $1}') && \
@@ -298,7 +298,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
 FROM downloader AS cert-manager-install
 ARG TARGETARCH
 ARG CERT_MANAGER_VERSION=2.5.0
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
+RUN ARCH=$TARGETARCH && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/cmctl_linux_${ARCH}.tar.gz" -o cmctl.tar.gz && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/checksums.txt" -o checksums.txt && \
     curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/checksums.txt.cosign.bundle" -o checksums.txt.cosign.bundle && \
@@ -319,7 +319,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
 FROM downloader AS agentgateway-install
 ARG TARGETARCH
 ARG AGENTGATEWAY_VERSION=1.3.1
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; else ARCH=arm64; fi && \
+RUN ARCH=$TARGETARCH && \
     curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}" -o /usr/local/bin/agctl && \
     curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}.sha256" -o agctl.sha256 && \
     EXPECTED=$(cat agctl.sha256 | awk '{print $1}') && \
@@ -364,7 +364,11 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 FROM downloader AS helm-ls-install
 ARG TARGETARCH
 ARG HELM_LS_VERSION=0.5.4
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=amd64; EXPECTED="5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f"; else ARCH=arm64; EXPECTED="565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c"; fi && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+      ARCH=amd64; EXPECTED="5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f"; \
+    else \
+      ARCH=arm64; EXPECTED="565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c"; \
+    fi && \
     curl -fsSL "https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_${ARCH}" -o /usr/local/bin/helm-ls && \
     echo "${EXPECTED}  /usr/local/bin/helm-ls" | sha256sum -c - && \
     chmod +x /usr/local/bin/helm-ls
