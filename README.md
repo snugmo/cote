@@ -16,11 +16,38 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | **uv** | 0.11.29 | astral-sh/uv (GitHub release) |
 | **cosign** | 3.1.1 | sigstore/cosign (OCI image) |
 
-**LSP servers**: `gopls`, `typescript-language-server`, `pyright`, `ruff-lsp`, `yaml-language-server`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`.
+**LSP servers**:
+
+| Server | Languages | File extensions |
+|--------|-----------|-----------------|
+| `gopls` | Go | `.go` |
+| `typescript-language-server` | TypeScript, JavaScript | `.ts`, `.tsx`, `.js`, `.jsx` |
+| `pyright` | Python | `.py` |
+| `ruff-lsp` | Python | `.py` |
+| `yaml-language-server` | YAML | `.yaml`, `.yml` |
+| `bash-language-server` | Bash, Shell | `.sh`, `.bash`, `.zsh`, `.fish` |
+| `dockerfile-language-server` | Dockerfile | `Dockerfile`, `Containerfile`, `.dockerfile` |
+| `clangd` | C, C++, Objective-C | `.c`, `.h`, `.cpp`, `.cc`, `.cxx`, `.hpp`, `.m`, `.mm` |
+| `rust-analyzer` | Rust | `.rs`, `Cargo.toml` |
+
+**Linters & formatters**:
+
+| Tool | Languages | File extensions |
+|------|-----------|-----------------|
+| `shellcheck` | Bash, Shell | `.sh`, `.bash`, `.zsh`, `.fish` |
+| `shfmt` | Shell (formatter) | `.sh`, `.bash`, `.zsh` |
+| `hadolint` | Dockerfile | `Dockerfile`, `Containerfile`, `.dockerfile` |
+| `golangci-lint` | Go | `.go` |
+| `eslint` | JavaScript, TypeScript | `.js`, `.jsx`, `.ts`, `.tsx` |
+| `prettier` | JavaScript, TypeScript, JSON, YAML, Markdown, CSS | `.js`, `.ts`, `.json`, `.yaml`, `.md`, `.css` |
+| `pylint` | Python | `.py` |
+| `ruff` | Python | `.py` |
+| `mypy` | Python (type checker) | `.py` |
+| `black` | Python (formatter) | `.py` |
 
 **Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal`, `kubectl-cnpg`, `kubectl-linstor`, `cmctl`, `agctl`, `mcp-cli`, `fj`, `gh`.
 
-**Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `bat`, `glow`, `tmux`, `shellcheck`, `shfmt`, `hadolint`, `age`, `gnupg2`, `ImageMagick`, `libsixel-utils`.
+**Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `bat`, `glow`, `tmux`, `age`, `gnupg2`, `ImageMagick`, `libsixel-utils`.
 
 ## Extensions
 
