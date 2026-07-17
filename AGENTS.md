@@ -29,6 +29,7 @@ devfiles/
 | Override version | `DEV_VERSION=v1.2.3 ./base-image/build.sh` |
 | Override image name | `DEV_IMAGE_NAME=my-base ./base-image/build.sh` |
 | Override registry | `DEV_REGISTRY=registry.example.com ./base-image/build.sh` |
+| Parallel build | `DEV_JOBS=$(nproc) ./base-image/build.sh` |
 | Build Hermes extension | `./extensions/hermes/build.sh` |
 | Build + push Hermes | `./extensions/hermes/build.sh push <registry>` |
 | Apply workspace | `kubectl apply -f devfiles/devfile.yaml` |
