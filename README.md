@@ -78,11 +78,16 @@ See [AGENTS.md](AGENTS.md) for Devfile conventions and gotchas.
 
 ### Standalone
 
-Run directly with podman/buildah:
+Run directly with podman — mount your code, preserve caches, and enable rootless containers via FUSE:
 
 ```bash
-./base-image/build.sh
-podman run -it --rm localhost:5000/dev-workspace-base:latest
+podman run -d --replace --name=dev-workspace \
+  --security-opt=label=disable \
+  --userns=keep-id:uid=1000,gid=1000 \
+  -v ~/workspace:/projects/ -w /projects \
+  --device=/dev/fuse \
+  -v dev-home:/home/user \
+  r5t.io/agentic/dev-workspace-base:latest
 ```
 
 ## Design
