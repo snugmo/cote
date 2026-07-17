@@ -379,6 +379,22 @@ RUN ARCH=$TARGETARCH && \
     chmod +x /usr/local/bin/helm-ls
 
 # =============================================================================
+# TOFU-LS — install OpenTofu Language Server from GitHub release
+# =============================================================================
+FROM downloader AS tofu-ls-install
+ARG TARGETARCH
+ARG TOFU_LS_VERSION=0.5.3
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=x86_64 || ARCH=arm64 && \
+    curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_${ARCH}.tar.gz" -o tofu-ls.tar.gz && \
+    curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_${TOFU_LS_VERSION}_checksums.txt" -o checksums.txt && \
+    EXPECTED=$(grep "tofu-ls_Linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
+    echo "${EXPECTED}  tofu-ls.tar.gz" | sha256sum -c - && \
+    tar -xzf tofu-ls.tar.gz -C /usr/local/bin --strip-components=1 && \
+    chmod +x /usr/local/bin/tofu-ls && \
+    rm -f tofu-ls.tar.gz checksums.txt
+
+# =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
 # =============================================================================
 FROM scratch AS forgejo-cli-artifacts
@@ -408,6 +424,9 @@ COPY --from=marksman-install /usr/local/bin/marksman /usr/local/bin/
 FROM scratch AS helm-ls-artifacts
 COPY --from=helm-ls-install /usr/local/bin/helm-ls /usr/local/bin/
 
+FROM scratch AS tofu-ls-artifacts
+COPY --from=tofu-ls-install /usr/local/bin/tofu-ls /usr/local/bin/
+
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
@@ -431,6 +450,7 @@ COPY --link --from=github-cli-artifacts / /
 COPY --link --from=mcp-cli-artifacts / /
 COPY --link --from=marksman-artifacts / /
 COPY --link --from=helm-ls-artifacts / /
+COPY --link --from=tofu-ls-artifacts / /
 
 # Generate shell completions for CLI tools
 RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \

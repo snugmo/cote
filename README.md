@@ -27,6 +27,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) | YAML | `.yaml`, `.yml` |
 | [marksman](https://github.com/artempyanykh/marksman) | Markdown | `.md` |
 | [helm-ls](https://github.com/mrjosh/helm-ls) | Helm | `.yaml`, `.yml` |
+| [tofu-ls](https://github.com/opentofu/tofu-ls) | HCL, Terraform | `.tf`, `.tfvars`, `.hcl` |
 | [bash-language-server](https://github.com/bash-lsp/bash-language-server) | Bash, Shell | `.sh`, `.bash`, `.zsh`, `.fish` |
 | [dockerfile-language-server](https://github.com/rcjsuen/dockerfile-language-server) | Dockerfile | `Dockerfile`, `Containerfile`, `.dockerfile` |
 | [clangd](https://github.com/clangd/clangd) | C, C++, Objective-C | `.c`, `.h`, `.cpp`, `.cc`, `.cxx`, `.hpp`, `.m`, `.mm` |
