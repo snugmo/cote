@@ -366,6 +366,19 @@ RUN ARCH=$TARGETARCH && \
     chmod +x /usr/local/bin/marksman
 
 # =============================================================================
+# HELM-LS — install Helm Language Server from GitHub release
+# =============================================================================
+FROM downloader AS helm-ls-install
+ARG TARGETARCH
+ARG HELM_LS_VERSION=0.5.4
+RUN ARCH=$TARGETARCH && \
+    [ "$ARCH" = "amd64" ] && ARCH=amd64 && EXPECTED="5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f" || \
+    ARCH=arm64 && EXPECTED="565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c" && \
+    curl -fsSL "https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_${ARCH}" -o /usr/local/bin/helm-ls && \
+    echo "${EXPECTED}  /usr/local/bin/helm-ls" | sha256sum -c - && \
+    chmod +x /usr/local/bin/helm-ls
+
+# =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
 # =============================================================================
 FROM scratch AS forgejo-cli-artifacts
@@ -392,6 +405,9 @@ COPY --from=mcp-cli-install /usr/local/bin/mcp-cli /usr/local/bin/
 FROM scratch AS marksman-artifacts
 COPY --from=marksman-install /usr/local/bin/marksman /usr/local/bin/
 
+FROM scratch AS helm-ls-artifacts
+COPY --from=helm-ls-install /usr/local/bin/helm-ls /usr/local/bin/
+
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
@@ -414,6 +430,7 @@ COPY --link --from=agentgateway-artifacts / /
 COPY --link --from=github-cli-artifacts / /
 COPY --link --from=mcp-cli-artifacts / /
 COPY --link --from=marksman-artifacts / /
+COPY --link --from=helm-ls-artifacts / /
 
 # Generate shell completions for CLI tools
 RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
