@@ -29,12 +29,7 @@ RUN git clone --depth 1 --branch "${HERMES_VERSION}" \
     UV_PROJECT_ENVIRONMENT=.venv uv pip install -e '.[acp]' && \
     # Create hermes launcher in /usr/local/bin (FHS layout, matches upstream)
     mkdir -p /usr/local/bin && \
-    cat > /usr/local/bin/hermes << 'EOF'
-#!/usr/bin/env bash
-unset PYTHONPATH
-unset PYTHONHOME
-exec "/opt/hermes-agent/.venv/bin/hermes" "$@"
-EOF && \
+    printf '#!/usr/bin/env bash\nunset PYTHONPATH\nunset PYTHONHOME\nexec "/opt/hermes-agent/.venv/bin/hermes" "$@"\n' > /usr/local/bin/hermes && \
     chmod +x /usr/local/bin/hermes && \
     # Verify installation
     hermes --version && \
