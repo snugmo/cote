@@ -127,10 +127,11 @@ RUN source <("${FNM_DIR}/fnm" env --shell bash) && \
     npm install -g \
         bash-language-server \
         dockerfile-language-server-nodejs \
-        typescript \
-        typescript-language-server \
         eslint \
         prettier \
+        pnpm \
+        typescript \
+        typescript-language-server \
         yaml-language-server
 
 FROM scratch AS nodejs-artifacts
