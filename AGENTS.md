@@ -41,7 +41,7 @@ devfiles/
 - Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
-- **Toolchain includes**: GCC, Clang/LLVM, Go 1.26.5, Rust (via rustup + rust-analyzer), Node.js 24, Python 3, Crush CLI, plus LSP servers (`gopls`, `typescript-language-server`, `pyright`, `ruff-lsp`, `yaml-language-server`).
+- **Toolchain includes**: GCC, Clang/LLVM, Go 1.26.5, Rust (via rustup + rust-analyzer), Node.js 24, Python 3, Crush CLI, plus LSP servers (`gopls`, `typescript-language-server`, `pyright`, `ruff-lsp`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 - Go version is controlled by `ARG GO_VERSION=1.26.5` — override at build time if needed.
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
