@@ -384,7 +384,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_${TOFU_LS_VERSION}_checksums.txt" -o checksums.txt && \
     EXPECTED=$(grep "tofu-ls_Linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
     echo "${EXPECTED}  tofu-ls.tar.gz" | sha256sum -c - && \
-    tar -xzf tofu-ls.tar.gz -C /usr/local/bin --strip-components=1 && \
+    tar -xzf tofu-ls.tar.gz -C /usr/local/bin && \
     chmod +x /usr/local/bin/tofu-ls && \
     rm -f tofu-ls.tar.gz checksums.txt
 
