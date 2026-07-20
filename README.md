@@ -12,7 +12,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | **[Python](https://python.org)**                                 | Fedora 44 stock | dnf                                                       |
 | **[Rust](https://rust-lang.org)**                                | stable          | [rustup](https://github.com/rust-lang/rustup)             |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)** | Fedora 44 stock | dnf                                                       |
-| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.85.0          | GitHub release, cosign verified                           |
+| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.86.0          | GitHub release, cosign verified                           |
 | **[uv](https://github.com/astral-sh/uv)**                        | 0.11.29         | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                 | 3.1.1           | OCI image                                                 |
 
