@@ -21,6 +21,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | Server                                                                                                 | Languages                | File extensions                                        |
 | ------------------------------------------------------------------------------------------------------ | ------------------------ | ------------------------------------------------------ |
 | [gopls](https://github.com/golang/tools/tree/master/gopls)                                             | Go                       | `.go`                                                  |
+| [golangci-lint-langserver](https://github.com/nametake/golangci-lint-langserver)                        | Go                       | `.go`                                                  |
 | [typescript-language-server](https://github.com/typescript-language-server/typescript-language-server) | TypeScript, JavaScript   | `.ts`, `.tsx`, `.js`, `.jsx`                           |
 | [pyright](https://github.com/microsoft/pyright)                                                        | Python                   | `.py`                                                  |
 | [ruff-lsp](https://github.com/astral-sh/ruff-lsp)                                                      | Python                   | `.py`                                                  |
