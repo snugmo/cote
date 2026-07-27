@@ -402,7 +402,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
 # =============================================================================
 FROM downloader AS herdr-install
 ARG TARGETARCH
-ARG HERDR_VERSION=0.7.4
+ARG HERDR_VERSION=0.7.5
 RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
     curl -fsSL "https://github.com/ogulcancelik/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-${ARCH}" -o /usr/local/bin/herdr && \
     chmod +x /usr/local/bin/herdr
