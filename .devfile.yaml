@@ -1,29 +1,13 @@
-# Devfile for the agent-workspace repository itself.
-# Opens this repo as a workspace using the pre-built agent-workspace image.
-
 schemaVersion: 2.2.0
-
-metadata:
-  name: agent-workspace
-
-projects:
-  - name: agent-workspace
-    git:
-      remotes:
-        origin: "https://codeberg.org/r5t/agent-workspace.git"
-    checkoutFrom:
-      revision: main
-    clonePath: "{{.ProjectsRoot}}/{{.ProjectName}}"
-
 components:
   - name: tools
     container:
-      image: "r5t.io/agentic/dev-workspace-base:latest"
+      image: "r5t.io/agentic/dev-workspace-base:0.11.3"
       mountSources: true
-      memoryRequest: "512M"
-      memoryLimit: "2Gi"
+      memoryRequest: "4Gi"
+      memoryLimit: "8Gi"
       cpuRequest: "500m"
-      cpuLimit: "2"
+      cpuLimit: "8"
       volumeMounts:
         - name: tools-cache
           path: /home/user/.cache
@@ -37,10 +21,3 @@ components:
   - name: tools-local
     volume:
       size: 2Gi
-
-commands:
-  - id: rebuild-base-image
-    exec:
-      component: tools
-      commandLine: "./base-image/build.sh"
-      workingDir: "${PROJECTS_ROOT}/${CURRENT_PROJECT}"
