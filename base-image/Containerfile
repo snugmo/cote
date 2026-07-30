@@ -408,6 +408,27 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
     chmod +x /usr/local/bin/herdr
 
 # =============================================================================
+# AST-GREP — install sg from GitHub release
+# =============================================================================
+FROM downloader AS ast-grep-install
+ARG TARGETARCH
+ARG AST_GREP_VERSION=0.45.0
+RUN apk add --no-cache unzip && \
+    if [ "$TARGETARCH" = "amd64" ]; then \
+      ARCH=x86_64; \
+      EXPECTED="78931ae35ebac33d9a72b3aecea3e3d62d6e5b0b718ac8bbedfbe69d68421e41"; \
+    else \
+      ARCH=aarch64; \
+      EXPECTED="62b60892dafacfa76d6de87157659f880bbf85ff38bdab52db12f1f14ec60f94"; \
+    fi && \
+    curl -fsSL "https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-${ARCH}-unknown-linux-gnu.zip" -o ast-grep.zip && \
+    echo "${EXPECTED}  ast-grep.zip" | sha256sum -c - && \
+    unzip -q ast-grep.zip -d /tmp/ast-grep && \
+    cp /tmp/ast-grep/sg /usr/local/bin/sg && \
+    chmod +x /usr/local/bin/sg && \
+    rm -rf /tmp/ast-grep ast-grep.zip
+
+# =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
 # =============================================================================
 FROM scratch AS forgejo-cli-artifacts
@@ -443,6 +464,9 @@ COPY --from=tofu-ls-install /usr/local/bin/tofu-ls /usr/local/bin/
 FROM scratch AS herdr-artifacts
 COPY --from=herdr-install /usr/local/bin/herdr /usr/local/bin/
 
+FROM scratch AS ast-grep-artifacts
+COPY --from=ast-grep-install /usr/local/bin/sg /usr/local/bin/
+
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
@@ -468,6 +492,7 @@ COPY --link --from=marksman-artifacts / /
 COPY --link --from=helm-ls-artifacts / /
 COPY --link --from=tofu-ls-artifacts / /
 COPY --link --from=herdr-artifacts / /
+COPY --link --from=ast-grep-artifacts / /
 
 # Generate shell completions for CLI tools
 RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
