@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# commit-msg — Add AI-assistance trailers when an agent is the committing agent.
+#
+# Install:
+#   ln -sf ../../scripts/git-hooks/commit-msg .git/hooks/commit-msg
+#
+# When AGENT=goose is set in the environment and the commit message does not
+# already contain an Assisted-by trailer, this hook appends:
+#
+#   Assisted-by: goose:<model>
+#   Model: <model>
+#   Agent-Session: <session-id>   (if AGENT_SESSION_ID is set)
+
+set -euo pipefail
+
+msg_file="${1:-}"
+# Exit if the commit message is missing or empty
+[ -n "${msg_file}" ] && [ -s "${msg_file}" ] || exit 0
+
+# Skip merge commits — they have no meaningful message to annotate.
+if [ -n "$(sed -n -e '/^[[:space:]]*#/d;/^[[:space:]]*Merge /p;q' "${msg_file}")" ]; then
+  exit 0
+fi
+
+# Set variables depending on agentic harness used.
+case "${AGENT:-}" in
+  goose)
+    model="${GOOSE_MODEL:-}"
+    session_id="${AGENT_SESSION_ID:-}"
+    ;;
+  crush)
+    exit 0;;
+  *)
+    exit 0;;
+esac
+
+# Avoid modifying anything if there is already an Assisted-by: trailer
+if [ -n "$(git interpret-trailers --parse "${msg_file}" | grep -i '^Assisted-by:')" ]; then
+  exit 0
+fi
+
+git interpret-trailers --in-place \
+  --if-exists=doNothing \
+  --trailer="Assisted-by: ${AGENT}:${model}" \
+  --trailer="Model: ${model}" \
+  "${msg_file}"
+
+if [ -n "${session_id:-}" ]; then
+  git interpret-trailers --in-place \
+    --if-exists=doNothing \
+    --trailer="Agent-Session: ${session_id}" \
+    "${msg_file}"
+fi
