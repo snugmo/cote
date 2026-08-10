@@ -12,9 +12,9 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | **[Python](https://python.org)**                                 | Fedora 44 stock | dnf                                                       |
 | **[Rust](https://rust-lang.org)**                                | stable          | [rustup](https://github.com/rust-lang/rustup)             |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)** | Fedora 44 stock | dnf                                                       |
-| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.86.0          | GitHub release, cosign verified                           |
-| **[uv](https://github.com/astral-sh/uv)**                        | 0.11.30         | GitHub release                                            |
-| **[cosign](https://github.com/sigstore/cosign)**                 | 3.1.1           | OCI image                                                 |
+| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.88.1          | GitHub release, cosign verified                           |
+| **[uv](https://github.com/astral-sh/uv)**                        | 0.12.3          | GitHub release                                            |
+| **[cosign](https://github.com/sigstore/cosign)**                 | 3.1.3           | OCI image                                                 |
 
 **LSP servers**:
 
@@ -49,9 +49,9 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | [mypy](https://github.com/python/mypy)                     | Python (type checker)                             | `.py`                                         |
 | [black](https://github.com/psf/black)                      | Python (formatter)                                | `.py`                                         |
 
-**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.38.4), `kubectl-cnpg` (1.30.0), `kubectl-linstor` (0.3.2), `cmctl` (2.5.0), `agctl` (1.3.1), `mcp-cli` (0.3.0), `fj` (0.6.0), `gh` (2.96.0).
+**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.38.4), `kubectl-cnpg` (1.30.0), `kubectl-linstor` (0.3.2), `cmctl` (2.5.0), `agctl` (1.4.1), `mcp-cli` (0.3.0), `fj` (0.6.0), `gh` (2.97.0).
 
-**Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `bat`, `glow`, `tmux`, `herdr` (0.7.4), `age`, `gnupg2`, `ImageMagick`, `libsixel-utils`.
+**Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `bat`, `glow`, `tmux`, `herdr` (0.8.0), `age`, `gnupg2`, `ImageMagick`, `libsixel-utils`.
 
 ## Extensions
 
