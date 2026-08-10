@@ -52,7 +52,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Language servers & search tools
         fd-find hadolint ripgrep shellcheck shfmt the_silver_searcher yq \
         # Identity, encryption, integrity
-        age ca-certificates gnupg2 gpgme sequoia-sop sequoia-sq \
+        age ca-certificates gnupg2 gpgme openssl-devel openssl-devel-engine sequoia-sop sequoia-sq \
         # Misc dev utilities
         7zip gzip rsync sqlite tar tmux unzip xdelta xz xxhash zstd \
         # Network tools
