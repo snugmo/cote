@@ -495,7 +495,9 @@ COPY --link --from=herdr-artifacts / /
 COPY --link --from=ast-grep-artifacts / /
 
 # Generate shell completions for CLI tools
-RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
+RUN mkdir -p /root/.local/share/forgejo-cli && \
+    echo '{"hosts":{}}' > /root/.local/share/forgejo-cli/keys.json && \
+    mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
     # Bash completions
     for tool in cosign fj kubectl-cnpg cmctl agctl; do \
       $tool completion bash > "/etc/bash_completion.d/$tool" 2>/dev/null || true; \
@@ -519,7 +521,8 @@ RUN mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/sh
     gh completion -s zsh > /usr/share/zsh/site-functions/_gh 2>/dev/null || true && \
     bun completions zsh > /usr/share/zsh/site-functions/_bun 2>/dev/null || true && \
     /opt/fnm/fnm completions --shell zsh > /usr/share/zsh/site-functions/_fnm 2>/dev/null || true && \
-    uv generate-shell-completion zsh > /usr/share/zsh/site-functions/_uv 2>/dev/null || true
+    uv generate-shell-completion zsh > /usr/share/zsh/site-functions/_uv 2>/dev/null || true && \
+    rm -rf /root/.local/share/forgejo-cli
 
 # Go env
 ARG GO_VERSION
