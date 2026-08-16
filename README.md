@@ -7,7 +7,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | Language / Tool                                                  | Version         | Source                                                    |
 | ---------------------------------------------------------------- | --------------- | --------------------------------------------------------- |
 | **[Go](https://go.dev)**                                         | 1.26.5          | go.dev/dl                                                 |
-| **[Node.js](https://nodejs.org)**                                | 24 LTS          | [fnm](https://github.com/Schniz/fnm)                      |
+| **[Node.js](https://nodejs.org)**                                | 26              | [fnm](https://github.com/Schniz/fnm)                      |
 | **[Bun](https://bun.sh)**                                        | latest          | [oven-sh/bun](https://github.com/oven-sh/bun) (OCI image) |
 | **[Python](https://python.org)**                                 | Fedora 44 stock | dnf                                                       |
 | **[Rust](https://rust-lang.org)**                                | stable          | [rustup](https://github.com/rust-lang/rustup)             |

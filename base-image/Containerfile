@@ -110,7 +110,7 @@ COPY --from=crush-install /usr/share/zsh/site-functions/_crush /usr/share/zsh/si
 FROM base AS nodejs-install
 ARG TARGETARCH
 ARG FNM_VERSION=1.39.0
-ARG NODE_VERSION=24
+ARG NODE_VERSION=26
 ENV FNM_DIR=/opt/fnm \
     PATH=${FNM_DIR}:$PATH
 
