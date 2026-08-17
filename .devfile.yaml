@@ -2,7 +2,7 @@ schemaVersion: 2.2.0
 components:
   - name: tools
     container:
-      image: "r5t.io/agentic/dev-workspace-base:0.11.5"
+      image: "r5t.io/agentic/dev-workspace-base:0.11.6"
       mountSources: true
       memoryRequest: "4Gi"
       memoryLimit: "8Gi"
