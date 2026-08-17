@@ -63,7 +63,7 @@ devfiles/
 ### Self-hosting Devfile (`.devfile.yaml`)
 
 - Opens this repository itself as a DevWorkspaces workspace.
-- References a pre-built image at `codeberg.org/r5t/agent-workspace:0.1.0`.
+- References the pre-built base image at `r5t.io/agentic/dev-workspace-base:0.11.5` (bump the tag when a new base image is released).
 - Use this to iterate on the repo configuration inside a live workspace.
 
 ### Build Script (`base-image/build.sh`)
