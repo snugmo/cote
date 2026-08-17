@@ -135,7 +135,7 @@ RUN source <("${FNM_DIR}/fnm" env --shell bash) && \
         yaml-language-server
 
 FROM scratch AS nodejs-artifacts
-COPY --from=nodejs-install /opt/fnm /opt/fnm/
+COPY --from=nodejs-install --chown=1000:1000 /opt/fnm /opt/fnm/
 
 # =============================================================================
 # BUN — install from upstream distroless image
@@ -170,7 +170,7 @@ RUN mkdir -p $GOPATH/bin && \
 
 FROM scratch AS go-artifacts
 COPY --from=go-install /opt/go /opt/go/
-COPY --from=go-install /go /go/
+COPY --from=go-install --chown=1000:1000 /go /go/
 
 # =============================================================================
 # RUST — install
@@ -184,8 +184,8 @@ RUN rustup-init -y --profile=default --default-toolchain stable && \
     rustup component add rust-analyzer
 
 FROM scratch AS rust-artifacts
-COPY --from=rust-install /opt/rustup /opt/rustup/
-COPY --from=rust-install /opt/cargo /opt/cargo/
+COPY --from=rust-install --chown=1000:1000 /opt/rustup /opt/rustup/
+COPY --from=rust-install --chown=1000:1000 /opt/cargo /opt/cargo/
 
 # =============================================================================
 # PYTHON — install
@@ -545,9 +545,8 @@ ENV FNM_DIR=/opt/fnm \
 # Workspace user (DevWorkspaces runs as non-root)
 # =============================================================================
 RUN useradd -m -u 1000 -U -s /bin/bash user && \
-    mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh \
-             /go /opt/cargo /opt/rustup && \
-    chown -R user:user /home/user /projects /go /opt/cargo /opt/rustup /opt/fnm
+    mkdir -p /projects /home/user/.local /home/user/.config /home/user/.ssh && \
+    chown -R user:user /home/user /projects
 
 # Fixes for allowing rootless buildah and podman inside the container
 RUN sed -i -e '/^user:/d' /etc/subuid /etc/subgid && \
