@@ -256,7 +256,7 @@ COPY --from=github-cli-install /usr/local/bin/gh /usr/local/bin/
 # =============================================================================
 FROM downloader AS kubeseal-install
 ARG TARGETARCH
-ARG KUBESEAL_VERSION=0.38.4
+ARG KUBESEAL_VERSION=0.39.1
 RUN ARCH=$TARGETARCH && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz" -o kubeseal.tar.gz && \
     curl -fsSL "https://github.com/bitnami/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${ARCH}.tar.gz.sig" -o kubeseal.tar.gz.sig && \
