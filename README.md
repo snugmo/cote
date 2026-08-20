@@ -6,13 +6,13 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 
 | Language / Tool                                                  | Version         | Source                                                    |
 | ---------------------------------------------------------------- | --------------- | --------------------------------------------------------- |
-| **[Go](https://go.dev)**                                         | 1.26.6          | go.dev/dl                                                 |
+| **[Go](https://go.dev)**                                         | 1.27.0          | go.dev/dl                                                 |
 | **[Node.js](https://nodejs.org)**                                | 26              | [fnm](https://github.com/Schniz/fnm)                      |
 | **[Bun](https://bun.sh)**                                        | latest          | [oven-sh/bun](https://github.com/oven-sh/bun) (OCI image) |
 | **[Python](https://python.org)**                                 | Fedora 44 stock | dnf                                                       |
 | **[Rust](https://rust-lang.org)**                                | stable          | [rustup](https://github.com/rust-lang/rustup)             |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)** | Fedora 44 stock | dnf                                                       |
-| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.89.0          | GitHub release, cosign verified                           |
+| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.90.0          | GitHub release, cosign verified                           |
 | **[uv](https://github.com/astral-sh/uv)**                        | 0.12.5          | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                 | 3.1.3           | OCI image                                                 |
 
