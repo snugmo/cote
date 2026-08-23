@@ -140,7 +140,7 @@ COPY --from=nodejs-install --chown=1000:1000 /opt/fnm /opt/fnm/
 # =============================================================================
 # BUN — install from upstream distroless image
 # =============================================================================
-FROM docker.io/oven/bun@sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4 AS bun-bin
+FROM docker.io/oven/bun@sha256:5ff609364c049b54eb0ff560ec96319729a972078ef2c755d758f0c6ef89c2d6 AS bun-bin
 
 FROM scratch AS bun-artifacts
 COPY --from=bun-bin /usr/local/bin/bun /usr/local/bin/
