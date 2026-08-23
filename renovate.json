@@ -188,6 +188,18 @@
       ],
       "depNameTemplate": "philschmid/mcp-cli",
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Track kubeconform version in Containerfile ARG",
+      "customType": "regex",
+      "fileMatch": [
+        "base-image/Containerfile"
+      ],
+      "matchStrings": [
+        "ARG\\s+KUBECONFORM_VERSION=(?<currentValue>[^\\s]+)\\n"
+      ],
+      "depNameTemplate": "yannh/kubeconform",
+      "datasourceTemplate": "github-releases"
     }
   ],
   "packageRules": [

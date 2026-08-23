@@ -168,6 +168,7 @@ The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as ima
 | `TOFU_LS_VERSION`           | `gh api repos/opentofu/tofu-ls/releases/latest --jq .tag_name` (verified against upstream `checksums.txt`, no hash to update) |
 | `HERDR_VERSION`             | `gh api repos/ogulcancelik/herdr/releases/latest --jq .tag_name`                                                    |
 | `AST_GREP_VERSION`          | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix)                                     |
+| `KUBECONFORM_VERSION`       | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (verified against upstream `CHECKSUMS`, no hash to update) |
 
 ### sha256 Recomputation (marksman, helm-ls, ast-grep)
 

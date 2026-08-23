@@ -429,6 +429,21 @@ RUN apk add --no-cache unzip && \
     rm -rf /tmp/ast-grep ast-grep.zip
 
 # =============================================================================
+# KUBECONFORM — install Kubernetes manifest validator from GitHub release
+# =============================================================================
+FROM downloader AS kubeconform-install
+ARG TARGETARCH
+ARG KUBECONFORM_VERSION=0.8.0
+RUN ARCH=$TARGETARCH && \
+    curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${ARCH}.tar.gz" -o kubeconform.tar.gz && \
+    curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/CHECKSUMS" -o CHECKSUMS && \
+    EXPECTED=$(grep "kubeconform-linux-${ARCH}.tar.gz$" CHECKSUMS | awk '{print $1}') && \
+    echo "${EXPECTED}  kubeconform.tar.gz" | sha256sum -c - && \
+    tar -xzf kubeconform.tar.gz -C /usr/local/bin kubeconform && \
+    chmod +x /usr/local/bin/kubeconform && \
+    rm -f kubeconform.tar.gz CHECKSUMS
+
+# =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
 # =============================================================================
 FROM scratch AS forgejo-cli-artifacts
@@ -467,6 +482,9 @@ COPY --from=herdr-install /usr/local/bin/herdr /usr/local/bin/
 FROM scratch AS ast-grep-artifacts
 COPY --from=ast-grep-install /usr/local/bin/sg /usr/local/bin/
 
+FROM scratch AS kubeconform-artifacts
+COPY --from=kubeconform-install /usr/local/bin/kubeconform /usr/local/bin/
+
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
@@ -493,6 +511,7 @@ COPY --link --from=helm-ls-artifacts / /
 COPY --link --from=tofu-ls-artifacts / /
 COPY --link --from=herdr-artifacts / /
 COPY --link --from=ast-grep-artifacts / /
+COPY --link --from=kubeconform-artifacts / /
 
 # Generate shell completions for CLI tools
 RUN mkdir -p /root/.local/share/forgejo-cli && \
