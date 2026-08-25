@@ -15,6 +15,12 @@ extensions/
     Containerfile      # Extends base image with Hermes agent
     build.sh           # Build script for Hermes extension
     README.md          # Extension documentation
+  pi/                  # Pi coding agent extension
+    Containerfile      # Extends base image with Pi coding agent
+    models.json        # Baked-in r5t LLM provider (keyless OpenAI-compatible)
+    settings.json      # Baked-in r5t defaults (model, thinking level)
+    build.sh           # Build script for Pi extension
+    README.md          # Extension documentation
 devfiles/
   devfile.yaml         # Generic workspace template (Devfile schema 2.2.0)
 .devfile.yaml          # Self-hosting devfile — opens this repo as a workspace
@@ -32,6 +38,8 @@ devfiles/
 | Parallel build         | `DEV_JOBS=$(nproc) ./base-image/build.sh`                 |
 | Build Hermes extension | `./extensions/hermes/build.sh`                            |
 | Build + push Hermes    | `./extensions/hermes/build.sh push <registry>`            |
+| Build Pi extension     | `./extensions/pi/build.sh`                                |
+| Build + push Pi        | `./extensions/pi/build.sh push <registry>`                |
 | Apply workspace        | `kubectl apply -f devfiles/devfile.yaml`                  |
 
 ## Key Conventions
@@ -79,6 +87,7 @@ Extensions build on top of the base image to add specific capabilities without p
 **Available extensions:**
 
 - **Hermes Agent** (`extensions/hermes/`) — Installs [Hermes Agent](https://hermes-agent.nousresearch.com/) with ACP (Agent Communication Protocol) support for IDE integration. Uses a shallow git clone of the upstream repo (pip installs are unsupported). Works with VS Code (ACP Client extension), Zed (ACP Registry), and JetBrains (ACP plugins).
+- **Pi Coding Agent** (`extensions/pi/`) — Installs the [Pi coding agent](https://pi.dev) ([earendil-works/pi](https://github.com/earendil-works/pi)) from the official npm package (`@earendil-works/pi-coding-agent`) with `--ignore-scripts`. Terminal coding agent with interactive TUI, print, RPC, and SDK modes. Bakes in the keyless `r5t` provider (`https://llm.r5t.io/v1`, model `qwen3.8-27b`) as the default LLM in `~/.pi/agent/models.json` + `settings.json`.
 
 To use an extension, replace the `tools` container image in your Devfile with the extension image reference.
 
@@ -91,6 +100,7 @@ To use an extension, replace the `tools` container image in your Devfile with th
 5. **Memory limits**: LSP servers (especially rust-analyzer and TypeScript) are memory-intensive. The default `2Gi` limit on the tools container is a minimum — increase for Rust-heavy projects.
 6. **Two devfiles, two purposes**: `devfiles/devfile.yaml` is the reusable template for end users. `.devfile.yaml` is for developing this repo itself. Don't confuse them.
 7. **Hermes credentials**: Hermes agent requires API credentials configured before first use. Run `hermes model` inside the workspace or pre-populate `~/.hermes/.env` via a ConfigMap/Secret.
+8. **Pi credentials**: The baked-in `r5t` provider (`qwen3.8-27b`) needs no API key, so `pi` works out of the box. For any other provider, pre-populate an env var (e.g. `ANTHROPIC_API_KEY`) via a ConfigMap/Secret, or run `pi` and use `/login`. Set `PI_OFFLINE=1` to silence startup network calls (update check, telemetry) in air-gapped workspaces.
 
 ## Adding New Components
 
@@ -169,6 +179,7 @@ The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as ima
 | `HERDR_VERSION`             | `gh api repos/ogulcancelik/herdr/releases/latest --jq .tag_name`                                                    |
 | `AST_GREP_VERSION`          | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix)                                     |
 | `KUBECONFORM_VERSION`       | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (verified against upstream `CHECKSUMS`, no hash to update) |
+| `PI_VERSION`                | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; strip the `v` prefix for the npm package) |
 
 ### sha256 Recomputation (marksman, helm-ls, ast-grep)
 

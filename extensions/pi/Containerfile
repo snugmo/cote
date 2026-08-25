@@ -1,0 +1,40 @@
+# Pi coding agent extension image
+# Installs the Pi coding agent (https://pi.dev, github.com/earendil-works/pi)
+# as a global npm package on top of the dev-workspace base image.
+#
+# Build:
+#   ./build.sh                          # Build only
+#   ./build.sh push <registry>          # Build and push
+#
+# Usage in Devfile:
+#   image: <registry>/dev-workspace-pi:<tag>
+
+ARG BASE_IMAGE=localhost:5000/dev-workspace-base:latest
+FROM ${BASE_IMAGE}
+
+USER root
+
+ARG PI_VERSION=0.84.3
+
+# Install the official Pi coding agent npm package globally (upstream's
+# documented install). --ignore-scripts is recommended by upstream: pi does
+# not require dependency lifecycle scripts, and the published package ships
+# an npm-shrinkwrap.json pinning all transitive dependencies. npm verifies
+# the published tarball integrity (sha512) against the registry.
+RUN npm install -g --ignore-scripts --no-audit --no-fund \
+      "@earendil-works/pi-coding-agent@${PI_VERSION}" && \
+    pi --version
+
+# Create Pi config directory for the workspace user and bake in the r5t
+# LLM provider (keyless OpenAI-compatible endpoint) as the default model
+RUN mkdir -p /home/user/.pi/agent && \
+    chown -R user:user /home/user/.pi
+
+COPY --chown=user:user models.json settings.json /home/user/.pi/agent/
+
+USER user
+
+LABEL name="dev-workspace-pi" \
+      description="Dev workspace base with Pi coding agent for terminal, RPC, and SDK integrations" \
+      maintainer="Joakim Nohlgard" \
+      io.openshift.tags="dev,workspace,pi,agent"

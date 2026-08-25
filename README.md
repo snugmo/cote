@@ -58,6 +58,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 Optional add-on images built on the base:
 
 - **[Hermes agent](extensions/hermes/)** — AI coding agent with ACP support for IDE integration (VS Code, Zed, JetBrains).
+- **[Pi agent](extensions/pi/)** — Terminal coding agent (official `@earendil-works/pi-coding-agent` npm package) with interactive, print, RPC, and SDK modes.
 
 ## Usage
 
