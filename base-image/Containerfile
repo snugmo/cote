@@ -411,14 +411,14 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
 # =============================================================================
 FROM downloader AS ast-grep-install
 ARG TARGETARCH
-ARG AST_GREP_VERSION=0.45.1
+ARG AST_GREP_VERSION=0.45.2
 RUN apk add --no-cache unzip && \
     if [ "$TARGETARCH" = "amd64" ]; then \
       ARCH=x86_64; \
-      EXPECTED="76fb6555be6734fb5057dba8d2fb756430f374bb9e1af694cf1ce00e13238d63"; \
+      EXPECTED="67aff72dd2994bf152fcc3a8a09cf93b13193abe59f39393095167c729af2015"; \
     else \
       ARCH=aarch64; \
-      EXPECTED="9ee7ec49aada3dc05135d21977af089a33fc3154ada25bab102daca90b5098f2"; \
+      EXPECTED="e67ee2f5928b4d77a472114edf6e227d90fefe22fa47e7a78db187c55d206564"; \
     fi && \
     curl -fsSL "https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-${ARCH}-unknown-linux-gnu.zip" -o ast-grep.zip && \
     echo "${EXPECTED}  ast-grep.zip" | sha256sum -c - && \
