@@ -219,7 +219,6 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     ruff \
     mypy \
     pyright \
-    ruff-lsp \
     pipx
 
 FROM scratch AS python-artifacts

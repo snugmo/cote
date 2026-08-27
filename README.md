@@ -24,7 +24,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | [golangci-lint-langserver](https://github.com/nametake/golangci-lint-langserver)                        | Go                       | `.go`                                                  |
 | [typescript-language-server](https://github.com/typescript-language-server/typescript-language-server) | TypeScript, JavaScript   | `.ts`, `.tsx`, `.js`, `.jsx`                           |
 | [pyright](https://github.com/microsoft/pyright)                                                        | Python                   | `.py`                                                  |
-| [ruff-lsp](https://github.com/astral-sh/ruff-lsp)                                                      | Python                   | `.py`                                                  |
+| [ruff server](https://github.com/astral-sh/ruff)                                                       | Python                   | `.py`                                                  |
 | [yaml-language-server](https://github.com/redhat-developer/yaml-language-server)                       | YAML                     | `.yaml`, `.yml`                                        |
 | [marksman](https://github.com/artempyanykh/marksman)                                                   | Markdown                 | `.md`                                                  |
 | [helm-ls](https://github.com/mrjosh/helm-ls)                                                           | Helm                     | `.yaml`, `.yml`                                        |
