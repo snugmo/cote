@@ -13,7 +13,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | **[Rust](https://rust-lang.org)**                                | stable          | [rustup](https://github.com/rust-lang/rustup)             |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)** | Fedora 44 stock | dnf                                                       |
 | **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.91.2          | GitHub release, cosign verified                           |
-| **[uv](https://github.com/astral-sh/uv)**                        | 0.12.5          | GitHub release                                            |
+| **[uv](https://github.com/astral-sh/uv)**                        | 0.12.6          | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                 | 3.1.3           | OCI image                                                 |
 
 **LSP servers**:
