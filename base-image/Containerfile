@@ -326,7 +326,7 @@ RUN ARCH=$TARGETARCH && \
 # =============================================================================
 FROM downloader AS agentgateway-install
 ARG TARGETARCH
-ARG AGENTGATEWAY_VERSION=1.4.1
+ARG AGENTGATEWAY_VERSION=1.5.0
 RUN ARCH=$TARGETARCH && \
     curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}" -o /usr/local/bin/agctl && \
     curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}.sha256" -o agctl.sha256 && \
