@@ -397,6 +397,21 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
     rm -f tofu-ls.tar.gz checksums.txt
 
 # =============================================================================
+# PROTOLS — install Protobuf Language Server from GitHub release
+# =============================================================================
+FROM downloader AS protols-install
+ARG TARGETARCH
+ARG PROTOLS_VERSION=0.7.4
+RUN ARCH=$TARGETARCH && \
+    curl -fsSL "https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_${ARCH}.tar.gz" -o protols.tar.gz && \
+    curl -fsSL "https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/checksums.txt" -o checksums.txt && \
+    EXPECTED=$(grep "protols_${PROTOLS_VERSION}_linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
+    echo "${EXPECTED}  protols.tar.gz" | sha256sum -c - && \
+    tar -xzf protols.tar.gz -C /usr/local/bin protols && \
+    chmod +x /usr/local/bin/protols && \
+    rm -f protols.tar.gz checksums.txt
+
+# =============================================================================
 # HERDR — install agent multiplexer from GitHub release
 # =============================================================================
 FROM downloader AS herdr-install
@@ -475,6 +490,9 @@ COPY --from=helm-ls-install /usr/local/bin/helm-ls /usr/local/bin/
 FROM scratch AS tofu-ls-artifacts
 COPY --from=tofu-ls-install /usr/local/bin/tofu-ls /usr/local/bin/
 
+FROM scratch AS protols-artifacts
+COPY --from=protols-install /usr/local/bin/protols /usr/local/bin/
+
 FROM scratch AS herdr-artifacts
 COPY --from=herdr-install /usr/local/bin/herdr /usr/local/bin/
 
@@ -508,6 +526,7 @@ COPY --link --from=mcp-cli-artifacts / /
 COPY --link --from=marksman-artifacts / /
 COPY --link --from=helm-ls-artifacts / /
 COPY --link --from=tofu-ls-artifacts / /
+COPY --link --from=protols-artifacts / /
 COPY --link --from=herdr-artifacts / /
 COPY --link --from=ast-grep-artifacts / /
 COPY --link --from=kubeconform-artifacts / /

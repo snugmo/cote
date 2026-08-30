@@ -50,7 +50,7 @@ devfiles/
 - Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
-- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.0, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Crush CLI, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
+- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.0, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Crush CLI, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 - Go version is controlled by `ARG GO_VERSION=1.27.0` — override at build time if needed.
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
@@ -176,6 +176,7 @@ The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as ima
 | `MARKSMAN_VERSION`          | `gh api repos/artempyanykh/marksman/releases/latest --jq .tag_name` (date-based tag, e.g. `2026-02-08`; used bare in the URL, no `v`) |
 | `HELM_LS_VERSION`           | `gh api repos/mrjosh/helm-ls/releases/latest --jq .tag_name`                                                         |
 | `TOFU_LS_VERSION`           | `gh api repos/opentofu/tofu-ls/releases/latest --jq .tag_name` (verified against upstream `checksums.txt`, no hash to update) |
+| `PROTOLS_VERSION`           | `gh api repos/kralicky/protols/releases/latest --jq .tag_name` (verified against upstream `checksums.txt`, no hash to update) |
 | `HERDR_VERSION`             | `gh api repos/ogulcancelik/herdr/releases/latest --jq .tag_name`                                                    |
 | `AST_GREP_VERSION`          | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix)                                     |
 | `KUBECONFORM_VERSION`       | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (verified against upstream `CHECKSUMS`, no hash to update) |
