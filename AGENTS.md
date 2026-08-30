@@ -104,7 +104,7 @@ To use an extension, replace the `tools` container image in your Devfile with th
 
 ## Adding New Components
 
-- **New language/tool**: Add to the base image Containerfile, rebuild, update the Devfile image reference.
+- **New language/tool**: Add it to the base image following *Adding a New Binary Tool to the Base Image* below, then rebuild and update the Devfile image reference.
 - **New extension**: Create a directory under `extensions/` with a `Containerfile` that extends the base image, a `build.sh` following the same pattern as `base-image/build.sh`, and a `README.md`.
 - **New IDE**: Add a commented-out component block in the Devfile (see VS Code example).
 - **Project-specific devfile**: Copy `devfiles/devfile.yaml`, update `projects`, `commands`, and add project-specific env vars or endpoints.
@@ -140,6 +140,69 @@ The Containerfile uses parallel install stages → scratch artifact stages → f
 
 3. **Cross-reference** the output against COPY directives in the artifact stages to find missing files.
 
+Note: local nested `buildah`/`podman` builds inside a DevWorkspaces workspace may fail with `potentially insufficient UIDs or GIDs available in user namespace` (e.g. unpacking cosign's `nonroot` user, UID 65532). That is a rootless subuid-range limitation of the workspace environment, not a Containerfile bug. The CI build with full subuid ranges is the source of truth.
+
+## Adding a New Binary Tool to the Base Image
+
+The Containerfile is structured as **parallel install stages → `FROM scratch` artifact stages → a single final assembly**. A new tool needs all three parts, plus doc sync.
+
+### 1. Pick the install method
+
+| Method                | Where it goes                                     | Examples                                                         |
+| --------------------- | ------------------------------------------------- | ---------------------------------------------------------------- |
+| npm global            | `nodejs-install` (`FROM base`, Node 26 via fnm)   | typescript-language-server, yaml-language-server, pnpm, eslint   |
+| `go install`          | `go-install` (`FROM downloader`, Go toolchain)    | gopls, golangci-lint-langserver, golangci-lint                   |
+| rustup component      | `rust-install` (`FROM base`)                      | rust-analyzer                                                    |
+| pip                   | `python-install` (`FROM base`)                    | pyright, ruff, mypy, black, pylint                               |
+| Raw binary download   | New `FROM downloader AS <tool>-install` stage     | protols, marksman, helm-ls, tofu-ls, kubeconform, ast-grep       |
+
+- If the tool is available through a package manager, append it to that stage's existing install command (`npm install -g …`, `go install <pkg>@<ref>`, `rustup component add …`, `pip3 install --no-cache-dir --break-system-packages …`). No new stage needed: the existing artifact stage already captures its output directory.
+- Otherwise create a dedicated `FROM downloader AS <tool>-install` stage with `ARG TARGETARCH` and `ARG <TOOL>_VERSION=…` (see `protols-install` for the minimal shape). Place new stages next to related tools (the LSP download stages are grouped together) and add the matching `<tool>-artifacts` stage in the `# EXTRAS` block.
+
+### 2. Pick the verification method
+
+1. **Upstream publishes `checksums.txt` / `CHECKSUMS` → fetch and verify at build time.** Preferred: no hashes to maintain across version bumps (tofu-ls, mcp-cli, kubeconform, protols, go).
+
+   ```dockerfile
+   EXPECTED=$(grep "<asset-name>$" checksums.txt | awk '{print $1}') && \
+   echo "${EXPECTED}  <downloaded-file>" | sha256sum -c -
+   ```
+
+2. **No checksum file, but per-arch binaries → hardcode per-arch `EXPECTED="…"`** in the RUN (marksman, helm-ls, ast-grep). These must be recomputed on every version bump. See *sha256 Recomputation*.
+3. **Release is cosign-signed → verify the signature instead of hashes** (kubeseal, kubeconform).
+4. **No verification available → say so explicitly** in a stage comment (herdr).
+
+### 3. Extract release tarballs safely
+
+Inspect the layout first (`tar -tzf <archive>`): many release tarballs bundle `LICENSE` / `README` next to the binary. Extract **only the binary member** so `/usr/local/bin` is not cluttered:
+
+```dockerfile
+tar -xzf tool.tar.gz -C /usr/local/bin <bin>
+```
+
+### 4. Wire it into the final image
+
+1. **Artifact stage** (in the `# EXTRAS` block for binary-download tools):
+
+   ```dockerfile
+   FROM scratch AS <tool>-artifacts
+   COPY --from=<tool>-install /usr/local/bin/<bin> /usr/local/bin/
+   ```
+
+2. **Final assembly**: add a `COPY --link --from=<tool>-artifacts / /` line to the `final` stage next to the other toolchains.
+3. **Shell completions**: if the tool has a `completion` subcommand, add it to the completion-generation loops in the `final` stage (currently covers cosign, fj, kubectl-cnpg, cmctl, agctl, gh, bun, fnm, uv, buildah).
+
+### 5. Sync the docs (all surfaces)
+
+1. The **`Toolchain includes`** bullet in the Base Image section above.
+2. The `## Toolchain` table in `README.md` for major tools, and/or its `**LSP servers**` / `**Linters & formatters**` tables.
+3. The **Per-Tool Lookup Commands** table below: add a row for the new `ARG <TOOL>_VERSION` with a minimal-output lookup command.
+4. Note when the binary name differs from the package name (`fj`/forgejo-cli, `sg`/ast-grep, `agctl`/agentgateway) so future lookups use the right name.
+
+The markdown tables in this file and in `README.md` are **column-aligned** (pipes at fixed column positions). Match the alignment of existing rows when inserting one.
+
+Then rebuild (`./base-image/build.sh`), check with `hadolint --ignore DL3007 base-image/Containerfile`, bump the tag in `.devfile.yaml`, and commit.
+
 ## Updating Base Image Tool Versions
 
 The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as image tags/digests (cosign, curlimages/curl, oven/bun). To update everything to the latest upstream releases:
@@ -150,7 +213,9 @@ The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as ima
 
 ### Environment Constraints (agent sessions)
 
-- `curl` and `wget` are not available in the bash tool; use the `download` tool to save non-GitHub JSON endpoints (Docker Hub, go.dev, Codeberg, nodejs.org) to /tmp, then parse with `jq`.
+These apply whenever an agent session needs network access — both for version lookups and for downloading/verifying release artifacts when adding or updating tools.
+
+- `curl` and `wget` are not available in the bash tool; use the `download` tool to save non-GitHub JSON endpoints (Docker Hub, go.dev, Codeberg, nodejs.org) **and binary release assets** to /tmp, then parse JSON with `jq` or verify binaries with `sha256sum` / `tar`.
 - The `gh` CLI is installed and authenticated; always use `gh api repos/<owner>/<repo>/releases/latest --jq .tag_name` for GitHub repos and never fetch raw release JSON.
 
 ### Per-Tool Lookup Commands
