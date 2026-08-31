@@ -327,13 +327,12 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS agentgateway-install
 ARG TARGETARCH
 ARG AGENTGATEWAY_VERSION=1.5.0
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}" -o /usr/local/bin/agctl && \
-    curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}.sha256" -o agctl.sha256 && \
-    EXPECTED=$(cat agctl.sha256 | awk '{print $1}') && \
-    echo "${EXPECTED}  /usr/local/bin/agctl" | sha256sum -c - && \
-    chmod +x /usr/local/bin/agctl && \
-    rm -f agctl.sha256
+ADD --checksum=sha256:19fb6e948991c7eb43c6cee9d7748685a4a372e55aa65dbfdc49492a5ba2fe76 --chmod=0755 \
+    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-amd64 /tmp/agctl-linux-amd64
+ADD --checksum=sha256:3c6f36f369ea9395d3214209240b645c4b09931d1249108d73179bd1a2adf706 --chmod=0755 \
+    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-arm64 /tmp/agctl-linux-arm64
+RUN mv /tmp/agctl-linux-${TARGETARCH} /usr/local/bin/agctl && \
+    rm -f /tmp/agctl-linux-*
 
 # =============================================================================
 # MCP-CLI — install mcp-cli from GitHub release
