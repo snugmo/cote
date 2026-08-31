@@ -419,20 +419,17 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
 FROM downloader AS ast-grep-install
 ARG TARGETARCH
 ARG AST_GREP_VERSION=0.45.2
-RUN apk add --no-cache unzip && \
-    if [ "$TARGETARCH" = "amd64" ]; then \
-      ARCH=x86_64; \
-      EXPECTED="67aff72dd2994bf152fcc3a8a09cf93b13193abe59f39393095167c729af2015"; \
-    else \
-      ARCH=aarch64; \
-      EXPECTED="e67ee2f5928b4d77a472114edf6e227d90fefe22fa47e7a78db187c55d206564"; \
-    fi && \
-    curl -fsSL "https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-${ARCH}-unknown-linux-gnu.zip" -o ast-grep.zip && \
-    echo "${EXPECTED}  ast-grep.zip" | sha256sum -c - && \
-    unzip -q ast-grep.zip -d /tmp/ast-grep && \
+RUN apk add --no-cache unzip
+ADD --checksum=sha256:67aff72dd2994bf152fcc3a8a09cf93b13193abe59f39393095167c729af2015 \
+    https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-x86_64-unknown-linux-gnu.zip /tmp/ast-grep-x86_64.zip
+ADD --checksum=sha256:e67ee2f5928b4d77a472114edf6e227d90fefe22fa47e7a78db187c55d206564 \
+    https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-aarch64-unknown-linux-gnu.zip /tmp/ast-grep-aarch64.zip
+RUN mkdir -p /tmp/ast-grep && \
+    if [ "$TARGETARCH" = "amd64" ]; then A=x86_64; else A=aarch64; fi && \
+    unzip -q /tmp/ast-grep-${A}.zip -d /tmp/ast-grep && \
     cp /tmp/ast-grep/sg /usr/local/bin/sg && \
     chmod +x /usr/local/bin/sg && \
-    rm -rf /tmp/ast-grep ast-grep.zip
+    rm -rf /tmp/ast-grep /tmp/ast-grep-*.zip
 
 # =============================================================================
 # KUBECONFORM — install Kubernetes manifest validator from GitHub release
