@@ -212,7 +212,7 @@ tar -xzf tool.tar.gz -C /usr/local/bin <bin>
    ```
 
 2. **Final assembly**: add a `COPY --link --from=<tool>-artifacts / /` line to the `final` stage next to the other toolchains.
-3. **Shell completions**: if the tool has a `completion` subcommand, add it to the completion-generation loops in the `final` stage (currently covers cosign, fj, kubectl-cnpg, cmctl, agctl, gh, bun, fnm, uv, buildah).
+3. **Shell completions**: if the tool has a `completion` subcommand, add it to the completion-generation loops in the `final` stage (currently covers cosign, fj, kubectl-cnpg, cmctl, agctl, gh, bun, fnm, uv, buildah, herdr).
 
 ### 5. Sync the docs (all surfaces)
 
