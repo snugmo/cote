@@ -160,7 +160,7 @@ ADD --checksum=sha256:675c26c449cbb18fc24b74650de1eabbae6e16f64326fd85a283fb3b58
 ADD --checksum=sha256:51798d2c42d0e1c6ed7fd9f48728b4193abac9e8aad6dbac2fe96a81f5909bda \
     https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz /tmp/go.linux-arm64.tar.gz
 RUN tar -C /opt -xzf /tmp/go.linux-${TARGETARCH}.tar.gz && \
-    rm -f /tmp/go.linux-*.tar.gz
+    rm -f /tmp/go.linux-amd64.tar.gz /tmp/go.linux-arm64.tar.gz
 
 RUN mkdir -p $GOPATH/bin && \
     go install golang.org/x/tools/gopls@latest && \
@@ -204,7 +204,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then A=x86_64; else A=aarch64; fi && \
     tar -xzf /tmp/uv-${A}.tar.gz -C /tmp/uv-extract --strip-components=1 && \
     cp /tmp/uv-extract/uv /usr/local/bin/ && \
     cp /tmp/uv-extract/uvx /usr/local/bin/ && \
-    rm -rf /tmp/uv-extract /tmp/uv-*.tar.gz
+    rm -rf /tmp/uv-extract /tmp/uv-x86_64.tar.gz /tmp/uv-aarch64.tar.gz
 
 FROM scratch AS uv-artifacts
 COPY --from=uv-install /usr/local/bin/uv /usr/local/bin/
@@ -278,7 +278,7 @@ ADD --checksum=sha256:5fa7f1bd4f0aa745835c049e2c443db49ad1554d50bde645fbb789e1fb
     https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_arm64.tar.gz /tmp/kubectl-linstor-arm64.tar.gz
 RUN tar -xzf /tmp/kubectl-linstor-${TARGETARCH}.tar.gz -C /usr/local/bin kubectl-linstor && \
     chmod +x /usr/local/bin/kubectl-linstor && \
-    rm -f /tmp/kubectl-linstor-*.tar.gz
+    rm -f /tmp/kubectl-linstor-amd64.tar.gz /tmp/kubectl-linstor-arm64.tar.gz
 
 # =============================================================================
 # CLOUDNATIVE-PG — install kubectl-cnpg plugin with SLSA provenance verification
@@ -332,7 +332,7 @@ ADD --checksum=sha256:19fb6e948991c7eb43c6cee9d7748685a4a372e55aa65dbfdc49492a5b
 ADD --checksum=sha256:3c6f36f369ea9395d3214209240b645c4b09931d1249108d73179bd1a2adf706 --chmod=0755 \
     https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-arm64 /tmp/agctl-linux-arm64
 RUN mv /tmp/agctl-linux-${TARGETARCH} /usr/local/bin/agctl && \
-    rm -f /tmp/agctl-linux-*
+    rm -f /tmp/agctl-linux-amd64 /tmp/agctl-linux-arm64
 
 # =============================================================================
 # MCP-CLI — install mcp-cli from GitHub release
@@ -360,7 +360,7 @@ ADD --checksum=sha256:db8e124527f7f8048e3e6c91821b9c52ef173d92c01e47d221bf1337af
     https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-arm64 /tmp/marksman-arm64
 RUN if [ "$TARGETARCH" = "amd64" ]; then A=x64; else A=arm64; fi && \
     mv /tmp/marksman-${A} /usr/local/bin/marksman && \
-    rm -f /tmp/marksman-*
+    rm -f /tmp/marksman-x64 /tmp/marksman-arm64
 
 # =============================================================================
 # HELM-LS — install Helm Language Server from GitHub release
@@ -373,7 +373,7 @@ ADD --checksum=sha256:5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695f
 ADD --checksum=sha256:565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c --chmod=0755 \
     https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_arm64 /tmp/helm-ls-arm64
 RUN mv /tmp/helm-ls-${TARGETARCH} /usr/local/bin/helm-ls && \
-    rm -f /tmp/helm-ls-*
+    rm -f /tmp/helm-ls-amd64 /tmp/helm-ls-arm64
 
 # =============================================================================
 # TOFU-LS — install OpenTofu Language Server from GitHub release
@@ -387,7 +387,7 @@ ADD --checksum=sha256:d30430f86720100e6fc6d16881fcf16bc9e4cb3c4d221fafc1aa992f01
     https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_arm64.tar.gz /tmp/tofu-ls-arm64.tar.gz
 RUN tar -xzf /tmp/tofu-ls-${TARGETARCH}.tar.gz -C /usr/local/bin && \
     chmod +x /usr/local/bin/tofu-ls && \
-    rm -f /tmp/tofu-ls-*.tar.gz
+    rm -f /tmp/tofu-ls-amd64.tar.gz /tmp/tofu-ls-arm64.tar.gz
 
 # =============================================================================
 # PROTOLS — install Protobuf Language Server from GitHub release
@@ -401,7 +401,7 @@ ADD --checksum=sha256:5cb5670dd8393d8f7b09df88261e017519c45239d0523b77eacd83b241
     https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_arm64.tar.gz /tmp/protols-arm64.tar.gz
 RUN tar -xzf /tmp/protols-${TARGETARCH}.tar.gz -C /usr/local/bin protols && \
     chmod +x /usr/local/bin/protols && \
-    rm -f /tmp/protols-*.tar.gz
+    rm -f /tmp/protols-amd64.tar.gz /tmp/protols-arm64.tar.gz
 
 # =============================================================================
 # HERDR — install agent multiplexer from GitHub release
@@ -429,7 +429,7 @@ RUN mkdir -p /tmp/ast-grep && \
     unzip -q /tmp/ast-grep-${A}.zip -d /tmp/ast-grep && \
     cp /tmp/ast-grep/sg /usr/local/bin/sg && \
     chmod +x /usr/local/bin/sg && \
-    rm -rf /tmp/ast-grep /tmp/ast-grep-*.zip
+    rm -rf /tmp/ast-grep /tmp/ast-grep-x86_64.zip /tmp/ast-grep-aarch64.zip
 
 # =============================================================================
 # KUBECONFORM — install Kubernetes manifest validator from GitHub release
@@ -443,7 +443,7 @@ ADD --checksum=sha256:1f53fc8e81258197a35e8603054162a5af1de8c5af13746c71ab680d95
     https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-arm64.tar.gz /tmp/kubeconform-arm64.tar.gz
 RUN tar -xzf /tmp/kubeconform-${TARGETARCH}.tar.gz -C /usr/local/bin kubeconform && \
     chmod +x /usr/local/bin/kubeconform && \
-    rm -f /tmp/kubeconform-*.tar.gz
+    rm -f /tmp/kubeconform-amd64.tar.gz /tmp/kubeconform-arm64.tar.gz
 
 # =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
