@@ -160,19 +160,29 @@ COPY --from=bun-bin /usr/local/bin/bun /usr/local/bin/
 # =============================================================================
 # GO — install
 # =============================================================================
-FROM downloader AS go-install
+FROM scratch AS go-download-amd64
 ARG TARGETARCH
-ARG GO_VERSION=1.27.0
+ARG GO_VERSION
+ADD --checksum=sha256:675c26c449cbb18fc24b74650de1eabbae6e16f64326fd85a283fb3b58280685 \
+    https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz /download/go.tar.gz
+
+FROM scratch AS go-download-arm64
+ARG TARGETARCH
+ARG GO_VERSION
+ADD --checksum=sha256:51798d2c42d0e1c6ed7fd9f48728b4193abac9e8aad6dbac2fe96a81f5909bda \
+    https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz /download/go.tar.gz
+
+# hadolint ignore=DL3006
+FROM go-download-${TARGETARCH} AS go-download
+
+FROM downloader AS go-install
+ARG GO_VERSION
 ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
     PATH=/go/bin:/opt/go/bin:$PATH
 
-ADD --checksum=sha256:675c26c449cbb18fc24b74650de1eabbae6e16f64326fd85a283fb3b58280685 \
-    https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz /tmp/go.linux-amd64.tar.gz
-ADD --checksum=sha256:51798d2c42d0e1c6ed7fd9f48728b4193abac9e8aad6dbac2fe96a81f5909bda \
-    https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz /tmp/go.linux-arm64.tar.gz
-RUN tar -C /opt -xzf /tmp/go.linux-${TARGETARCH}.tar.gz && \
-    rm -f /tmp/go.linux-amd64.tar.gz /tmp/go.linux-arm64.tar.gz
+RUN --mount=type=bind,dst=/download,from=go-download,src=/download/ \
+    tar -C /opt -xzf /download/go.tar.gz
 
 RUN mkdir -p $GOPATH/bin && \
     go install golang.org/x/tools/gopls@latest && \
