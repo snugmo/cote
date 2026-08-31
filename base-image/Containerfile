@@ -436,8 +436,7 @@ ADD --checksum=sha256:565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c8
 FROM helm-ls-download-${TARGETARCH} AS helm-ls-download
 
 FROM downloader AS helm-ls-install
-RUN --mount=type=bind,dst=/download,from=helm-ls-download,src=/download/ \
-    cp /download/helm-ls /usr/local/bin/helm-ls
+COPY --from=helm-ls-download /download/helm-ls /usr/local/bin/helm-ls
 
 # =============================================================================
 # TOFU-LS — install OpenTofu Language Server from GitHub release
