@@ -242,7 +242,7 @@ These apply whenever an agent session needs network access — both for version 
 | `HELM_LS_VERSION`           | `gh api repos/mrjosh/helm-ls/releases/latest --jq .tag_name`                                                         |
 | `TOFU_LS_VERSION`           | `gh api repos/opentofu/tofu-ls/releases/latest --jq .tag_name` (verified against upstream `checksums.txt`, no hash to update) |
 | `PROTOLS_VERSION`           | `gh api repos/kralicky/protols/releases/latest --jq .tag_name` (verified against upstream `checksums.txt`, no hash to update) |
-| `HERDR_VERSION`             | `gh api repos/ogulcancelik/herdr/releases/latest --jq .tag_name`                                                    |
+| `HERDR_VERSION`             | `gh api repos/herdrdev/herdr/releases/latest --jq .tag_name`                                                        |
 | `AST_GREP_VERSION`          | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix)                                     |
 | `KUBECONFORM_VERSION`       | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (verified against upstream `CHECKSUMS`, no hash to update) |
 | `PI_VERSION`                | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; strip the `v` prefix for the npm package) |
