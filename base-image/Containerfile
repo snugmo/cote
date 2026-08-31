@@ -368,14 +368,12 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then A=x64; else A=arm64; fi && \
 FROM downloader AS helm-ls-install
 ARG TARGETARCH
 ARG HELM_LS_VERSION=0.5.4
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
-      ARCH=amd64; EXPECTED="5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f"; \
-    else \
-      ARCH=arm64; EXPECTED="565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c"; \
-    fi && \
-    curl -fsSL "https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_${ARCH}" -o /usr/local/bin/helm-ls && \
-    echo "${EXPECTED}  /usr/local/bin/helm-ls" | sha256sum -c - && \
-    chmod +x /usr/local/bin/helm-ls
+ADD --checksum=sha256:5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f --chmod=0755 \
+    https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_amd64 /tmp/helm-ls-amd64
+ADD --checksum=sha256:565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c --chmod=0755 \
+    https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_arm64 /tmp/helm-ls-arm64
+RUN mv /tmp/helm-ls-${TARGETARCH} /usr/local/bin/helm-ls && \
+    rm -f /tmp/helm-ls-*
 
 # =============================================================================
 # TOFU-LS — install OpenTofu Language Server from GitHub release
