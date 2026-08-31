@@ -395,14 +395,13 @@ RUN tar -xzf /tmp/tofu-ls-${TARGETARCH}.tar.gz -C /usr/local/bin && \
 FROM downloader AS protols-install
 ARG TARGETARCH
 ARG PROTOLS_VERSION=0.7.4
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_${ARCH}.tar.gz" -o protols.tar.gz && \
-    curl -fsSL "https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/checksums.txt" -o checksums.txt && \
-    EXPECTED=$(grep "protols_${PROTOLS_VERSION}_linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  protols.tar.gz" | sha256sum -c - && \
-    tar -xzf protols.tar.gz -C /usr/local/bin protols && \
+ADD --checksum=sha256:04ffaf0cabe5dcdaf53483223cdc3c3dcf44170ef5b03c7941393c843269eb21 \
+    https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_amd64.tar.gz /tmp/protols-amd64.tar.gz
+ADD --checksum=sha256:5cb5670dd8393d8f7b09df88261e017519c45239d0523b77eacd83b24170ec99 \
+    https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_arm64.tar.gz /tmp/protols-arm64.tar.gz
+RUN tar -xzf /tmp/protols-${TARGETARCH}.tar.gz -C /usr/local/bin protols && \
     chmod +x /usr/local/bin/protols && \
-    rm -f protols.tar.gz checksums.txt
+    rm -f /tmp/protols-*.tar.gz
 
 # =============================================================================
 # HERDR — install agent multiplexer from GitHub release
