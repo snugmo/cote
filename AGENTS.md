@@ -219,7 +219,7 @@ tar -xzf tool.tar.gz -C /usr/local/bin <bin>
 1. The **`Toolchain includes`** bullet in the Base Image section above.
 2. The `## Toolchain` table in `README.md` for major tools, and/or its `**LSP servers**` / `**Linters & formatters**` tables.
 3. The **Per-Tool Lookup Commands** table below: add a row for the new `ARG <TOOL>_VERSION` with a minimal-output lookup command.
-4. Note when the binary name differs from the package name (`fj`/forgejo-cli, `sg`/ast-grep, `agctl`/agentgateway) so future lookups use the right name.
+4. Note when the binary name differs from the package name (`fj`/forgejo-cli, `agctl`/agentgateway) so future lookups use the right name.
 
 The markdown tables in this file and in `README.md` are **column-aligned** (pipes at fixed column positions). Match the alignment of existing rows when inserting one.
 
