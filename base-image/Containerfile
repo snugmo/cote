@@ -541,7 +541,6 @@ ADD --checksum=sha256:e67ee2f5928b4d77a472114edf6e227d90fefe22fa47e7a78db187c55d
 FROM ast-grep-download-${TARGETARCH} AS ast-grep-download
 
 FROM downloader AS ast-grep-install
-RUN apk add --no-cache unzip
 RUN --mount=type=bind,dst=/download,from=ast-grep-download,src=/download/ \
     mkdir -p /tmp/ast-grep && \
     unzip -q /download/ast-grep.zip -d /tmp/ast-grep && \
