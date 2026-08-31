@@ -544,8 +544,8 @@ FROM downloader AS ast-grep-install
 RUN --mount=type=bind,dst=/download,from=ast-grep-download,src=/download/ \
     mkdir -p /tmp/ast-grep && \
     unzip -q /download/ast-grep.zip -d /tmp/ast-grep && \
-    cp /tmp/ast-grep/sg /usr/local/bin/sg && \
-    chmod +x /usr/local/bin/sg && \
+    cp /tmp/ast-grep/ast-grep /usr/local/bin/ast-grep && \
+    chmod +x /usr/local/bin/ast-grep && \
     rm -rf /tmp/ast-grep
 
 # =============================================================================
@@ -611,7 +611,7 @@ FROM scratch AS herdr-artifacts
 COPY --from=herdr-install /usr/local/bin/herdr /usr/local/bin/
 
 FROM scratch AS ast-grep-artifacts
-COPY --from=ast-grep-install /usr/local/bin/sg /usr/local/bin/
+COPY --from=ast-grep-install /usr/local/bin/ast-grep /usr/local/bin/
 
 FROM scratch AS kubeconform-artifacts
 COPY --from=kubeconform-install /usr/local/bin/kubeconform /usr/local/bin/
