@@ -161,7 +161,7 @@ The Containerfile is structured as **per-arch download stages → parallel insta
 
 ### 2. Pick the verification method
 
-1. **Upstream publishes per-arch SHA-256s** (`.sha256` sidecars, `checksums.txt`, `CHECKSUMS`) → pin the hashes in per-arch `FROM scratch` download stages so a build only downloads the selected arch. This is the standard pattern (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep):
+1. **Upstream publishes per-arch SHA-256s** (`.sha256` sidecars, `checksums.txt`, `CHECKSUMS`) → pin the hashes in per-arch `FROM scratch` download stages so a build only downloads the selected arch. This is the standard pattern (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep, gh):
 
    ```dockerfile
    FROM scratch AS <tool>-download-amd64
@@ -192,7 +192,7 @@ The Containerfile is structured as **per-arch download stages → parallel insta
    echo "${EXPECTED}  <downloaded-file>" | sha256sum -c -
    ```
 3. **Release is cosign-signed or SLSA-attested → verify the signature instead of hashes** (crush, kubeseal, cloudnative-pg, cert-manager).
-4. **No verification available → say so explicitly** in a stage comment (herdr, forgejo-cli, fnm, gh).
+4. **No verification available → say so explicitly** in a stage comment (herdr, forgejo-cli, fnm).
 
 ### 3. Extract release tarballs safely
 
@@ -253,7 +253,7 @@ These apply whenever an agent session needs network access — both for version 
 | `GO_VERSION`              | no GitHub releases; download `https://go.dev/dl/?mode=json`, then `jq -r '.[0].version'` (strip the `go` prefix) (hash pinned in ADD; recompute on bump)                   |
 | `UV_VERSION`              | `gh api repos/astral-sh/uv/releases/latest --jq .tag_name` (no `v` prefix) (hash pinned in ADD; recompute on bump)                                                         |
 | `FJ_VERSION`              | download `https://codeberg.org/api/v1/repos/forgejo-contrib/forgejo-cli/releases/latest`, then `jq -r .tag_name`                                                           |
-| `GH_VERSION`              | `gh api repos/cli/cli/releases/latest --jq .tag_name`                                                                                                                      |
+| `GH_VERSION`              | `gh api repos/cli/cli/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                                              |
 | `KUBESEAL_VERSION`        | `gh api repos/bitnami/sealed-secrets/releases/latest --jq .tag_name` (verified with cosign signature, no hash to update)                                                   |
 | `KUBECTL_LINSTOR_VERSION` | `gh api repos/piraeusdatastore/kubectl-linstor/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                     |
 | `CLOUDNATIVE_PG_VERSION`  | `gh api repos/cloudnative-pg/cloudnative-pg/releases/latest --jq .tag_name`                                                                                                |
@@ -271,9 +271,9 @@ These apply whenever an agent session needs network access — both for version 
 
 ### Hash Recomputation on Bumps
 
-Ten tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
+Eleven tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep, gh. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
 
-**Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
+**Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, gh).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
 
    - go: `https://dl.google.com/go/go<ver>.linux-amd64.tar.gz.sha256` and `.../go<ver>.linux-arm64.tar.gz.sha256`
    - uv: `https://github.com/astral-sh/uv/releases/download/<ver>/uv-x86_64-unknown-linux-gnu.tar.gz.sha256` and `.../uv-aarch64-unknown-linux-gnu.tar.gz.sha256`
@@ -282,6 +282,7 @@ Ten tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…`
    - protols: `https://github.com/kralicky/protols/releases/download/v<ver>/checksums.txt`
    - kubeconform: `https://github.com/yannh/kubeconform/releases/download/v<ver>/CHECKSUMS`
    - agctl: `https://github.com/agentgateway/agentgateway/releases/download/v<ver>/agctl-linux-amd64.sha256` and `.../agctl-linux-arm64.sha256`
+   - gh: `https://github.com/cli/cli/releases/download/v<ver>/gh_<ver>_checksums.txt`
 
 **Case 2 — no hash file (marksman, helm-ls, ast-grep).** Download each release asset into /tmp with the `download` tool and run `sha256sum /tmp/<asset>` on each file:
 
