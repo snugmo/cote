@@ -415,8 +415,7 @@ ADD --checksum=sha256:db8e124527f7f8048e3e6c91821b9c52ef173d92c01e47d221bf1337af
 FROM marksman-download-${TARGETARCH} AS marksman-download
 
 FROM downloader AS marksman-install
-RUN --mount=type=bind,dst=/download,from=marksman-download,src=/download/ \
-    cp /download/marksman /usr/local/bin/marksman
+COPY --from=marksman-download /download/marksman /usr/local/bin/marksman
 
 # =============================================================================
 # HELM-LS — install Helm Language Server from GitHub release
