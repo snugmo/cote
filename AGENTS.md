@@ -56,7 +56,7 @@ devfiles/
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
 - ENTRYPOINT uses `catatonit` (from podman) for zombie process reaping; CMD defaults to `tail -f /dev/null` so the container stays alive for `exec`.
 - Subuid/subgid ranges (2000–65000) are configured on the `user` account to enable **rootless buildah/podman inside the container**.
-- All binary downloads are verified as far as possible: where upstreams publish SHA-256s, the download itself is an `ADD --checksum=sha256:…` in the Containerfile; otherwise cosign signatures or SLSA provenance — not all upstreams provide cryptographic signatures.
+- All binary downloads are verified as far as possible: where upstreams publish SHA-256s, the download itself is an `ADD --checksum=sha256:…` in the Containerfile; otherwise cosign signatures or SLSA provenance — not all upstreams provide cryptographic signatures. Per-arch release assets download only the selected arch via `FROM scratch` download stages and a `FROM <tool>-download-${TARGETARCH}` selector (see *Adding a New Binary Tool to the Base Image*).
 
 ### Devfile (`devfiles/devfile.yaml`)
 
@@ -113,7 +113,7 @@ To use an extension, replace the `tools` container image in your Devfile with th
 
 ### Verifying Artifact Stages
 
-The Containerfile uses parallel install stages → scratch artifact stages → final assembly. After changing COPY directives in artifact stages, verify they capture all needed files:
+The Containerfile uses per-arch download stages → parallel install stages → scratch artifact stages → final assembly. After changing COPY directives in artifact stages, verify they capture all needed files:
 
 1. **Build each install stage as a tagged image:**
 
@@ -144,7 +144,7 @@ Note: local nested `buildah`/`podman` builds inside a DevWorkspaces workspace ma
 
 ## Adding a New Binary Tool to the Base Image
 
-The Containerfile is structured as **parallel install stages → `FROM scratch` artifact stages → a single final assembly**. A new tool needs all three parts, plus doc sync.
+The Containerfile is structured as **per-arch download stages → parallel install stages → `FROM scratch` artifact stages → a single final assembly**. A new tool needs the download, install, and artifact parts, plus doc sync.
 
 ### 1. Pick the install method
 
@@ -154,24 +154,37 @@ The Containerfile is structured as **parallel install stages → `FROM scratch` 
 | `go install`          | `go-install` (`FROM downloader`, Go toolchain)    | gopls, golangci-lint-langserver, golangci-lint                   |
 | rustup component      | `rust-install` (`FROM base`)                      | rust-analyzer                                                    |
 | pip                   | `python-install` (`FROM base`)                    | pyright, ruff, mypy, black, pylint                               |
-| Raw binary download   | New `FROM downloader AS <tool>-install` stage     | protols, marksman, helm-ls, tofu-ls, kubeconform, ast-grep       |
+| Raw binary download   | `<tool>-download-${TARGETARCH}` + install stage   | protols, marksman, helm-ls, tofu-ls, kubeconform, ast-grep       |
 
 - If the tool is available through a package manager, append it to that stage's existing install command (`npm install -g …`, `go install <pkg>@<ref>`, `rustup component add …`, `pip3 install --no-cache-dir --break-system-packages …`). No new stage needed: the existing artifact stage already captures its output directory.
-- Otherwise create a dedicated `FROM downloader AS <tool>-install` stage with `ARG TARGETARCH` and `ARG <TOOL>_VERSION=…` (see `protols-install` for the minimal shape). Place new stages next to related tools (the LSP download stages are grouped together) and add the matching `<tool>-artifacts` stage in the `# EXTRAS` block.
+- Otherwise add three stages: a per-arch pair `FROM scratch AS <tool>-download-amd64`/`-arm64` (each a single `ADD` to a canonical `/download/<name>`), a `FROM <tool>-download-${TARGETARCH} AS <tool>-download` selector with a `# hadolint ignore=DL3006` comment above it, and a `FROM downloader AS <tool>-install` stage that consumes the file in a bind-mounted `RUN` (see `kubeconform` for the minimal shape). The version ARGs live in global scope at the top of the file; the download stages redeclare them bare. Place the new stages next to related tools and add the matching `<tool>-artifacts` stage in the `# EXTRAS` block.
 
 ### 2. Pick the verification method
 
-1. **Upstream publishes per-arch SHA-256s** (`.sha256` sidecars, `checksums.txt`, `CHECKSUMS`) → pin the hashes directly in the Containerfile with `ADD --checksum=sha256:…`. This is the standard pattern (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep):
+1. **Upstream publishes per-arch SHA-256s** (`.sha256` sidecars, `checksums.txt`, `CHECKSUMS`) → pin the hashes in per-arch `FROM scratch` download stages so a build only downloads the selected arch. This is the standard pattern (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep):
 
    ```dockerfile
+   FROM scratch AS <tool>-download-amd64
+   ARG TARGETARCH
+   ARG <TOOL>_VERSION
    ADD --checksum=sha256:<hash-amd64> \
-       https://example.com/tool-${TOOL_VERSION}-linux-amd64 /tmp/tool-linux-amd64
+       https://example.com/tool-${TOOL_VERSION}-linux-amd64 /download/tool
+
+   FROM scratch AS <tool>-download-arm64
+   ARG TARGETARCH
+   ARG <TOOL>_VERSION
    ADD --checksum=sha256:<hash-arm64> \
-       https://example.com/tool-${TOOL_VERSION}-linux-arm64 /tmp/tool-linux-arm64
-   RUN mv /tmp/tool-linux-${TARGETARCH} /usr/local/bin/tool
+       https://example.com/tool-${TOOL_VERSION}-linux-arm64 /download/tool
+
+   # hadolint ignore=DL3006
+   FROM <tool>-download-${TARGETARCH} AS <tool>-download
+
+   FROM downloader AS <tool>-install
+   RUN --mount=type=bind,dst=/download,from=<tool>-download,src=/download/ \
+       tar -xzf /download/tool.tar.gz -C /usr/local/bin <bin>
    ```
 
-   One `ADD` per architecture: ARGs cannot be derived conditionally, so a single `ADD` cannot pick between the two hashes. The RUN selects the `${TARGETARCH}` asset and unpacks it (buildah's `ADD` has no `--unpack` flag) and removes both downloads. For plain-binary downloads, add `--chmod=0755` to the `ADD` instead of a separate `chmod`. The hashes are pinned in the file, so every version bump must update them — see *Hash Recomputation on Bumps*.
+   One scratch stage per architecture, each with a single `ADD` to a canonical `/download/<name>` destination; buildah expands the global `ARG TARGETARCH` in the selector `FROM` to pick exactly one of them, so cache-miss builds only download the selected arch. The install stage's `RUN` bind-mounts that download stage's `/download/` and references only the canonical name, so no arch variable appears in any `RUN` (buildah's `ADD` has no `--unpack` flag). The bind mount is read-only: plain-binary installs use `cp`, never `mv` (the executable bit survives because `--chmod=0755` on the `ADD` set the file mode). The `# hadolint ignore=DL3006` line suppresses hadolint's false positive that treats the selector as an untagged external image. Version ARGs are declared globally at the top of the file; the download stages redeclare them bare so the `ADD` URLs can expand. The hashes are pinned in the file, so every version bump must update them; see *Hash Recomputation on Bumps*.
 2. **Upstream publishes a checksum file, but the release lacks an asset for one architecture** so not every download can be pinned → fetch the file at build time and verify with it (mcp-cli: no `linux-arm64` asset upstream):
 
    ```dockerfile
@@ -218,7 +231,7 @@ The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as ima
 
 1. Create a todo list with one item per pinned tool, then check releases **one at a time**. Never fetch release info for all tools in parallel: a single raw GitHub API release JSON response is enough to overflow the session context.
 2. For each tool, look up the latest release with the minimal-output command from the table below and compare it to the pin in the Containerfile.
-3. If a newer version exists, edit the `ARG` line (plus the pinned `--checksum` hashes where applicable — see *Hash Recomputation on Bumps*), then immediately commit that single tool with the message `chore(base-image): update <tool> from <old> to <new>`. One commit per tool, never batch.
+3. If a newer version exists, edit the global `ARG` line (plus the two per-arch `--checksum` hashes where applicable — see *Hash Recomputation on Bumps*), then immediately commit that single tool with the message `chore(base-image): update <tool> from <old> to <new>`. One commit per tool, never batch.
 
 ### Environment Constraints (agent sessions)
 
@@ -258,7 +271,7 @@ These apply whenever an agent session needs network access — both for version 
 
 ### Hash Recomputation on Bumps
 
-Ten tools pin per-architecture SHA-256 hashes in their `ADD --checksum=sha256:…` lines: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep. After bumping one of their `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
+Ten tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
 
 **Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
 
@@ -276,7 +289,7 @@ Ten tools pin per-architecture SHA-256 hashes in their `ADD --checksum=sha256:�
    - helm-ls: `https://github.com/mrjosh/helm-ls/releases/download/v<ver>/helm_ls_linux_amd64` and `.../helm_ls_linux_arm64`
    - ast-grep: `https://github.com/ast-grep/ast-grep/releases/download/<ver>/app-x86_64-unknown-linux-gnu.zip` and `.../app-aarch64-unknown-linux-gnu.zip` — hash the `.zip` files: the Containerfile verifies the zip before unzipping.
 
-Then update both `--checksum=sha256:…` values in the stage and the `ARG <TOOL>_VERSION` line, and rebuild.
+Then update both `--checksum=sha256:…` values in the tool's two download stages and the global `ARG <TOOL>_VERSION` line, and rebuild.
 
 ### Post-Bump Housekeeping
 

@@ -2,7 +2,7 @@
 # Provides universal toolchain: compilers, package managers, shell utils, LSP servers
 # IDEs are excluded — they are added as separate Devfile components (e.g., Eclipse Che plugins)
 #
-# Build strategy: parallel install stages → scratch artifact stages → final assembly.
+# Build strategy: per-arch download stages → parallel install stages → scratch artifact stages → final assembly.
 # Each toolchain installs to standard paths, then a FROM scratch stage captures
 # only the files needed. Final image assembles via single COPY --link per toolchain.
 
