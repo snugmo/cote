@@ -2,11 +2,25 @@
 # Provides universal toolchain: compilers, package managers, shell utils, LSP servers
 # IDEs are excluded — they are added as separate Devfile components (e.g., Eclipse Che plugins)
 #
-# Build strategy: parallel install stages → scratch artifact stages → final assembly.
+# Build strategy: per-arch download stages → parallel install stages → scratch artifact stages → final assembly.
 # Each toolchain installs to standard paths, then a FROM scratch stage captures
 # only the files needed. Final image assembles via single COPY --link per toolchain.
 
 ARG TARGETARCH
+# Pinned tool versions for the per-arch download stages (overridable at build)
+ARG GO_VERSION=1.27.0
+ARG UV_VERSION=0.12.7
+ARG GH_VERSION=2.98.0
+ARG KUBECTL_LINSTOR_VERSION=0.3.2
+ARG AGENTGATEWAY_VERSION=1.5.0
+ARG MARKSMAN_VERSION=2026-02-08
+ARG HELM_LS_VERSION=0.5.4
+ARG TOFU_LS_VERSION=0.5.3
+ARG PROTOLS_VERSION=0.7.4
+ARG HERDR_VERSION=0.8.2
+ARG AST_GREP_VERSION=0.45.2
+ARG KUBECONFORM_VERSION=0.8.0
+
 # Cosign binary from upstream image (defined first so downloader can reference it)
 FROM ghcr.io/sigstore/cosign/cosign:v3.1.3 AS cosign-bin
 
@@ -148,19 +162,29 @@ COPY --from=bun-bin /usr/local/bin/bun /usr/local/bin/
 # =============================================================================
 # GO — install
 # =============================================================================
-FROM downloader AS go-install
+FROM scratch AS go-download-amd64
 ARG TARGETARCH
-ARG GO_VERSION=1.27.0
+ARG GO_VERSION
+ADD --checksum=sha256:675c26c449cbb18fc24b74650de1eabbae6e16f64326fd85a283fb3b58280685 \
+    https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz /download/go.tar.gz
+
+FROM scratch AS go-download-arm64
+ARG TARGETARCH
+ARG GO_VERSION
+ADD --checksum=sha256:51798d2c42d0e1c6ed7fd9f48728b4193abac9e8aad6dbac2fe96a81f5909bda \
+    https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz /download/go.tar.gz
+
+# hadolint ignore=DL3006
+FROM go-download-${TARGETARCH} AS go-download
+
+FROM downloader AS go-install
+ARG GO_VERSION
 ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
     PATH=/go/bin:/opt/go/bin:$PATH
 
-RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" -o go.tar.gz && \
-    curl -fsSL "https://dl.google.com/go/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz.sha256" -o go.sha256 && \
-    EXPECTED=$(cat go.sha256) && \
-    echo "${EXPECTED}  go.tar.gz" | sha256sum -c - && \
-    tar -C /opt -xzf go.tar.gz && \
-    rm -f go.tar.gz go.sha256
+RUN --mount=type=bind,dst=/download,from=go-download,src=/download/ \
+    tar -C /opt -xzf /download/go.tar.gz
 
 RUN mkdir -p $GOPATH/bin && \
     go install golang.org/x/tools/gopls@latest && \
@@ -192,18 +216,28 @@ COPY --from=rust-install --chown=1000:1000 /opt/cargo /opt/cargo/
 # =============================================================================
 # UV — install from GitHub release
 # =============================================================================
-FROM downloader AS uv-install
+FROM scratch AS uv-download-amd64
 ARG TARGETARCH
-ARG UV_VERSION=0.12.7
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
-    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}-unknown-linux-gnu.tar.gz" -o "uv-${ARCH}-unknown-linux-gnu.tar.gz" && \
-    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}-unknown-linux-gnu.tar.gz.sha256" -o uv.sha256 && \
-    sha256sum -c uv.sha256 && \
-    tar -xzf "uv-${ARCH}-unknown-linux-gnu.tar.gz" -C /tmp --strip-components=1 && \
-    cp /tmp/uv /usr/local/bin/ && \
-    cp /tmp/uvx /usr/local/bin/ && \
-    rm -rf /tmp/uv-* && \
-    rm -f "uv-${ARCH}-unknown-linux-gnu.tar.gz" uv.sha256
+ARG UV_VERSION
+ADD --checksum=sha256:788f18abea7c5f55d6216e4f5613fd89d4d59b631efeec117b2b07fe72f1da21 \
+    https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz /download/uv.tar.gz
+
+FROM scratch AS uv-download-arm64
+ARG TARGETARCH
+ARG UV_VERSION
+ADD --checksum=sha256:66393193038dd7eb108abd7a218d9cec04ac70ab98242b0720fa94de19223b7c \
+    https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-aarch64-unknown-linux-gnu.tar.gz /download/uv.tar.gz
+
+# hadolint ignore=DL3006
+FROM uv-download-${TARGETARCH} AS uv-download
+
+FROM downloader AS uv-install
+RUN --mount=type=bind,dst=/download,from=uv-download,src=/download/ \
+    mkdir -p /tmp/uv-extract && \
+    tar -xzf /download/uv.tar.gz -C /tmp/uv-extract --strip-components=1 && \
+    cp /tmp/uv-extract/uv /usr/local/bin/ && \
+    cp /tmp/uv-extract/uvx /usr/local/bin/ && \
+    rm -rf /tmp/uv-extract
 
 FROM scratch AS uv-artifacts
 COPY --from=uv-install /usr/local/bin/uv /usr/local/bin/
@@ -239,13 +273,28 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
 # =============================================================================
 # GITHUB CLI — install gh from GitHub release
 # =============================================================================
-FROM downloader AS github-cli-install
+FROM scratch AS github-cli-download-amd64
 ARG TARGETARCH
-ARG GH_VERSION=2.98.0
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${ARCH}.tar.gz" -o gh.tar.gz && \
-    tar -xzf gh.tar.gz -C /usr/local/bin --strip-components=2 "gh_${GH_VERSION}_linux_${ARCH}/bin/gh" && \
-    rm -f gh.tar.gz
+ARG GH_VERSION
+ADD --checksum=sha256:3b8ac6b30336802fc1a858d7c084e11cdf24ac1a761ca90b68022d7d729208de \
+    https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz /download/gh.tar.gz
+
+FROM scratch AS github-cli-download-arm64
+ARG TARGETARCH
+ARG GH_VERSION
+ADD --checksum=sha256:cf689084f3a3618f7eae4a2420d335d74626d65f5e594b9828d125d69f800d86 \
+    https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_arm64.tar.gz /download/gh.tar.gz
+
+# hadolint ignore=DL3006
+FROM github-cli-download-${TARGETARCH} AS github-cli-download
+
+FROM downloader AS github-cli-install
+RUN --mount=type=bind,dst=/download,from=github-cli-download,src=/download/ \
+    mkdir -p /tmp/gh-extract && \
+    tar -xzf /download/gh.tar.gz -C /tmp/gh-extract && \
+    cp /tmp/gh-extract/*/bin/gh /usr/local/bin/gh && \
+    chmod +x /usr/local/bin/gh && \
+    rm -rf /tmp/gh-extract
 
 FROM scratch AS github-cli-artifacts
 COPY --from=github-cli-install /usr/local/bin/gh /usr/local/bin/
@@ -268,17 +317,25 @@ RUN ARCH=$TARGETARCH && \
 # =============================================================================
 # KUBECTL-LINSTOR — install Linstor kubectl plugin
 # =============================================================================
-FROM downloader AS kubectl-linstor-install
+FROM scratch AS kubectl-linstor-download-amd64
 ARG TARGETARCH
-ARG KUBECTL_LINSTOR_VERSION=0.3.2
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-linstor.tar.gz && \
-    curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_${KUBECTL_LINSTOR_VERSION}_checksums.txt" -o checksums.txt && \
-    EXPECTED=$(grep "kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  kubectl-linstor.tar.gz" | sha256sum -c - && \
-    tar -xzf kubectl-linstor.tar.gz -C /usr/local/bin kubectl-linstor && \
-    chmod +x /usr/local/bin/kubectl-linstor && \
-    rm -f kubectl-linstor.tar.gz checksums.txt
+ARG KUBECTL_LINSTOR_VERSION
+ADD --checksum=sha256:f2ff11a663b4811e51ed811600e6ed5abf3c5b584acc072fcd51065a8871fa4f \
+    https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_amd64.tar.gz /download/kubectl-linstor.tar.gz
+
+FROM scratch AS kubectl-linstor-download-arm64
+ARG TARGETARCH
+ARG KUBECTL_LINSTOR_VERSION
+ADD --checksum=sha256:5fa7f1bd4f0aa745835c049e2c443db49ad1554d50bde645fbb789e1fb43a9f4 \
+    https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_arm64.tar.gz /download/kubectl-linstor.tar.gz
+
+# hadolint ignore=DL3006
+FROM kubectl-linstor-download-${TARGETARCH} AS kubectl-linstor-download
+
+FROM downloader AS kubectl-linstor-install
+RUN --mount=type=bind,dst=/download,from=kubectl-linstor-download,src=/download/ \
+    tar -xzf /download/kubectl-linstor.tar.gz -C /usr/local/bin kubectl-linstor && \
+    chmod +x /usr/local/bin/kubectl-linstor
 
 # =============================================================================
 # CLOUDNATIVE-PG — install kubectl-cnpg plugin with SLSA provenance verification
@@ -324,16 +381,23 @@ RUN ARCH=$TARGETARCH && \
 # =============================================================================
 # AGENTGATEWAY — install agctl CLI
 # =============================================================================
-FROM downloader AS agentgateway-install
+FROM scratch AS agentgateway-download-amd64
 ARG TARGETARCH
-ARG AGENTGATEWAY_VERSION=1.5.0
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}" -o /usr/local/bin/agctl && \
-    curl -fsSL "https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-${ARCH}.sha256" -o agctl.sha256 && \
-    EXPECTED=$(cat agctl.sha256 | awk '{print $1}') && \
-    echo "${EXPECTED}  /usr/local/bin/agctl" | sha256sum -c - && \
-    chmod +x /usr/local/bin/agctl && \
-    rm -f agctl.sha256
+ARG AGENTGATEWAY_VERSION
+ADD --checksum=sha256:19fb6e948991c7eb43c6cee9d7748685a4a372e55aa65dbfdc49492a5ba2fe76 --chmod=0755 \
+    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-amd64 /download/agctl
+
+FROM scratch AS agentgateway-download-arm64
+ARG TARGETARCH
+ARG AGENTGATEWAY_VERSION
+ADD --checksum=sha256:3c6f36f369ea9395d3214209240b645c4b09931d1249108d73179bd1a2adf706 --chmod=0755 \
+    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-arm64 /download/agctl
+
+# hadolint ignore=DL3006
+FROM agentgateway-download-${TARGETARCH} AS agentgateway-download
+
+FROM downloader AS agentgateway-install
+COPY --from=agentgateway-download /download/agctl /usr/local/bin/agctl
 
 # =============================================================================
 # MCP-CLI — install mcp-cli from GitHub release
@@ -352,110 +416,160 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x64; else ARCH=arm64; fi && \
 # =============================================================================
 # MARKSMAN — install Markdown LSP from GitHub release
 # =============================================================================
-FROM downloader AS marksman-install
+FROM scratch AS marksman-download-amd64
 ARG TARGETARCH
-ARG MARKSMAN_VERSION=2026-02-08
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
-      ARCH=x64; \
-      EXPECTED="be5098e8213219269c47fc0d916a66fa31ce0602ec967475c722260aabf26087"; \
-    else \
-      ARCH=arm64; \
-      EXPECTED="db8e124527f7f8048e3e6c91821b9c52ef173d92c01e47d221bf1337afd962fb"; \
-    fi && \
-    curl -fsSL "https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-${ARCH}" -o /usr/local/bin/marksman && \
-    echo "${EXPECTED}  /usr/local/bin/marksman" | sha256sum -c - && \
-    chmod +x /usr/local/bin/marksman
+ARG MARKSMAN_VERSION
+ADD --checksum=sha256:be5098e8213219269c47fc0d916a66fa31ce0602ec967475c722260aabf26087 --chmod=0755 \
+    https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-x64 /download/marksman
+
+FROM scratch AS marksman-download-arm64
+ARG TARGETARCH
+ARG MARKSMAN_VERSION
+ADD --checksum=sha256:db8e124527f7f8048e3e6c91821b9c52ef173d92c01e47d221bf1337afd962fb --chmod=0755 \
+    https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-arm64 /download/marksman
+
+# hadolint ignore=DL3006
+FROM marksman-download-${TARGETARCH} AS marksman-download
+
+FROM downloader AS marksman-install
+COPY --from=marksman-download /download/marksman /usr/local/bin/marksman
 
 # =============================================================================
 # HELM-LS — install Helm Language Server from GitHub release
 # =============================================================================
-FROM downloader AS helm-ls-install
+FROM scratch AS helm-ls-download-amd64
 ARG TARGETARCH
-ARG HELM_LS_VERSION=0.5.4
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
-      ARCH=amd64; EXPECTED="5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f"; \
-    else \
-      ARCH=arm64; EXPECTED="565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c"; \
-    fi && \
-    curl -fsSL "https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_${ARCH}" -o /usr/local/bin/helm-ls && \
-    echo "${EXPECTED}  /usr/local/bin/helm-ls" | sha256sum -c - && \
-    chmod +x /usr/local/bin/helm-ls
+ARG HELM_LS_VERSION
+ADD --checksum=sha256:5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f --chmod=0755 \
+    https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_amd64 /download/helm-ls
+
+FROM scratch AS helm-ls-download-arm64
+ARG TARGETARCH
+ARG HELM_LS_VERSION
+ADD --checksum=sha256:565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c --chmod=0755 \
+    https://github.com/mrjosh/helm-ls/releases/download/v${HELM_LS_VERSION}/helm_ls_linux_arm64 /download/helm-ls
+
+# hadolint ignore=DL3006
+FROM helm-ls-download-${TARGETARCH} AS helm-ls-download
+
+FROM downloader AS helm-ls-install
+COPY --from=helm-ls-download /download/helm-ls /usr/local/bin/helm-ls
 
 # =============================================================================
 # TOFU-LS — install OpenTofu Language Server from GitHub release
 # =============================================================================
-FROM downloader AS tofu-ls-install
+FROM scratch AS tofu-ls-download-amd64
 ARG TARGETARCH
-ARG TOFU_LS_VERSION=0.5.3
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
-    curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_${ARCH}.tar.gz" -o tofu-ls.tar.gz && \
-    curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_${TOFU_LS_VERSION}_checksums.txt" -o checksums.txt && \
-    EXPECTED=$(grep "tofu-ls_Linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  tofu-ls.tar.gz" | sha256sum -c - && \
-    tar -xzf tofu-ls.tar.gz -C /usr/local/bin && \
-    chmod +x /usr/local/bin/tofu-ls && \
-    rm -f tofu-ls.tar.gz checksums.txt
+ARG TOFU_LS_VERSION
+ADD --checksum=sha256:ccf8d85881f493483c9c20ac010d320bf455fdc9dcc39ba0af515206cb488460 \
+    https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_x86_64.tar.gz /download/tofu-ls.tar.gz
+
+FROM scratch AS tofu-ls-download-arm64
+ARG TARGETARCH
+ARG TOFU_LS_VERSION
+ADD --checksum=sha256:d30430f86720100e6fc6d16881fcf16bc9e4cb3c4d221fafc1aa992f01387db0 \
+    https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_arm64.tar.gz /download/tofu-ls.tar.gz
+
+# hadolint ignore=DL3006
+FROM tofu-ls-download-${TARGETARCH} AS tofu-ls-download
+
+FROM downloader AS tofu-ls-install
+RUN --mount=type=bind,dst=/download,from=tofu-ls-download,src=/download/ \
+    tar -xzf /download/tofu-ls.tar.gz -C /usr/local/bin && \
+    chmod +x /usr/local/bin/tofu-ls
 
 # =============================================================================
 # PROTOLS — install Protobuf Language Server from GitHub release
 # =============================================================================
-FROM downloader AS protols-install
+FROM scratch AS protols-download-amd64
 ARG TARGETARCH
-ARG PROTOLS_VERSION=0.7.4
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_${ARCH}.tar.gz" -o protols.tar.gz && \
-    curl -fsSL "https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/checksums.txt" -o checksums.txt && \
-    EXPECTED=$(grep "protols_${PROTOLS_VERSION}_linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  protols.tar.gz" | sha256sum -c - && \
-    tar -xzf protols.tar.gz -C /usr/local/bin protols && \
-    chmod +x /usr/local/bin/protols && \
-    rm -f protols.tar.gz checksums.txt
+ARG PROTOLS_VERSION
+ADD --checksum=sha256:04ffaf0cabe5dcdaf53483223cdc3c3dcf44170ef5b03c7941393c843269eb21 \
+    https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_amd64.tar.gz /download/protols.tar.gz
+
+FROM scratch AS protols-download-arm64
+ARG TARGETARCH
+ARG PROTOLS_VERSION
+ADD --checksum=sha256:5cb5670dd8393d8f7b09df88261e017519c45239d0523b77eacd83b24170ec99 \
+    https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_arm64.tar.gz /download/protols.tar.gz
+
+# hadolint ignore=DL3006
+FROM protols-download-${TARGETARCH} AS protols-download
+
+FROM downloader AS protols-install
+RUN --mount=type=bind,dst=/download,from=protols-download,src=/download/ \
+    tar -xzf /download/protols.tar.gz -C /usr/local/bin protols && \
+    chmod +x /usr/local/bin/protols
 
 # =============================================================================
 # HERDR — install agent multiplexer from GitHub release
 # =============================================================================
-FROM downloader AS herdr-install
+FROM scratch AS herdr-download-amd64
 ARG TARGETARCH
-ARG HERDR_VERSION=0.8.2
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
-    curl -fsSL "https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-${ARCH}" -o /usr/local/bin/herdr && \
-    chmod +x /usr/local/bin/herdr
+ARG HERDR_VERSION
+ADD --checksum=sha256:976150a14d490c94b243ea2e1a7eb2dfb67f12e36b182db90936f6728e6aecf4 --chmod=0755 \
+    https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-x86_64 /download/herdr
+
+FROM scratch AS herdr-download-arm64
+ARG TARGETARCH
+ARG HERDR_VERSION
+ADD --checksum=sha256:f55610658e1c2e0d2aaef730b4b2ab885f7f8ba00285ab372bfb14f2e3d5b40d --chmod=0755 \
+    https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-aarch64 /download/herdr
+
+# hadolint ignore=DL3006
+FROM herdr-download-${TARGETARCH} AS herdr-download
+
+FROM downloader AS herdr-install
+COPY --from=herdr-download /download/herdr /usr/local/bin/herdr
 
 # =============================================================================
 # AST-GREP — install sg from GitHub release
 # =============================================================================
-FROM downloader AS ast-grep-install
+FROM scratch AS ast-grep-download-amd64
 ARG TARGETARCH
-ARG AST_GREP_VERSION=0.45.2
-RUN apk add --no-cache unzip && \
-    if [ "$TARGETARCH" = "amd64" ]; then \
-      ARCH=x86_64; \
-      EXPECTED="67aff72dd2994bf152fcc3a8a09cf93b13193abe59f39393095167c729af2015"; \
-    else \
-      ARCH=aarch64; \
-      EXPECTED="e67ee2f5928b4d77a472114edf6e227d90fefe22fa47e7a78db187c55d206564"; \
-    fi && \
-    curl -fsSL "https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-${ARCH}-unknown-linux-gnu.zip" -o ast-grep.zip && \
-    echo "${EXPECTED}  ast-grep.zip" | sha256sum -c - && \
-    unzip -q ast-grep.zip -d /tmp/ast-grep && \
-    cp /tmp/ast-grep/sg /usr/local/bin/sg && \
-    chmod +x /usr/local/bin/sg && \
-    rm -rf /tmp/ast-grep ast-grep.zip
+ARG AST_GREP_VERSION
+ADD --checksum=sha256:67aff72dd2994bf152fcc3a8a09cf93b13193abe59f39393095167c729af2015 \
+    https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-x86_64-unknown-linux-gnu.zip /download/ast-grep.zip
+
+FROM scratch AS ast-grep-download-arm64
+ARG TARGETARCH
+ARG AST_GREP_VERSION
+ADD --checksum=sha256:e67ee2f5928b4d77a472114edf6e227d90fefe22fa47e7a78db187c55d206564 \
+    https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-aarch64-unknown-linux-gnu.zip /download/ast-grep.zip
+
+# hadolint ignore=DL3006
+FROM ast-grep-download-${TARGETARCH} AS ast-grep-download
+
+FROM downloader AS ast-grep-install
+RUN --mount=type=bind,dst=/download,from=ast-grep-download,src=/download/ \
+    mkdir -p /tmp/ast-grep && \
+    unzip -q /download/ast-grep.zip -d /tmp/ast-grep && \
+    cp /tmp/ast-grep/ast-grep /usr/local/bin/ast-grep && \
+    chmod +x /usr/local/bin/ast-grep && \
+    rm -rf /tmp/ast-grep
 
 # =============================================================================
 # KUBECONFORM — install Kubernetes manifest validator from GitHub release
 # =============================================================================
-FROM downloader AS kubeconform-install
+FROM scratch AS kubeconform-download-amd64
 ARG TARGETARCH
-ARG KUBECONFORM_VERSION=0.8.0
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${ARCH}.tar.gz" -o kubeconform.tar.gz && \
-    curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/CHECKSUMS" -o CHECKSUMS && \
-    EXPECTED=$(grep "kubeconform-linux-${ARCH}.tar.gz$" CHECKSUMS | awk '{print $1}') && \
-    echo "${EXPECTED}  kubeconform.tar.gz" | sha256sum -c - && \
-    tar -xzf kubeconform.tar.gz -C /usr/local/bin kubeconform && \
-    chmod +x /usr/local/bin/kubeconform && \
-    rm -f kubeconform.tar.gz CHECKSUMS
+ARG KUBECONFORM_VERSION
+ADD --checksum=sha256:9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883 \
+    https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz /download/kubeconform.tar.gz
+
+FROM scratch AS kubeconform-download-arm64
+ARG TARGETARCH
+ARG KUBECONFORM_VERSION
+ADD --checksum=sha256:1f53fc8e81258197a35e8603054162a5af1de8c5af13746c71ab680d9534ed87 \
+    https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-arm64.tar.gz /download/kubeconform.tar.gz
+
+# hadolint ignore=DL3006
+FROM kubeconform-download-${TARGETARCH} AS kubeconform-download
+
+FROM downloader AS kubeconform-install
+RUN --mount=type=bind,dst=/download,from=kubeconform-download,src=/download/ \
+    tar -xzf /download/kubeconform.tar.gz -C /usr/local/bin kubeconform && \
+    chmod +x /usr/local/bin/kubeconform
 
 # =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
@@ -497,7 +611,7 @@ FROM scratch AS herdr-artifacts
 COPY --from=herdr-install /usr/local/bin/herdr /usr/local/bin/
 
 FROM scratch AS ast-grep-artifacts
-COPY --from=ast-grep-install /usr/local/bin/sg /usr/local/bin/
+COPY --from=ast-grep-install /usr/local/bin/ast-grep /usr/local/bin/
 
 FROM scratch AS kubeconform-artifacts
 COPY --from=kubeconform-install /usr/local/bin/kubeconform /usr/local/bin/
@@ -536,7 +650,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     echo '{"hosts":{}}' > /root/.local/share/forgejo-cli/keys.json && \
     mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
     # Bash completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl; do \
+    for tool in cosign fj kubectl-cnpg cmctl agctl herdr; do \
       $tool completion bash > "/etc/bash_completion.d/$tool" 2>/dev/null || true; \
     done && \
     gh completion -s bash > /etc/bash_completion.d/gh 2>/dev/null || true && \
@@ -544,7 +658,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     /opt/fnm/fnm completions --shell bash > /etc/bash_completion.d/fnm 2>/dev/null || true && \
     uv generate-shell-completion bash > /etc/bash_completion.d/uv 2>/dev/null || true && \
     # Fish completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl buildah; do \
+    for tool in cosign fj kubectl-cnpg cmctl agctl buildah herdr; do \
       $tool completion fish > "/usr/share/fish/vendor_completions.d/${tool}.fish" 2>/dev/null || true; \
     done && \
     gh completion -s fish > /usr/share/fish/vendor_completions.d/gh.fish 2>/dev/null || true && \
@@ -552,7 +666,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     /opt/fnm/fnm completions --shell fish > /usr/share/fish/vendor_completions.d/fnm.fish 2>/dev/null || true && \
     uv generate-shell-completion fish > /usr/share/fish/vendor_completions.d/uv.fish 2>/dev/null || true && \
     # Zsh completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl buildah; do \
+    for tool in cosign fj kubectl-cnpg cmctl agctl buildah herdr; do \
       $tool completion zsh > "/usr/share/zsh/site-functions/_$tool" 2>/dev/null || true; \
     done && \
     gh completion -s zsh > /usr/share/zsh/site-functions/_gh 2>/dev/null || true && \

@@ -105,7 +105,7 @@ podman exec -ti -e TERM -e COLORTERM dev-workspace "${SHELL}"
 - IDEs and AI agents are added as separate Devfile components or extension images, chosen per-team or per-project.
 - Extensions keep the base lean while enabling agent-ready workspaces when needed.
 - Workspace containers run as non-root (UID 1000).
-- All binary downloads are verified as far as possible (SHA-256 checksums, cosign signatures, or SLSA provenance) — not all upstreams provide cryptographic signatures.
+- All binary downloads are verified as far as possible: where upstreams publish SHA-256s, the download itself is an `ADD --checksum=sha256:…` in the Containerfile; otherwise cosign signatures or SLSA provenance — not all upstreams provide cryptographic signatures.
 
 ## Details
 
