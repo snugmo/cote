@@ -364,15 +364,24 @@ RUN ARCH=$TARGETARCH && \
 # =============================================================================
 # AGENTGATEWAY — install agctl CLI
 # =============================================================================
-FROM downloader AS agentgateway-install
+FROM scratch AS agentgateway-download-amd64
 ARG TARGETARCH
-ARG AGENTGATEWAY_VERSION=1.5.0
+ARG AGENTGATEWAY_VERSION
 ADD --checksum=sha256:19fb6e948991c7eb43c6cee9d7748685a4a372e55aa65dbfdc49492a5ba2fe76 --chmod=0755 \
-    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-amd64 /tmp/agctl-linux-amd64
+    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-amd64 /download/agctl
+
+FROM scratch AS agentgateway-download-arm64
+ARG TARGETARCH
+ARG AGENTGATEWAY_VERSION
 ADD --checksum=sha256:3c6f36f369ea9395d3214209240b645c4b09931d1249108d73179bd1a2adf706 --chmod=0755 \
-    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-arm64 /tmp/agctl-linux-arm64
-RUN mv /tmp/agctl-linux-${TARGETARCH} /usr/local/bin/agctl && \
-    rm -f /tmp/agctl-linux-amd64 /tmp/agctl-linux-arm64
+    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-arm64 /download/agctl
+
+# hadolint ignore=DL3006
+FROM agentgateway-download-${TARGETARCH} AS agentgateway-download
+
+FROM downloader AS agentgateway-install
+RUN --mount=type=bind,dst=/download,from=agentgateway-download,src=/download/ \
+    cp /download/agctl /usr/local/bin/agctl
 
 # =============================================================================
 # MCP-CLI — install mcp-cli from GitHub release
