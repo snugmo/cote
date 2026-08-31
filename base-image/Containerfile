@@ -467,16 +467,25 @@ RUN --mount=type=bind,dst=/download,from=tofu-ls-download,src=/download/ \
 # =============================================================================
 # PROTOLS — install Protobuf Language Server from GitHub release
 # =============================================================================
-FROM downloader AS protols-install
+FROM scratch AS protols-download-amd64
 ARG TARGETARCH
-ARG PROTOLS_VERSION=0.7.4
+ARG PROTOLS_VERSION
 ADD --checksum=sha256:04ffaf0cabe5dcdaf53483223cdc3c3dcf44170ef5b03c7941393c843269eb21 \
-    https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_amd64.tar.gz /tmp/protols-amd64.tar.gz
+    https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_amd64.tar.gz /download/protols.tar.gz
+
+FROM scratch AS protols-download-arm64
+ARG TARGETARCH
+ARG PROTOLS_VERSION
 ADD --checksum=sha256:5cb5670dd8393d8f7b09df88261e017519c45239d0523b77eacd83b24170ec99 \
-    https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_arm64.tar.gz /tmp/protols-arm64.tar.gz
-RUN tar -xzf /tmp/protols-${TARGETARCH}.tar.gz -C /usr/local/bin protols && \
-    chmod +x /usr/local/bin/protols && \
-    rm -f /tmp/protols-amd64.tar.gz /tmp/protols-arm64.tar.gz
+    https://github.com/kralicky/protols/releases/download/v${PROTOLS_VERSION}/protols_${PROTOLS_VERSION}_linux_arm64.tar.gz /download/protols.tar.gz
+
+# hadolint ignore=DL3006
+FROM protols-download-${TARGETARCH} AS protols-download
+
+FROM downloader AS protols-install
+RUN --mount=type=bind,dst=/download,from=protols-download,src=/download/ \
+    tar -xzf /download/protols.tar.gz -C /usr/local/bin protols && \
+    chmod +x /usr/local/bin/protols
 
 # =============================================================================
 # HERDR — install agent multiplexer from GitHub release
