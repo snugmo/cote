@@ -44,6 +44,12 @@ devfiles/
 
 ## Key Conventions
 
+### Commit Conventions
+
+- Make small, logically contained commits; one per meaningful change, committed as you go.
+- Prefix every commit subject with a single emoji representing the change, followed by the conventional type prefix used in this repo (`chore(base-image):`, `docs:`, `fix:`, …); keep subjects under 72 characters. Examples: `📦 chore(base-image): update herdr from 0.8.1 to 0.8.2`, `✏️ docs: …`, `🐛 fix: …`.
+- End commit messages with an `Assisted-by: Crush:<model>` trailer (no "generated with" line).
+
 ### Base Image (`base-image/Containerfile`)
 
 - **No IDEs** — IDEs and AI agents are Devfile components or extension images, never baked into the base image.
@@ -231,7 +237,7 @@ The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as ima
 
 1. Create a todo list with one item per pinned tool, then check releases **one at a time**. Never fetch release info for all tools in parallel: a single raw GitHub API release JSON response is enough to overflow the session context.
 2. For each tool, look up the latest release with the minimal-output command from the table below and compare it to the pin in the Containerfile.
-3. If a newer version exists, edit the global `ARG` line (plus the two per-arch `--checksum` hashes where applicable — see *Hash Recomputation on Bumps*), then immediately commit that single tool with the message `chore(base-image): update <tool> from <old> to <new>`. One commit per tool, never batch.
+3. If a newer version exists, edit the global `ARG` line (plus the two per-arch `--checksum` hashes where applicable — see *Hash Recomputation on Bumps*), then immediately commit that single tool with the message `📦 chore(base-image): update <tool> from <old> to <new>` (see *Commit Conventions*). One commit per tool, never batch.
 
 ### Environment Constraints (agent sessions)
 
