@@ -437,14 +437,13 @@ RUN mkdir -p /tmp/ast-grep && \
 FROM downloader AS kubeconform-install
 ARG TARGETARCH
 ARG KUBECONFORM_VERSION=0.8.0
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${ARCH}.tar.gz" -o kubeconform.tar.gz && \
-    curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/CHECKSUMS" -o CHECKSUMS && \
-    EXPECTED=$(grep "kubeconform-linux-${ARCH}.tar.gz$" CHECKSUMS | awk '{print $1}') && \
-    echo "${EXPECTED}  kubeconform.tar.gz" | sha256sum -c - && \
-    tar -xzf kubeconform.tar.gz -C /usr/local/bin kubeconform && \
+ADD --checksum=sha256:9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883 \
+    https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz /tmp/kubeconform-amd64.tar.gz
+ADD --checksum=sha256:1f53fc8e81258197a35e8603054162a5af1de8c5af13746c71ab680d9534ed87 \
+    https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-arm64.tar.gz /tmp/kubeconform-arm64.tar.gz
+RUN tar -xzf /tmp/kubeconform-${TARGETARCH}.tar.gz -C /usr/local/bin kubeconform && \
     chmod +x /usr/local/bin/kubeconform && \
-    rm -f kubeconform.tar.gz CHECKSUMS
+    rm -f /tmp/kubeconform-*.tar.gz
 
 # =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
