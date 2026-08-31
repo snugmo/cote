@@ -444,16 +444,25 @@ RUN --mount=type=bind,dst=/download,from=helm-ls-download,src=/download/ \
 # =============================================================================
 # TOFU-LS — install OpenTofu Language Server from GitHub release
 # =============================================================================
-FROM downloader AS tofu-ls-install
+FROM scratch AS tofu-ls-download-amd64
 ARG TARGETARCH
-ARG TOFU_LS_VERSION=0.5.3
+ARG TOFU_LS_VERSION
 ADD --checksum=sha256:ccf8d85881f493483c9c20ac010d320bf455fdc9dcc39ba0af515206cb488460 \
-    https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_x86_64.tar.gz /tmp/tofu-ls-amd64.tar.gz
+    https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_x86_64.tar.gz /download/tofu-ls.tar.gz
+
+FROM scratch AS tofu-ls-download-arm64
+ARG TARGETARCH
+ARG TOFU_LS_VERSION
 ADD --checksum=sha256:d30430f86720100e6fc6d16881fcf16bc9e4cb3c4d221fafc1aa992f01387db0 \
-    https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_arm64.tar.gz /tmp/tofu-ls-arm64.tar.gz
-RUN tar -xzf /tmp/tofu-ls-${TARGETARCH}.tar.gz -C /usr/local/bin && \
-    chmod +x /usr/local/bin/tofu-ls && \
-    rm -f /tmp/tofu-ls-amd64.tar.gz /tmp/tofu-ls-arm64.tar.gz
+    https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_arm64.tar.gz /download/tofu-ls.tar.gz
+
+# hadolint ignore=DL3006
+FROM tofu-ls-download-${TARGETARCH} AS tofu-ls-download
+
+FROM downloader AS tofu-ls-install
+RUN --mount=type=bind,dst=/download,from=tofu-ls-download,src=/download/ \
+    tar -xzf /download/tofu-ls.tar.gz -C /usr/local/bin && \
+    chmod +x /usr/local/bin/tofu-ls
 
 # =============================================================================
 # PROTOLS — install Protobuf Language Server from GitHub release
