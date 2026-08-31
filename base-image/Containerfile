@@ -195,15 +195,16 @@ COPY --from=rust-install --chown=1000:1000 /opt/cargo /opt/cargo/
 FROM downloader AS uv-install
 ARG TARGETARCH
 ARG UV_VERSION=0.12.7
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
-    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}-unknown-linux-gnu.tar.gz" -o "uv-${ARCH}-unknown-linux-gnu.tar.gz" && \
-    curl -fsSL "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH}-unknown-linux-gnu.tar.gz.sha256" -o uv.sha256 && \
-    sha256sum -c uv.sha256 && \
-    tar -xzf "uv-${ARCH}-unknown-linux-gnu.tar.gz" -C /tmp --strip-components=1 && \
-    cp /tmp/uv /usr/local/bin/ && \
-    cp /tmp/uvx /usr/local/bin/ && \
-    rm -rf /tmp/uv-* && \
-    rm -f "uv-${ARCH}-unknown-linux-gnu.tar.gz" uv.sha256
+ADD --checksum=sha256:788f18abea7c5f55d6216e4f5613fd89d4d59b631efeec117b2b07fe72f1da21 \
+    https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv-x86_64.tar.gz
+ADD --checksum=sha256:66393193038dd7eb108abd7a218d9cec04ac70ab98242b0720fa94de19223b7c \
+    https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-aarch64-unknown-linux-gnu.tar.gz /tmp/uv-aarch64.tar.gz
+RUN if [ "$TARGETARCH" = "amd64" ]; then A=x86_64; else A=aarch64; fi && \
+    mkdir -p /tmp/uv-extract && \
+    tar -xzf /tmp/uv-${A}.tar.gz -C /tmp/uv-extract --strip-components=1 && \
+    cp /tmp/uv-extract/uv /usr/local/bin/ && \
+    cp /tmp/uv-extract/uvx /usr/local/bin/ && \
+    rm -rf /tmp/uv-extract /tmp/uv-*.tar.gz
 
 FROM scratch AS uv-artifacts
 COPY --from=uv-install /usr/local/bin/uv /usr/local/bin/
