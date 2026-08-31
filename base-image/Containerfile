@@ -426,7 +426,7 @@ ADD --checksum=sha256:e67ee2f5928b4d77a472114edf6e227d90fefe22fa47e7a78db187c55d
     https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-aarch64-unknown-linux-gnu.zip /tmp/ast-grep-aarch64.zip
 RUN mkdir -p /tmp/ast-grep && \
     if [ "$TARGETARCH" = "amd64" ]; then A=x86_64; else A=aarch64; fi && \
-    unzip -q /tmp/ast-grep-${A}.zip -d /tmp/ast-grep && \
+    unzip -q "/tmp/ast-grep-${A}.zip" -d /tmp/ast-grep && \
     cp /tmp/ast-grep/sg /usr/local/bin/sg && \
     chmod +x /usr/local/bin/sg && \
     rm -rf /tmp/ast-grep /tmp/ast-grep-x86_64.zip /tmp/ast-grep-aarch64.zip
