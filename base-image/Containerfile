@@ -651,7 +651,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     echo '{"hosts":{}}' > /root/.local/share/forgejo-cli/keys.json && \
     mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
     # Bash completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl; do \
+    for tool in cosign fj kubectl-cnpg cmctl agctl herdr; do \
       $tool completion bash > "/etc/bash_completion.d/$tool" 2>/dev/null || true; \
     done && \
     gh completion -s bash > /etc/bash_completion.d/gh 2>/dev/null || true && \
@@ -659,7 +659,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     /opt/fnm/fnm completions --shell bash > /etc/bash_completion.d/fnm 2>/dev/null || true && \
     uv generate-shell-completion bash > /etc/bash_completion.d/uv 2>/dev/null || true && \
     # Fish completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl buildah; do \
+    for tool in cosign fj kubectl-cnpg cmctl agctl buildah herdr; do \
       $tool completion fish > "/usr/share/fish/vendor_completions.d/${tool}.fish" 2>/dev/null || true; \
     done && \
     gh completion -s fish > /usr/share/fish/vendor_completions.d/gh.fish 2>/dev/null || true && \
@@ -667,7 +667,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     /opt/fnm/fnm completions --shell fish > /usr/share/fish/vendor_completions.d/fnm.fish 2>/dev/null || true && \
     uv generate-shell-completion fish > /usr/share/fish/vendor_completions.d/uv.fish 2>/dev/null || true && \
     # Zsh completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl buildah; do \
+    for tool in cosign fj kubectl-cnpg cmctl agctl buildah herdr; do \
       $tool completion zsh > "/usr/share/zsh/site-functions/_$tool" 2>/dev/null || true; \
     done && \
     gh completion -s zsh > /usr/share/zsh/site-functions/_gh 2>/dev/null || true && \
