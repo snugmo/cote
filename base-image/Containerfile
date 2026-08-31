@@ -10,6 +10,7 @@ ARG TARGETARCH
 # Pinned tool versions for the per-arch download stages (overridable at build)
 ARG GO_VERSION=1.27.0
 ARG UV_VERSION=0.12.7
+ARG GH_VERSION=2.98.0
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
 ARG AGENTGATEWAY_VERSION=1.5.0
 ARG MARKSMAN_VERSION=2026-02-08
@@ -271,13 +272,28 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
 # =============================================================================
 # GITHUB CLI — install gh from GitHub release
 # =============================================================================
-FROM downloader AS github-cli-install
+FROM scratch AS github-cli-download-amd64
 ARG TARGETARCH
-ARG GH_VERSION=2.98.0
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${ARCH}.tar.gz" -o gh.tar.gz && \
-    tar -xzf gh.tar.gz -C /usr/local/bin --strip-components=2 "gh_${GH_VERSION}_linux_${ARCH}/bin/gh" && \
-    rm -f gh.tar.gz
+ARG GH_VERSION
+ADD --checksum=sha256:3b8ac6b30336802fc1a858d7c084e11cdf24ac1a761ca90b68022d7d729208de \
+    https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz /download/gh.tar.gz
+
+FROM scratch AS github-cli-download-arm64
+ARG TARGETARCH
+ARG GH_VERSION
+ADD --checksum=sha256:cf689084f3a3618f7eae4a2420d335d74626d65f5e594b9828d125d69f800d86 \
+    https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_arm64.tar.gz /download/gh.tar.gz
+
+# hadolint ignore=DL3006
+FROM github-cli-download-${TARGETARCH} AS github-cli-download
+
+FROM downloader AS github-cli-install
+RUN --mount=type=bind,dst=/download,from=github-cli-download,src=/download/ \
+    mkdir -p /tmp/gh-extract && \
+    tar -xzf /download/gh.tar.gz -C /tmp/gh-extract && \
+    cp /tmp/gh-extract/*/bin/gh /usr/local/bin/gh && \
+    chmod +x /usr/local/bin/gh && \
+    rm -rf /tmp/gh-extract
 
 FROM scratch AS github-cli-artifacts
 COPY --from=github-cli-install /usr/local/bin/gh /usr/local/bin/
