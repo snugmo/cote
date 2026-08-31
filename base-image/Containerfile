@@ -272,14 +272,13 @@ RUN ARCH=$TARGETARCH && \
 FROM downloader AS kubectl-linstor-install
 ARG TARGETARCH
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-linstor.tar.gz && \
-    curl -fsSL "https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_${KUBECTL_LINSTOR_VERSION}_checksums.txt" -o checksums.txt && \
-    EXPECTED=$(grep "kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_${ARCH}.tar.gz" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  kubectl-linstor.tar.gz" | sha256sum -c - && \
-    tar -xzf kubectl-linstor.tar.gz -C /usr/local/bin kubectl-linstor && \
+ADD --checksum=sha256:f2ff11a663b4811e51ed811600e6ed5abf3c5b584acc072fcd51065a8871fa4f \
+    https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_amd64.tar.gz /tmp/kubectl-linstor-amd64.tar.gz
+ADD --checksum=sha256:5fa7f1bd4f0aa745835c049e2c443db49ad1554d50bde645fbb789e1fb43a9f4 \
+    https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_arm64.tar.gz /tmp/kubectl-linstor-arm64.tar.gz
+RUN tar -xzf /tmp/kubectl-linstor-${TARGETARCH}.tar.gz -C /usr/local/bin kubectl-linstor && \
     chmod +x /usr/local/bin/kubectl-linstor && \
-    rm -f kubectl-linstor.tar.gz checksums.txt
+    rm -f /tmp/kubectl-linstor-*.tar.gz
 
 # =============================================================================
 # CLOUDNATIVE-PG — install kubectl-cnpg plugin with SLSA provenance verification
