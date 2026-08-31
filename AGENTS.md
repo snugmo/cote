@@ -56,7 +56,7 @@ devfiles/
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
 - ENTRYPOINT uses `catatonit` (from podman) for zombie process reaping; CMD defaults to `tail -f /dev/null` so the container stays alive for `exec`.
 - Subuid/subgid ranges (2000–65000) are configured on the `user` account to enable **rootless buildah/podman inside the container**.
-- All binary downloads are verified as far as possible (SHA-256 checksums, cosign signatures, or SLSA provenance) — not all upstreams provide cryptographic signatures.
+- All binary downloads are verified as far as possible: where upstreams publish SHA-256s, the download itself is an `ADD --checksum=sha256:…` in the Containerfile; otherwise cosign signatures or SLSA provenance — not all upstreams provide cryptographic signatures.
 
 ### Devfile (`devfiles/devfile.yaml`)
 
@@ -161,16 +161,25 @@ The Containerfile is structured as **parallel install stages → `FROM scratch` 
 
 ### 2. Pick the verification method
 
-1. **Upstream publishes `checksums.txt` / `CHECKSUMS` → fetch and verify at build time.** Preferred: no hashes to maintain across version bumps (tofu-ls, mcp-cli, kubeconform, protols, go).
+1. **Upstream publishes per-arch SHA-256s** (`.sha256` sidecars, `checksums.txt`, `CHECKSUMS`) → pin the hashes directly in the Containerfile with `ADD --checksum=sha256:…`. This is the standard pattern (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep):
+
+   ```dockerfile
+   ADD --checksum=sha256:<hash-amd64> \
+       https://example.com/tool-${TOOL_VERSION}-linux-amd64 /tmp/tool-linux-amd64
+   ADD --checksum=sha256:<hash-arm64> \
+       https://example.com/tool-${TOOL_VERSION}-linux-arm64 /tmp/tool-linux-arm64
+   RUN mv /tmp/tool-linux-${TARGETARCH} /usr/local/bin/tool
+   ```
+
+   One `ADD` per architecture: ARGs cannot be derived conditionally, so a single `ADD` cannot pick between the two hashes. The RUN selects the `${TARGETARCH}` asset and unpacks it (buildah's `ADD` has no `--unpack` flag) and removes both downloads. For plain-binary downloads, add `--chmod=0755` to the `ADD` instead of a separate `chmod`. The hashes are pinned in the file, so every version bump must update them — see *Hash Recomputation on Bumps*.
+2. **Upstream publishes a checksum file, but the release lacks an asset for one architecture** so not every download can be pinned → fetch the file at build time and verify with it (mcp-cli: no `linux-arm64` asset upstream):
 
    ```dockerfile
    EXPECTED=$(grep "<asset-name>$" checksums.txt | awk '{print $1}') && \
    echo "${EXPECTED}  <downloaded-file>" | sha256sum -c -
    ```
-
-2. **No checksum file, but per-arch binaries → hardcode per-arch `EXPECTED="…"`** in the RUN (marksman, helm-ls, ast-grep). These must be recomputed on every version bump. See *sha256 Recomputation*.
-3. **Release is cosign-signed → verify the signature instead of hashes** (kubeseal, kubeconform).
-4. **No verification available → say so explicitly** in a stage comment (herdr).
+3. **Release is cosign-signed or SLSA-attested → verify the signature instead of hashes** (crush, kubeseal, cloudnative-pg, cert-manager).
+4. **No verification available → say so explicitly** in a stage comment (herdr, forgejo-cli, fnm, gh).
 
 ### 3. Extract release tarballs safely
 
@@ -209,7 +218,7 @@ The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as ima
 
 1. Create a todo list with one item per pinned tool, then check releases **one at a time**. Never fetch release info for all tools in parallel: a single raw GitHub API release JSON response is enough to overflow the session context.
 2. For each tool, look up the latest release with the minimal-output command from the table below and compare it to the pin in the Containerfile.
-3. If a newer version exists, edit the `ARG` line (plus `EXPECTED=` hashes where applicable), then immediately commit that single tool with the message `chore(base-image): update <tool> from <old> to <new>`. One commit per tool, never batch.
+3. If a newer version exists, edit the `ARG` line (plus the pinned `--checksum` hashes where applicable — see *Hash Recomputation on Bumps*), then immediately commit that single tool with the message `chore(base-image): update <tool> from <old> to <new>`. One commit per tool, never batch.
 
 ### Environment Constraints (agent sessions)
 
@@ -220,43 +229,54 @@ These apply whenever an agent session needs network access — both for version 
 
 ### Per-Tool Lookup Commands
 
-| Pin (Containerfile)         | Latest release lookup                                                                                              |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| cosign image tag            | `gh api repos/sigstore/cosign/releases/latest --jq .tag_name`                                                       |
-| curlimages/curl digest      | download `https://hub.docker.com/v2/repositories/curlimages/curl/tags/latest`, then `jq -r .digest`                 |
-| `CRUSH_VERSION`             | `gh api repos/charmbracelet/crush/releases/latest --jq .tag_name`                                                   |
-| `FNM_VERSION`               | `gh api repos/Schniz/fnm/releases/latest --jq .tag_name`                                                            |
-| `NODE_VERSION` (major only) | download `https://nodejs.org/dist/index.json` (sorted newest first), then `jq -r '.[0].version'`; bump only when the major changes |
-| oven/bun digest             | download `https://hub.docker.com/v2/repositories/oven/bun/tags/latest`, then `jq -r .digest`                        |
-| `GO_VERSION`                | no GitHub releases; download `https://go.dev/dl/?mode=json`, then `jq -r '.[0].version'` (strip the `go` prefix)    |
-| `UV_VERSION`                | `gh api repos/astral-sh/uv/releases/latest --jq .tag_name` (no `v` prefix)                                          |
-| `FJ_VERSION`                | download `https://codeberg.org/api/v1/repos/forgejo-contrib/forgejo-cli/releases/latest`, then `jq -r .tag_name`    |
-| `GH_VERSION`                | `gh api repos/cli/cli/releases/latest --jq .tag_name`                                                               |
-| `KUBESEAL_VERSION`          | `gh api repos/bitnami/sealed-secrets/releases/latest --jq .tag_name` (verified with cosign signature, no hash to update) |
-| `KUBECTL_LINSTOR_VERSION`   | `gh api repos/piraeusdatastore/kubectl-linstor/releases/latest --jq .tag_name`                                      |
-| `CLOUDNATIVE_PG_VERSION`    | `gh api repos/cloudnative-pg/cloudnative-pg/releases/latest --jq .tag_name`                                         |
-| `CERT_MANAGER_VERSION`      | `gh api repos/cert-manager/cmctl/releases/latest --jq .tag_name`                                                    |
-| `AGENTGATEWAY_VERSION`      | `gh api repos/agentgateway/agentgateway/releases/latest --jq .tag_name`                                             |
-| `MCP_CLI_VERSION`           | `gh api repos/philschmid/mcp-cli/releases/latest --jq .tag_name`                                                    |
-| `MARKSMAN_VERSION`          | `gh api repos/artempyanykh/marksman/releases/latest --jq .tag_name` (date-based tag, e.g. `2026-02-08`; used bare in the URL, no `v`) |
-| `HELM_LS_VERSION`           | `gh api repos/mrjosh/helm-ls/releases/latest --jq .tag_name`                                                         |
-| `TOFU_LS_VERSION`           | `gh api repos/opentofu/tofu-ls/releases/latest --jq .tag_name` (verified against upstream `checksums.txt`, no hash to update) |
-| `PROTOLS_VERSION`           | `gh api repos/kralicky/protols/releases/latest --jq .tag_name` (verified against upstream `checksums.txt`, no hash to update) |
-| `HERDR_VERSION`             | `gh api repos/herdrdev/herdr/releases/latest --jq .tag_name`                                                        |
-| `AST_GREP_VERSION`          | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix)                                     |
-| `KUBECONFORM_VERSION`       | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (verified against upstream `CHECKSUMS`, no hash to update) |
-| `PI_VERSION`                | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; strip the `v` prefix for the npm package) |
+| Pin (Containerfile)       | Latest release lookup                                                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| cosign image tag          | `gh api repos/sigstore/cosign/releases/latest --jq .tag_name`                                                                                                              |
+| curlimages/curl digest    | download `https://hub.docker.com/v2/repositories/curlimages/curl/tags/latest`, then `jq -r .digest`                                                                        |
+| `CRUSH_VERSION`           | `gh api repos/charmbracelet/crush/releases/latest --jq .tag_name`                                                                                                          |
+| `FNM_VERSION`             | `gh api repos/Schniz/fnm/releases/latest --jq .tag_name`                                                                                                                   |
+| `NODE_VERSION` (major only) | download `https://nodejs.org/dist/index.json` (sorted newest first), then `jq -r '.[0].version'`; bump only when the major changes                                         |
+| oven/bun digest           | download `https://hub.docker.com/v2/repositories/oven/bun/tags/latest`, then `jq -r .digest`                                                                               |
+| `GO_VERSION`              | no GitHub releases; download `https://go.dev/dl/?mode=json`, then `jq -r '.[0].version'` (strip the `go` prefix) (hash pinned in ADD; recompute on bump)                   |
+| `UV_VERSION`              | `gh api repos/astral-sh/uv/releases/latest --jq .tag_name` (no `v` prefix) (hash pinned in ADD; recompute on bump)                                                         |
+| `FJ_VERSION`              | download `https://codeberg.org/api/v1/repos/forgejo-contrib/forgejo-cli/releases/latest`, then `jq -r .tag_name`                                                           |
+| `GH_VERSION`              | `gh api repos/cli/cli/releases/latest --jq .tag_name`                                                                                                                      |
+| `KUBESEAL_VERSION`        | `gh api repos/bitnami/sealed-secrets/releases/latest --jq .tag_name` (verified with cosign signature, no hash to update)                                                   |
+| `KUBECTL_LINSTOR_VERSION` | `gh api repos/piraeusdatastore/kubectl-linstor/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                     |
+| `CLOUDNATIVE_PG_VERSION`  | `gh api repos/cloudnative-pg/cloudnative-pg/releases/latest --jq .tag_name`                                                                                                |
+| `CERT_MANAGER_VERSION`    | `gh api repos/cert-manager/cmctl/releases/latest --jq .tag_name`                                                                                                           |
+| `AGENTGATEWAY_VERSION`    | `gh api repos/agentgateway/agentgateway/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                            |
+| `MCP_CLI_VERSION`         | `gh api repos/philschmid/mcp-cli/releases/latest --jq .tag_name` (no linux-arm64 asset upstream; build-time `checksums.txt` fallback)                                      |
+| `MARKSMAN_VERSION`        | `gh api repos/artempyanykh/marksman/releases/latest --jq .tag_name` (date-based tag, e.g. `2026-02-08`; used bare in the URL, no `v`; hash pinned in ADD, recompute on bump) |
+| `HELM_LS_VERSION`         | `gh api repos/mrjosh/helm-ls/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                                       |
+| `TOFU_LS_VERSION`         | `gh api repos/opentofu/tofu-ls/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                        |
+| `PROTOLS_VERSION`         | `gh api repos/kralicky/protols/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                        |
+| `HERDR_VERSION`           | `gh api repos/herdrdev/herdr/releases/latest --jq .tag_name`                                                                                                               |
+| `AST_GREP_VERSION`        | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix; hash pinned in ADD, recompute on bump)                                                     |
+| `KUBECONFORM_VERSION`     | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                       |
+| `PI_VERSION`              | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; strip the `v` prefix for the npm package)                               |
 
-### sha256 Recomputation (marksman, helm-ls, ast-grep)
+### Hash Recomputation on Bumps
 
-These three tools hardcode per-architecture `EXPECTED="..."` hashes in the Containerfile. After bumping their version:
+Ten tools pin per-architecture SHA-256 hashes in their `ADD --checksum=sha256:…` lines: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep. After bumping one of their `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
 
-1. Download each release asset into /tmp with the `download` tool:
+**Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
+
+   - go: `https://dl.google.com/go/go<ver>.linux-amd64.tar.gz.sha256` and `.../go<ver>.linux-arm64.tar.gz.sha256`
+   - uv: `https://github.com/astral-sh/uv/releases/download/<ver>/uv-x86_64-unknown-linux-gnu.tar.gz.sha256` and `.../uv-aarch64-unknown-linux-gnu.tar.gz.sha256`
+   - kubectl-linstor: `https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v<ver>/kubectl-linstor_v<ver>_checksums.txt`
+   - tofu-ls: `https://github.com/opentofu/tofu-ls/releases/download/v<ver>/tofu-ls_v<ver>_checksums.txt`
+   - protols: `https://github.com/kralicky/protols/releases/download/v<ver>/checksums.txt`
+   - kubeconform: `https://github.com/yannh/kubeconform/releases/download/v<ver>/CHECKSUMS`
+   - agctl: `https://github.com/agentgateway/agentgateway/releases/download/v<ver>/agctl-linux-amd64.sha256` and `.../agctl-linux-arm64.sha256`
+
+**Case 2 — no hash file (marksman, helm-ls, ast-grep).** Download each release asset into /tmp with the `download` tool and run `sha256sum /tmp/<asset>` on each file:
+
    - marksman: `https://github.com/artempyanykh/marksman/releases/download/<tag>/marksman-linux-x64` and `.../marksman-linux-arm64`
    - helm-ls: `https://github.com/mrjosh/helm-ls/releases/download/v<ver>/helm_ls_linux_amd64` and `.../helm_ls_linux_arm64`
-   - ast-grep: `https://github.com/ast-grep/ast-grep/releases/download/<ver>/app-x86_64-unknown-linux-gnu.zip` and `.../app-aarch64-unknown-linux-gnu.zip`
-2. Run `sha256sum /tmp/<asset>` for each file and replace both `EXPECTED=` values (amd64 and arm64 branches).
-3. For ast-grep, hash the `.zip` files: the Containerfile verifies the zip before unzipping.
+   - ast-grep: `https://github.com/ast-grep/ast-grep/releases/download/<ver>/app-x86_64-unknown-linux-gnu.zip` and `.../app-aarch64-unknown-linux-gnu.zip` — hash the `.zip` files: the Containerfile verifies the zip before unzipping.
+
+Then update both `--checksum=sha256:…` values in the stage and the `ARG <TOOL>_VERSION` line, and rebuild.
 
 ### Post-Bump Housekeeping
 
