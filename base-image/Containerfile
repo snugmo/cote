@@ -527,16 +527,25 @@ RUN --mount=type=bind,dst=/download,from=ast-grep-download,src=/download/ \
 # =============================================================================
 # KUBECONFORM — install Kubernetes manifest validator from GitHub release
 # =============================================================================
-FROM downloader AS kubeconform-install
+FROM scratch AS kubeconform-download-amd64
 ARG TARGETARCH
-ARG KUBECONFORM_VERSION=0.8.0
+ARG KUBECONFORM_VERSION
 ADD --checksum=sha256:9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883 \
-    https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz /tmp/kubeconform-amd64.tar.gz
+    https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz /download/kubeconform.tar.gz
+
+FROM scratch AS kubeconform-download-arm64
+ARG TARGETARCH
+ARG KUBECONFORM_VERSION
 ADD --checksum=sha256:1f53fc8e81258197a35e8603054162a5af1de8c5af13746c71ab680d9534ed87 \
-    https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-arm64.tar.gz /tmp/kubeconform-arm64.tar.gz
-RUN tar -xzf /tmp/kubeconform-${TARGETARCH}.tar.gz -C /usr/local/bin kubeconform && \
-    chmod +x /usr/local/bin/kubeconform && \
-    rm -f /tmp/kubeconform-amd64.tar.gz /tmp/kubeconform-arm64.tar.gz
+    https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-arm64.tar.gz /download/kubeconform.tar.gz
+
+# hadolint ignore=DL3006
+FROM kubeconform-download-${TARGETARCH} AS kubeconform-download
+
+FROM downloader AS kubeconform-install
+RUN --mount=type=bind,dst=/download,from=kubeconform-download,src=/download/ \
+    tar -xzf /download/kubeconform.tar.gz -C /usr/local/bin kubeconform && \
+    chmod +x /usr/local/bin/kubeconform
 
 # =============================================================================
 # EXTRAS — artifact stages for single-binary tools in /usr/local/bin
