@@ -381,14 +381,13 @@ RUN mv /tmp/helm-ls-${TARGETARCH} /usr/local/bin/helm-ls && \
 FROM downloader AS tofu-ls-install
 ARG TARGETARCH
 ARG TOFU_LS_VERSION=0.5.3
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
-    curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_${ARCH}.tar.gz" -o tofu-ls.tar.gz && \
-    curl -fsSL "https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_${TOFU_LS_VERSION}_checksums.txt" -o checksums.txt && \
-    EXPECTED=$(grep "tofu-ls_Linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  tofu-ls.tar.gz" | sha256sum -c - && \
-    tar -xzf tofu-ls.tar.gz -C /usr/local/bin && \
+ADD --checksum=sha256:ccf8d85881f493483c9c20ac010d320bf455fdc9dcc39ba0af515206cb488460 \
+    https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_x86_64.tar.gz /tmp/tofu-ls-amd64.tar.gz
+ADD --checksum=sha256:d30430f86720100e6fc6d16881fcf16bc9e4cb3c4d221fafc1aa992f01387db0 \
+    https://github.com/opentofu/tofu-ls/releases/download/v${TOFU_LS_VERSION}/tofu-ls_Linux_arm64.tar.gz /tmp/tofu-ls-arm64.tar.gz
+RUN tar -xzf /tmp/tofu-ls-${TARGETARCH}.tar.gz -C /usr/local/bin && \
     chmod +x /usr/local/bin/tofu-ls && \
-    rm -f tofu-ls.tar.gz checksums.txt
+    rm -f /tmp/tofu-ls-*.tar.gz
 
 # =============================================================================
 # PROTOLS — install Protobuf Language Server from GitHub release
