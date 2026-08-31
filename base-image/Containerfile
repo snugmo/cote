@@ -214,19 +214,28 @@ COPY --from=rust-install --chown=1000:1000 /opt/cargo /opt/cargo/
 # =============================================================================
 # UV — install from GitHub release
 # =============================================================================
-FROM downloader AS uv-install
+FROM scratch AS uv-download-amd64
 ARG TARGETARCH
-ARG UV_VERSION=0.12.7
+ARG UV_VERSION
 ADD --checksum=sha256:788f18abea7c5f55d6216e4f5613fd89d4d59b631efeec117b2b07fe72f1da21 \
-    https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv-x86_64.tar.gz
+    https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz /download/uv.tar.gz
+
+FROM scratch AS uv-download-arm64
+ARG TARGETARCH
+ARG UV_VERSION
 ADD --checksum=sha256:66393193038dd7eb108abd7a218d9cec04ac70ab98242b0720fa94de19223b7c \
-    https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-aarch64-unknown-linux-gnu.tar.gz /tmp/uv-aarch64.tar.gz
-RUN if [ "$TARGETARCH" = "amd64" ]; then A=x86_64; else A=aarch64; fi && \
+    https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-aarch64-unknown-linux-gnu.tar.gz /download/uv.tar.gz
+
+# hadolint ignore=DL3006
+FROM uv-download-${TARGETARCH} AS uv-download
+
+FROM downloader AS uv-install
+RUN --mount=type=bind,dst=/download,from=uv-download,src=/download/ \
     mkdir -p /tmp/uv-extract && \
-    tar -xzf /tmp/uv-${A}.tar.gz -C /tmp/uv-extract --strip-components=1 && \
+    tar -xzf /download/uv.tar.gz -C /tmp/uv-extract --strip-components=1 && \
     cp /tmp/uv-extract/uv /usr/local/bin/ && \
     cp /tmp/uv-extract/uvx /usr/local/bin/ && \
-    rm -rf /tmp/uv-extract /tmp/uv-x86_64.tar.gz /tmp/uv-aarch64.tar.gz
+    rm -rf /tmp/uv-extract
 
 FROM scratch AS uv-artifacts
 COPY --from=uv-install /usr/local/bin/uv /usr/local/bin/
