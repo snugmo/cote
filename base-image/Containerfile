@@ -17,6 +17,7 @@ ARG MARKSMAN_VERSION=2026-02-08
 ARG HELM_LS_VERSION=0.5.4
 ARG TOFU_LS_VERSION=0.5.3
 ARG PROTOLS_VERSION=0.7.4
+ARG HERDR_VERSION=0.8.2
 ARG AST_GREP_VERSION=0.45.2
 ARG KUBECONFORM_VERSION=0.8.0
 
@@ -503,12 +504,23 @@ RUN --mount=type=bind,dst=/download,from=protols-download,src=/download/ \
 # =============================================================================
 # HERDR — install agent multiplexer from GitHub release
 # =============================================================================
-FROM downloader AS herdr-install
+FROM scratch AS herdr-download-amd64
 ARG TARGETARCH
-ARG HERDR_VERSION=0.8.2
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
-    curl -fsSL "https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-${ARCH}" -o /usr/local/bin/herdr && \
-    chmod +x /usr/local/bin/herdr
+ARG HERDR_VERSION
+ADD --checksum=sha256:976150a14d490c94b243ea2e1a7eb2dfb67f12e36b182db90936f6728e6aecf4 --chmod=0755 \
+    https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-x86_64 /download/herdr
+
+FROM scratch AS herdr-download-arm64
+ARG TARGETARCH
+ARG HERDR_VERSION
+ADD --checksum=sha256:f55610658e1c2e0d2aaef730b4b2ab885f7f8ba00285ab372bfb14f2e3d5b40d --chmod=0755 \
+    https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-aarch64 /download/herdr
+
+# hadolint ignore=DL3006
+FROM herdr-download-${TARGETARCH} AS herdr-download
+
+FROM downloader AS herdr-install
+COPY --from=herdr-download /download/herdr /usr/local/bin/herdr
 
 # =============================================================================
 # AST-GREP — install sg from GitHub release
