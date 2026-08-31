@@ -400,16 +400,24 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x64; else ARCH=arm64; fi && \
 # =============================================================================
 # MARKSMAN — install Markdown LSP from GitHub release
 # =============================================================================
-FROM downloader AS marksman-install
+FROM scratch AS marksman-download-amd64
 ARG TARGETARCH
-ARG MARKSMAN_VERSION=2026-02-08
+ARG MARKSMAN_VERSION
 ADD --checksum=sha256:be5098e8213219269c47fc0d916a66fa31ce0602ec967475c722260aabf26087 --chmod=0755 \
-    https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-x64 /tmp/marksman-x64
+    https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-x64 /download/marksman
+
+FROM scratch AS marksman-download-arm64
+ARG TARGETARCH
+ARG MARKSMAN_VERSION
 ADD --checksum=sha256:db8e124527f7f8048e3e6c91821b9c52ef173d92c01e47d221bf1337afd962fb --chmod=0755 \
-    https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-arm64 /tmp/marksman-arm64
-RUN if [ "$TARGETARCH" = "amd64" ]; then A=x64; else A=arm64; fi && \
-    mv /tmp/marksman-${A} /usr/local/bin/marksman && \
-    rm -f /tmp/marksman-x64 /tmp/marksman-arm64
+    https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-arm64 /download/marksman
+
+# hadolint ignore=DL3006
+FROM marksman-download-${TARGETARCH} AS marksman-download
+
+FROM downloader AS marksman-install
+RUN --mount=type=bind,dst=/download,from=marksman-download,src=/download/ \
+    cp /download/marksman /usr/local/bin/marksman
 
 # =============================================================================
 # HELM-LS — install Helm Language Server from GitHub release
