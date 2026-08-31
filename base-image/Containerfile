@@ -380,8 +380,7 @@ ADD --checksum=sha256:3c6f36f369ea9395d3214209240b645c4b09931d1249108d73179bd1a2
 FROM agentgateway-download-${TARGETARCH} AS agentgateway-download
 
 FROM downloader AS agentgateway-install
-RUN --mount=type=bind,dst=/download,from=agentgateway-download,src=/download/ \
-    cp /download/agctl /usr/local/bin/agctl
+COPY --from=agentgateway-download /download/agctl /usr/local/bin/agctl
 
 # =============================================================================
 # MCP-CLI — install mcp-cli from GitHub release
