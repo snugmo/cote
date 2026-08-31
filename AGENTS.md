@@ -48,7 +48,7 @@ devfiles/
 
 - Make small, logically contained commits; one per meaningful change, committed as you go.
 - Prefix every commit subject with a single emoji representing the change, followed by the conventional type prefix used in this repo (`chore(base-image):`, `docs:`, `fix:`, …); keep subjects under 72 characters. Examples: `📦 chore(base-image): update herdr from 0.8.1 to 0.8.2`, `✏️ docs: …`, `🐛 fix: …`.
-- End commit messages with an `Assisted-by: Crush:<model>` trailer (no "generated with" line).
+- End commit messages with an `Assisted-by: <agent>:<model>` trailer, where `<agent>` is the coding agent doing the committing (no "generated with" line).
 
 ### Base Image (`base-image/Containerfile`)
 
