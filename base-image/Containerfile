@@ -300,16 +300,25 @@ RUN ARCH=$TARGETARCH && \
 # =============================================================================
 # KUBECTL-LINSTOR — install Linstor kubectl plugin
 # =============================================================================
-FROM downloader AS kubectl-linstor-install
+FROM scratch AS kubectl-linstor-download-amd64
 ARG TARGETARCH
-ARG KUBECTL_LINSTOR_VERSION=0.3.2
+ARG KUBECTL_LINSTOR_VERSION
 ADD --checksum=sha256:f2ff11a663b4811e51ed811600e6ed5abf3c5b584acc072fcd51065a8871fa4f \
-    https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_amd64.tar.gz /tmp/kubectl-linstor-amd64.tar.gz
+    https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_amd64.tar.gz /download/kubectl-linstor.tar.gz
+
+FROM scratch AS kubectl-linstor-download-arm64
+ARG TARGETARCH
+ARG KUBECTL_LINSTOR_VERSION
 ADD --checksum=sha256:5fa7f1bd4f0aa745835c049e2c443db49ad1554d50bde645fbb789e1fb43a9f4 \
-    https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_arm64.tar.gz /tmp/kubectl-linstor-arm64.tar.gz
-RUN tar -xzf /tmp/kubectl-linstor-${TARGETARCH}.tar.gz -C /usr/local/bin kubectl-linstor && \
-    chmod +x /usr/local/bin/kubectl-linstor && \
-    rm -f /tmp/kubectl-linstor-amd64.tar.gz /tmp/kubectl-linstor-arm64.tar.gz
+    https://github.com/piraeusdatastore/kubectl-linstor/releases/download/v${KUBECTL_LINSTOR_VERSION}/kubectl-linstor_v${KUBECTL_LINSTOR_VERSION}_linux_arm64.tar.gz /download/kubectl-linstor.tar.gz
+
+# hadolint ignore=DL3006
+FROM kubectl-linstor-download-${TARGETARCH} AS kubectl-linstor-download
+
+FROM downloader AS kubectl-linstor-install
+RUN --mount=type=bind,dst=/download,from=kubectl-linstor-download,src=/download/ \
+    tar -xzf /download/kubectl-linstor.tar.gz -C /usr/local/bin kubectl-linstor && \
+    chmod +x /usr/local/bin/kubectl-linstor
 
 # =============================================================================
 # CLOUDNATIVE-PG — install kubectl-cnpg plugin with SLSA provenance verification
