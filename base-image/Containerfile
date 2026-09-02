@@ -18,7 +18,7 @@ ARG HELM_LS_VERSION=0.5.4
 ARG TOFU_LS_VERSION=0.5.3
 ARG PROTOLS_VERSION=0.7.4
 ARG HERDR_VERSION=0.8.2
-ARG AST_GREP_VERSION=0.45.2
+ARG AST_GREP_VERSION=0.45.3
 ARG KUBECONFORM_VERSION=0.8.0
 
 # Cosign binary from upstream image (defined first so downloader can reference it)
@@ -528,13 +528,13 @@ COPY --from=herdr-download /download/herdr /usr/local/bin/herdr
 FROM scratch AS ast-grep-download-amd64
 ARG TARGETARCH
 ARG AST_GREP_VERSION
-ADD --checksum=sha256:67aff72dd2994bf152fcc3a8a09cf93b13193abe59f39393095167c729af2015 \
+ADD --checksum=sha256:f8ac830881339d1edee6b2652f54798c0f4da5a827f2db38a08ee31117783ce8 \
     https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-x86_64-unknown-linux-gnu.zip /download/ast-grep.zip
 
 FROM scratch AS ast-grep-download-arm64
 ARG TARGETARCH
 ARG AST_GREP_VERSION
-ADD --checksum=sha256:e67ee2f5928b4d77a472114edf6e227d90fefe22fa47e7a78db187c55d206564 \
+ADD --checksum=sha256:b39cfbc58da4b869a88b8a4bc57bd5deb0d24541e704cf7c257da7b53ec81c8f \
     https://github.com/ast-grep/ast-grep/releases/download/${AST_GREP_VERSION}/app-aarch64-unknown-linux-gnu.zip /download/ast-grep.zip
 
 # hadolint ignore=DL3006
