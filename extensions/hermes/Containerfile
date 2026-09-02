@@ -14,7 +14,7 @@ FROM ${BASE_IMAGE}
 
 USER root
 
-ARG HERMES_VERSION=v2026.7.20
+ARG HERMES_VERSION=v2026.8.31
 
 # Shallow clone Hermes agent repo and install with ACP extra into system Python.
 # Using git clone + editable install instead of pip package (pip installs are
