@@ -6,14 +6,14 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 
 | Language / Tool                                                  | Version         | Source                                                    |
 | ---------------------------------------------------------------- | --------------- | --------------------------------------------------------- |
-| **[Go](https://go.dev)**                                         | 1.27.0          | go.dev/dl                                                 |
+| **[Go](https://go.dev)**                                         | 1.27.1          | go.dev/dl                                                 |
 | **[Node.js](https://nodejs.org)**                                | 26              | [fnm](https://github.com/Schniz/fnm)                      |
 | **[Bun](https://bun.sh)**                                        | latest          | [oven-sh/bun](https://github.com/oven-sh/bun) (OCI image) |
 | **[Python](https://python.org)**                                 | Fedora 44 stock | dnf                                                       |
 | **[Rust](https://rust-lang.org)**                                | stable          | [rustup](https://github.com/rust-lang/rustup)             |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)** | Fedora 44 stock | dnf                                                       |
-| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.91.2          | GitHub release, cosign verified                           |
-| **[uv](https://github.com/astral-sh/uv)**                        | 0.12.7          | GitHub release                                            |
+| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.92.0          | GitHub release, cosign verified                           |
+| **[uv](https://github.com/astral-sh/uv)**                        | 0.12.9          | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                 | 3.1.3           | OCI image                                                 |
 
 **LSP servers**:
@@ -50,7 +50,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | [mypy](https://github.com/python/mypy)                     | Python (type checker)                             | `.py`                                         |
 | [black](https://github.com/psf/black)                      | Python (formatter)                                | `.py`                                         |
 
-**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.39.1), `kubectl-cnpg` (1.30.0), `kubectl-linstor` (0.3.2), `cmctl` (2.5.0), `agctl` (1.5.0), `mcp-cli` (0.3.0), `fj` (0.6.0), `gh` (2.98.0), `kubeconform` (0.8.0).
+**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.39.1), `kubectl-cnpg` (1.30.0), `kubectl-linstor` (0.3.2), `cmctl` (2.5.0), `agctl` (1.5.0), `mcp-cli` (0.3.0), `fj` (0.6.0), `gh` (2.99.0), `kubeconform` (0.8.0).
 
 **Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `bat`, `glow`, `tmux`, `herdr` (0.8.2), `age`, `gnupg2`, `ImageMagick`, `libsixel-utils`.
 
