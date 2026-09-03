@@ -83,6 +83,13 @@ RUN mkdir -p /etc/yum.repos.d && \
         foot-terminfo kitty-terminfo \
     && dnf clean all
 
+RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
+        adoptium-temurin-java-repository.noarch \
+    && fedora-third-party enable \
+    && dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
+        temurin-25-jdk \
+    && dnf clean all
+
 # Copy cosign binary from upstream image
 COPY --from=cosign-bin /ko-app/cosign /usr/local/bin/cosign
 
