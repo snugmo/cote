@@ -52,7 +52,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | [mypy](https://github.com/python/mypy)                     | Python (type checker)                             | `.py`                                         |
 | [black](https://github.com/psf/black)                      | Python (formatter)                                | `.py`                                         |
 
-**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.39.1), `kubectl-cnpg` (1.30.0), `kubectl-linstor` (0.3.2), `cmctl` (2.5.0), `agctl` (1.5.0), `mcp-cli` (0.3.0), `fj` (0.6.0), `gh` (2.99.0), `kubeconform` (0.8.0).
+**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.39.1), `kubectl-cnpg` (1.30.0), `kubectl-linstor` (0.3.2), `cmctl` (2.5.0), `agctl` (1.5.0), `mcp-cli` (0.3.0), `fj` (0.6.0), `gh` (2.100.0), `kubeconform` (0.8.0).
 
 **Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `bat`, `glow`, `tmux`, `herdr` (0.8.2), `age`, `gnupg2`, `ImageMagick`, `libsixel-utils`.
 
