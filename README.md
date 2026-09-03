@@ -12,6 +12,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | **[Python](https://python.org)**                                 | Fedora 44 stock | dnf                                                       |
 | **[Rust](https://rust-lang.org)**                                | stable          | [rustup](https://github.com/rust-lang/rustup)             |
 | **[Java](https://adoptium.net/temurin/releases)**                | 25              | dnf (Adoptium Temurin repo)                               |
+| **[Maven](https://maven.apache.org)**                            | Fedora 44 stock | dnf                                                       |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)** | Fedora 44 stock | dnf                                                       |
 | **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.92.0          | GitHub release, cosign verified                           |
 | **[uv](https://github.com/astral-sh/uv)**                        | 0.12.9          | GitHub release                                            |

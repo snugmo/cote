@@ -56,7 +56,7 @@ devfiles/
 - Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
-- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Java (Temurin 25 JDK), Crush CLI, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
+- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 - Go version is controlled by `ARG GO_VERSION=1.27.1` — override at build time if needed.
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
@@ -69,7 +69,7 @@ devfiles/
 - Uses Devfile schema `2.2.0`.
 - The `tools` container mounts source code and provides the shared toolchain.
 - IDE components are commented out by default — uncomment and configure per-team.
-- Env vars (`GOPATH`, `CARGO_HOME`, `RUSTUP_HOME`, `PATH`) are baked into the image — no `env` block needed in devfiles.
+- Env vars (`GOPATH`, `CARGO_HOME`, `RUSTUP_HOME`, `JAVA_HOME`, `PATH`) are baked into the image — no `env` block needed in devfiles.
 - Persistent volumes (`tools-cache`, `tools-local`) survive pod restarts for pip/npm/cargo caches.
 - The `image` field in the `tools` component defaults to `r5t.io/agentic/dev-workspace-base:latest`.
 - Commands section includes `run-tests` (placeholder) and `rebuild-base-image` (runs buildah inside the workspace).
