@@ -68,7 +68,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Identity, encryption, integrity
         age ca-certificates gnupg2 gpgme openssl-devel openssl-devel-engine sequoia-sop sequoia-sq \
         # Misc dev utilities
-        7zip gzip rsync sqlite tar tmux unzip xdelta xz xxhash zstd \
+        7zip gzip rsync sqlite tar tmux unzip xdelta xz xxhash zip zstd \
         # Network tools
         bind-utils grpcurl iproute iputils knot-utils net-tools nmap nmap-ncat oidc-agent-cli socat tcpdump \
         # Markdown renderer
