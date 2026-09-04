@@ -205,6 +205,8 @@ ENV GO_VERSION=${GO_VERSION} \
 RUN --mount=type=bind,dst=/download,from=go-download,src=/download/ \
     tar -C /opt -xzf /download/go.tar.gz
 
+# Go tools intentionally track latest module versions via @latest
+# hadolint ignore=DL3062
 RUN mkdir -p $GOPATH/bin && \
     go install golang.org/x/tools/gopls@latest && \
     go install github.com/nametake/golangci-lint-langserver@latest && \
