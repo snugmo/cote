@@ -117,8 +117,9 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
       --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       --bundle checksums.txt.sigstore.json \
       checksums.txt && \
-    EXPECTED=$(grep "crush_${CRUSH_VERSION}_Linux_${ARCH}.tar.gz$" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  crush.tar.gz" | sha256sum -c - && \
+    EXPECTED=$(awk -v f="crush_${CRUSH_VERSION}_Linux_${ARCH}.tar.gz" '$0 ~ (f "$") { print $1; exit }' checksums.txt) && \
+    printf '%s\n' "${EXPECTED}  crush.tar.gz" > expected.sum && \
+    sha256sum -c expected.sum && rm -f expected.sum && \
     mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
     tar -xzf crush.tar.gz -C /tmp --strip-components=1 && \
     mv /tmp/crush /usr/local/bin/crush && \
@@ -389,8 +390,9 @@ RUN ARCH=$TARGETARCH && \
       --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       --bundle checksums.txt.cosign.bundle \
       checksums.txt && \
-    EXPECTED=$(grep "cmctl_linux_${ARCH}.tar.gz" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  cmctl.tar.gz" | sha256sum -c - && \
+    EXPECTED=$(awk -v f="cmctl_linux_${ARCH}.tar.gz" '$0 ~ (f "$") { print $1; exit }' checksums.txt) && \
+    printf '%s\n' "${EXPECTED}  cmctl.tar.gz" > expected.sum && \
+    sha256sum -c expected.sum && rm -f expected.sum && \
     tar -xzf cmctl.tar.gz -C /usr/local/bin cmctl && \
     chmod +x /usr/local/bin/cmctl && \
     rm -f cmctl.tar.gz checksums.txt checksums.txt.cosign.bundle
@@ -425,8 +427,9 @@ ARG MCP_CLI_VERSION=0.3.0
 RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/philschmid/mcp-cli/releases/download/v${MCP_CLI_VERSION}/mcp-cli-linux-${ARCH}" -o /usr/local/bin/mcp-cli && \
     curl -fsSL "https://github.com/philschmid/mcp-cli/releases/download/v${MCP_CLI_VERSION}/checksums.txt" -o checksums.txt && \
-    EXPECTED=$(grep "mcp-cli-linux-${ARCH}$" checksums.txt | awk '{print $1}') && \
-    echo "${EXPECTED}  /usr/local/bin/mcp-cli" | sha256sum -c - && \
+    EXPECTED=$(awk -v f="mcp-cli-linux-${ARCH}" '$0 ~ (f "$") { print $1; exit }' checksums.txt) && \
+    printf '%s\n' "${EXPECTED}  /usr/local/bin/mcp-cli" > expected.sum && \
+    sha256sum -c expected.sum && rm -f expected.sum && \
     chmod +x /usr/local/bin/mcp-cli && \
     rm -f checksums.txt
 
