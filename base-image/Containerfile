@@ -646,6 +646,8 @@ COPY --from=kubeconform-install /usr/local/bin/kubeconform /usr/local/bin/
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
+# Dev-workspace image must ship a full OS environment, not a scratch attack surface
+# hadolint ignore=DL3007
 FROM base AS final
 
 # Assemble toolchains from artifact stages
