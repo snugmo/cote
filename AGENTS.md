@@ -229,7 +229,7 @@ tar -xzf tool.tar.gz -C /usr/local/bin <bin>
 
 The markdown tables in this file and in `README.md` are **column-aligned** (pipes at fixed column positions). Match the alignment of existing rows when inserting one.
 
-Then rebuild (`./base-image/build.sh`), check with `hadolint --ignore DL3007 base-image/Containerfile`, bump the tag in `.devfile.yaml`, and commit.
+Then rebuild (`./base-image/build.sh`), check with `hadolint base-image/Containerfile`, bump the tag in `.devfile.yaml`, and commit.
 
 ## Updating Base Image Tool Versions
 
