@@ -268,6 +268,8 @@ COPY --from=uv-install /usr/local/bin/uvx /usr/local/bin/
 # PYTHON — pip packages (LSP servers, formatters, linters)
 # =============================================================================
 FROM base AS python-install
+# Python tools intentionally track latest PyPI releases
+# hadolint ignore=DL3013
 RUN pip3 install --no-cache-dir --break-system-packages \
     pylint \
     black \
