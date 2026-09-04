@@ -136,8 +136,8 @@ FROM base AS nodejs-install
 ARG TARGETARCH
 ARG FNM_VERSION=1.39.0
 ARG NODE_VERSION=26
-ENV FNM_DIR=/opt/fnm \
-    PATH=${FNM_DIR}:$PATH
+ENV FNM_DIR=/opt/fnm
+ENV PATH=${FNM_DIR}:$PATH
 
 RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH=arm64; else ARCH=linux; fi && \
     mkdir -p "${FNM_DIR}" && \
