@@ -154,6 +154,8 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH=arm64; else ARCH=linux; fi && \
 RUN "${FNM_DIR}/fnm" install "${NODE_VERSION}" && \
     "${FNM_DIR}/fnm" default "${NODE_VERSION}"
 
+# LSP servers and JS tooling intentionally track latest npm releases
+# hadolint ignore=DL3016
 RUN bash -c 'source <("${FNM_DIR}/fnm" env --shell bash) && \
     npm install -g \
         bash-language-server \
