@@ -154,7 +154,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH=arm64; else ARCH=linux; fi && \
 RUN "${FNM_DIR}/fnm" install "${NODE_VERSION}" && \
     "${FNM_DIR}/fnm" default "${NODE_VERSION}"
 
-RUN source <("${FNM_DIR}/fnm" env --shell bash) && \
+RUN bash -c 'source <("${FNM_DIR}/fnm" env --shell bash) && \
     npm install -g \
         bash-language-server \
         dockerfile-language-server-nodejs \
@@ -163,7 +163,7 @@ RUN source <("${FNM_DIR}/fnm" env --shell bash) && \
         pnpm \
         typescript \
         typescript-language-server \
-        yaml-language-server
+        yaml-language-server'
 
 FROM scratch AS nodejs-artifacts
 COPY --from=nodejs-install --chown=1000:1000 /opt/fnm /opt/fnm/
