@@ -60,7 +60,7 @@ scripts/
 - Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
-- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
+- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, SimpleX Chat CLI, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 - Go version is controlled by `ARG GO_VERSION=1.27.1` — override at build time if needed.
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
@@ -280,12 +280,13 @@ These apply whenever an agent session needs network access — both for version 
 | `AST_GREP_VERSION`        | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix; hash pinned in ADD, recompute on bump)                                                     |
 | `KUBECONFORM_VERSION`     | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                       |
 | `PI_VERSION`              | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; npm registry is the install source, see note below)                     |
+| `SIMPLEX_CHAT_VERSION`    | `gh api repos/simplex-chat/simplex-chat/releases/latest --jq .tag_name` (no `v` prefix; hash published in the release body; recompute on bump)                             |
 
 Note: the pi extension installs the npm package `@earendil-works/pi-coding-agent` (`extensions/pi/Containerfile`), so the npm registry is the source of truth for what actually gets installed: download `https://registry.npmjs.org/@earendil-works%2Fpi-coding-agent/latest`, then `jq .version` to cross-check the ARG.
 
 ### Hash Recomputation on Bumps
 
-Twelve tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep, gh, herdr. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
+Thirteen tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep, gh, herdr, simplex-chat. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
 
 **Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, gh).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
 
@@ -298,12 +299,13 @@ Twelve tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:�
    - agctl: `https://github.com/agentgateway/agentgateway/releases/download/v<ver>/agctl-linux-amd64.sha256` and `.../agctl-linux-arm64.sha256`
    - gh: `https://github.com/cli/cli/releases/download/v<ver>/gh_<ver>_checksums.txt`
 
-**Case 2 — no hash file (marksman, helm-ls, ast-grep, herdr).** Download each release asset into /tmp with the `download` tool and run `sha256sum /tmp/<asset>` on each file:
+**Case 2 — no hash file (marksman, helm-ls, ast-grep, herdr, simplex-chat).** Download each release asset into /tmp with the `download` tool and run `sha256sum /tmp/<asset>` on each file:
 
    - marksman: `https://github.com/artempyanykh/marksman/releases/download/<tag>/marksman-linux-x64` and `.../marksman-linux-arm64`
    - helm-ls: `https://github.com/mrjosh/helm-ls/releases/download/v<ver>/helm_ls_linux_amd64` and `.../helm_ls_linux_arm64`
    - ast-grep: `https://github.com/ast-grep/ast-grep/releases/download/<ver>/app-x86_64-unknown-linux-gnu.zip` and `.../app-aarch64-unknown-linux-gnu.zip` — hash the `.zip` files: the Containerfile verifies the zip before unzipping.
    - herdr: `https://github.com/herdrdev/herdr/releases/download/v<ver>/herdr-linux-x86_64` and `.../herdr-linux-aarch64`
+   - simplex-chat: `https://github.com/simplex-chat/simplex-chat/releases/download/v<ver>/simplex-chat-ubuntu-22_04-x86_64` and `.../simplex-chat-ubuntu-22_04-aarch64` (hashes also published in the release body; older releases ship a GPG-signed `_sha256sums`)
 
 Then update both `--checksum=sha256:…` values in the tool's two download stages and the global `ARG <TOOL>_VERSION` line, and rebuild.
 
