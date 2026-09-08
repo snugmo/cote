@@ -24,6 +24,9 @@ extensions/
 devfiles/
   devfile.yaml         # Generic workspace template (Devfile schema 2.2.0)
 .devfile.yaml          # Self-hosting devfile — opens this repo as a workspace
+renovate.json          # Weekly Renovate PRs for Containerfile pins (see *Renovate*)
+scripts/
+  git-hooks/commit-msg # Optional commit-msg hook (adds goose agent trailers)
 ```
 
 ## Essential Commands
@@ -50,6 +53,7 @@ devfiles/
 - Make small, logically contained commits; one per meaningful change, committed as you go.
 - Prefix every commit subject with a single emoji representing the change, followed by the conventional type prefix used in this repo (`feat(base-image):`, `chore(base-image):`, `docs:`, `fix:`, …); keep subjects under 72 characters. Use `feat(base-image):` when a change adds a new capability to the base image (a new language, tool, or package), and `chore(base-image):` for maintenance such as version bumps and internal adjustments. Examples: `✨ feat(base-image): add Temurin 25 JDK to base image`, `📦 chore(base-image): update herdr from 0.8.1 to 0.8.2`, `✏️ docs: …`, `🐛 fix: …`.
 - End commit messages with an `Assisted-by: <agent>:<model>` trailer, where `<agent>` is the coding agent doing the committing (no "generated with" line).
+- An optional `scripts/git-hooks/commit-msg` hook (install: `ln -sf ../../scripts/git-hooks/commit-msg .git/hooks/commit-msg`) auto-appends `Assisted-by:`, `Model:`, and `Agent-Session:` trailers when `AGENT=goose`; it is a no-op for every other agent and does not validate the emoji/conventional format.
 
 ### Base Image (`base-image/Containerfile`)
 
@@ -235,11 +239,20 @@ Then rebuild (`./base-image/build.sh`), check with `hadolint base-image/Containe
 
 ## Updating Base Image Tool Versions
 
-The base image pins ~20 binary tools, either as `ARG *_VERSION` values or as image tags/digests (cosign, curlimages/curl, oven/bun). To update everything to the latest upstream releases:
+The base image pins ~24 binary tools, either as `ARG *_VERSION` values or as image tags/digests (cosign, curlimages/curl, oven/bun). To update everything to the latest upstream releases:
 
 1. Create a todo list with one item per pinned tool, then check releases **one at a time**. Never fetch release info for all tools in parallel: a single raw GitHub API release JSON response is enough to overflow the session context.
 2. For each tool, look up the latest release with the minimal-output command from the table below and compare it to the pin in the Containerfile.
 3. If a newer version exists, edit the global `ARG` line (plus the two per-arch `--checksum` hashes where applicable — see *Hash Recomputation on Bumps*), then immediately commit that single tool with the message `📦 chore(base-image): update <tool> from <old> to <new>` (see *Commit Conventions*). One commit per tool, never batch.
+
+### Renovate
+
+`renovate.json` (repo root) runs on a weekly schedule ("on monday before 10am") with `config:recommended`, top-level `automerge: false`, `prConcurrentLimit: 5`, and labels `dependencies`. A native `dockerfile` manager scoped to `base-image/Containerfile` plus 15 `customManagers` (regex on the `ARG …_VERSION` lines) track: cosign, crush, fnm, go, uv, fj (Codeberg `git-refs`), gh, kubeseal, kubectl-linstor, cloudnative-pg, cmctl, bun, agentgateway, mcp-cli, kubeconform.
+
+- All `custom.regex` updates are grouped into a single PR ("base-image binary toolchain") that does not auto-merge, except a package rule that auto-merges `github-releases` **patch** updates (`automergeType: pr`), overriding the top-level `automerge: false`.
+- Pins with no `customManager` coverage (treat as manual-only via this workflow; the native `dockerfile` manager may still open PRs for the `fedora` and `curlimages/curl` base images): marksman, helm-ls, tofu-ls, protols, herdr, ast-grep, and the pi extension (`extensions/pi/` is outside every manager's `fileMatch`).
+- Dead config (verified against the Containerfile on 2026-09-08): the `COSIGN_VERSION` and `BUN_VERSION` customManagers match `ARG …_VERSION=` lines that do not exist (cosign is pinned as an image tag, bun as an image digest), so those managers never fire; fix or remove them in `renovate.json` before relying on them.
+- Coordination with manual runs: the weekly patch auto-merge can land on `main` between your commits (it runs Monday); pull/rebase before and after a manual update run, and if a Renovate PR and a manual bump touch the same pin, one of them has to give.
 
 ### Environment Constraints (agent sessions)
 
@@ -247,7 +260,7 @@ These apply whenever an agent session needs network access — both for version 
 
 - `curl` and `wget` are not available in the bash tool; use the `download` tool to save non-GitHub JSON endpoints (Docker Hub, go.dev, Codeberg, nodejs.org) **and binary release assets** to /tmp, then parse JSON with `jq` or verify binaries with `sha256sum` / `tar`.
 - The `gh` CLI is installed and authenticated; always use `gh api repos/<owner>/<repo>/releases/latest --jq .tag_name` for GitHub repos and never fetch raw release JSON.
-- Do not use the MCP GitHub release tools for version updates: `get_latest_release` and `get_release_by_tag` return the entire release object (full changelog body plus all asset metadata), which consumes large numbers of session tokens. Use the minimal-output manual commands from the table below instead; to cross-check asset digests for hash-pinned tools, use `gh api repos/<owner>/<repo>/releases/tags/v<ver> --jq '.assets[] | select(.name | test("linux")) | [.name, .digest] | @tsv'`.
+- MCP GitHub release tools: never use `get_latest_release` or `get_release_by_tag` for version lookups; they return the entire release object (full changelog body plus all asset metadata, including an embedded uploader object per asset) and can consume large amounts of session tokens. The manual minimal-output commands from the table below are the default; the only acceptable MCP call is `list_releases` with a restricted `fields` selection (e.g. `["tag_name","prerelease","draft"]`) and a small `perPage` (e.g. 3). Its field enum has no `assets`, so digest cross-checks for hash-pinned tools still need the `gh api` one-liner: `gh api repos/<owner>/<repo>/releases/tags/v<ver> --jq '.assets[] | select(.name | test("linux")) | [.name, .digest] | @tsv'`.
 
 ### Per-Tool Lookup Commands
 
@@ -257,7 +270,7 @@ These apply whenever an agent session needs network access — both for version 
 | curlimages/curl digest    | download `https://hub.docker.com/v2/repositories/curlimages/curl/tags/latest`, then `jq -r .digest`                                                                        |
 | `CRUSH_VERSION`           | `gh api repos/charmbracelet/crush/releases/latest --jq .tag_name`                                                                                                          |
 | `FNM_VERSION`             | `gh api repos/Schniz/fnm/releases/latest --jq .tag_name`                                                                                                                   |
-| `NODE_VERSION` (major only) | download `https://nodejs.org/dist/index.json` (sorted newest first), then `jq -r '.[0].version'`; bump only when the major changes                                         |
+| `NODE_VERSION` (major)    | download `https://nodejs.org/dist/index.json` (sorted newest first), then `jq -r '.[0].version'`; bump only when the major changes                                         |
 | oven/bun digest           | download `https://hub.docker.com/v2/repositories/oven/bun/tags/latest`, then `jq -r .digest`                                                                               |
 | `GO_VERSION`              | no GitHub releases; download `https://go.dev/dl/?mode=json`, then `jq -r '.[0].version'` (strip the `go` prefix) (hash pinned in ADD; recompute on bump)                   |
 | `UV_VERSION`              | `gh api repos/astral-sh/uv/releases/latest --jq .tag_name` (no `v` prefix) (hash pinned in ADD; recompute on bump)                                                         |
@@ -269,14 +282,16 @@ These apply whenever an agent session needs network access — both for version 
 | `CERT_MANAGER_VERSION`    | `gh api repos/cert-manager/cmctl/releases/latest --jq .tag_name`                                                                                                           |
 | `AGENTGATEWAY_VERSION`    | `gh api repos/agentgateway/agentgateway/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                            |
 | `MCP_CLI_VERSION`         | `gh api repos/philschmid/mcp-cli/releases/latest --jq .tag_name` (no linux-arm64 asset upstream; build-time `checksums.txt` fallback)                                      |
-| `MARKSMAN_VERSION`        | `gh api repos/artempyanykh/marksman/releases/latest --jq .tag_name` (date-based tag, e.g. `2026-02-08`; used bare in the URL, no `v`; hash pinned in ADD, recompute on bump) |
+| `MARKSMAN_VERSION`        | `gh api repos/artempyanykh/marksman/releases/latest --jq .tag_name` (date-based tag, `2026-02-08`; used bare in the URL, no `v`; hash pinned in ADD, recompute on bump)    |
 | `HELM_LS_VERSION`         | `gh api repos/mrjosh/helm-ls/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                                       |
 | `TOFU_LS_VERSION`         | `gh api repos/opentofu/tofu-ls/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                        |
 | `PROTOLS_VERSION`         | `gh api repos/kralicky/protols/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                        |
 | `HERDR_VERSION`           | `gh api repos/herdrdev/herdr/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                                       |
 | `AST_GREP_VERSION`        | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix; hash pinned in ADD, recompute on bump)                                                     |
 | `KUBECONFORM_VERSION`     | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                       |
-| `PI_VERSION`              | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; strip the `v` prefix for the npm package)                               |
+| `PI_VERSION`              | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; npm registry is the install source, see note below)                     |
+
+Note: the pi extension installs the npm package `@earendil-works/pi-coding-agent` (`extensions/pi/Containerfile`), so the npm registry is the source of truth for what actually gets installed: download `https://registry.npmjs.org/@earendil-works%2Fpi-coding-agent/latest`, then `jq .version` to cross-check the ARG.
 
 ### Hash Recomputation on Bumps
 
