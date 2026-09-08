@@ -24,7 +24,6 @@ extensions/
 devfiles/
   devfile.yaml         # Generic workspace template (Devfile schema 2.2.0)
 .devfile.yaml          # Self-hosting devfile — opens this repo as a workspace
-renovate.json          # Weekly Renovate PRs for Containerfile pins (see *Renovate*)
 scripts/
   git-hooks/commit-msg # Optional commit-msg hook (adds goose agent trailers)
 ```
@@ -244,15 +243,6 @@ The base image pins ~24 binary tools, either as `ARG *_VERSION` values or as ima
 1. Create a todo list with one item per pinned tool, then check releases **one at a time**. Never fetch release info for all tools in parallel: a single raw GitHub API release JSON response is enough to overflow the session context.
 2. For each tool, look up the latest release with the minimal-output command from the table below and compare it to the pin in the Containerfile.
 3. If a newer version exists, edit the global `ARG` line (plus the two per-arch `--checksum` hashes where applicable — see *Hash Recomputation on Bumps*), then immediately commit that single tool with the message `📦 chore(base-image): update <tool> from <old> to <new>` (see *Commit Conventions*). One commit per tool, never batch.
-
-### Renovate
-
-`renovate.json` (repo root) runs on a weekly schedule ("on monday before 10am") with `config:recommended`, top-level `automerge: false`, `prConcurrentLimit: 5`, and labels `dependencies`. A native `dockerfile` manager scoped to `base-image/Containerfile` plus 15 `customManagers` (regex on the `ARG …_VERSION` lines) track: cosign, crush, fnm, go, uv, fj (Codeberg `git-refs`), gh, kubeseal, kubectl-linstor, cloudnative-pg, cmctl, bun, agentgateway, mcp-cli, kubeconform.
-
-- All `custom.regex` updates are grouped into a single PR ("base-image binary toolchain") that does not auto-merge, except a package rule that auto-merges `github-releases` **patch** updates (`automergeType: pr`), overriding the top-level `automerge: false`.
-- Pins with no `customManager` coverage (treat as manual-only via this workflow; the native `dockerfile` manager may still open PRs for the `fedora` and `curlimages/curl` base images): marksman, helm-ls, tofu-ls, protols, herdr, ast-grep, and the pi extension (`extensions/pi/` is outside every manager's `fileMatch`).
-- Dead config (verified against the Containerfile on 2026-09-08): the `COSIGN_VERSION` and `BUN_VERSION` customManagers match `ARG …_VERSION=` lines that do not exist (cosign is pinned as an image tag, bun as an image digest), so those managers never fire; fix or remove them in `renovate.json` before relying on them.
-- Coordination with manual runs: the weekly patch auto-merge can land on `main` between your commits (it runs Monday); pull/rebase before and after a manual update run, and if a Renovate PR and a manual bump touch the same pin, one of them has to give.
 
 ### Environment Constraints (agent sessions)
 
