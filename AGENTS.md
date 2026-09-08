@@ -245,6 +245,7 @@ These apply whenever an agent session needs network access — both for version 
 
 - `curl` and `wget` are not available in the bash tool; use the `download` tool to save non-GitHub JSON endpoints (Docker Hub, go.dev, Codeberg, nodejs.org) **and binary release assets** to /tmp, then parse JSON with `jq` or verify binaries with `sha256sum` / `tar`.
 - The `gh` CLI is installed and authenticated; always use `gh api repos/<owner>/<repo>/releases/latest --jq .tag_name` for GitHub repos and never fetch raw release JSON.
+- Do not use the MCP GitHub release tools for version updates: `get_latest_release` and `get_release_by_tag` return the entire release object (full changelog body plus all asset metadata), which consumes large numbers of session tokens. Use the minimal-output manual commands from the table below instead; to cross-check asset digests for hash-pinned tools, use `gh api repos/<owner>/<repo>/releases/tags/v<ver> --jq '.assets[] | select(.name | test("linux")) | [.name, .digest] | @tsv'`.
 
 ### Per-Tool Lookup Commands
 
