@@ -36,6 +36,7 @@ devfiles/
 | Override image name    | `DEV_IMAGE_NAME=my-base ./base-image/build.sh`            |
 | Override registry      | `DEV_REGISTRY=registry.example.com ./base-image/build.sh` |
 | Parallel build         | `DEV_JOBS=$(nproc) ./base-image/build.sh`                 |
+| Publish base image     | `./base-image/build.sh push r5t.io/agentic`               |
 | Build Hermes extension | `./extensions/hermes/build.sh`                            |
 | Build + push Hermes    | `./extensions/hermes/build.sh push <registry>`            |
 | Build Pi extension     | `./extensions/pi/build.sh`                                |
@@ -85,6 +86,7 @@ devfiles/
 - Uses `buildah` (not `docker`) — rootless, works in CI without a Docker daemon.
 - Tag defaults to latest git tag via `git describe --tags --always --dirty`, falling back to `latest`.
 - Registry defaults to `localhost:5000` (OpenShift internal registry). Override with `DEV_REGISTRY` or pass as second argument to `push`.
+- To publish, run `./base-image/build.sh push r5t.io/agentic` (tags `r5t.io/agentic/dev-workspace-base:<tag>`); the default `localhost:5000` registry is for local development and CI only.
 
 ### Extensions (`extensions/`)
 
@@ -93,7 +95,7 @@ Extensions build on top of the base image to add specific capabilities without p
 **Available extensions:**
 
 - **Hermes Agent** (`extensions/hermes/`) — Installs [Hermes Agent](https://hermes-agent.nousresearch.com/) with ACP (Agent Communication Protocol) support for IDE integration. Uses a shallow git clone of the upstream repo (pip installs are unsupported). Works with VS Code (ACP Client extension), Zed (ACP Registry), and JetBrains (ACP plugins).
-- **Pi Coding Agent** (`extensions/pi/`) — Installs the [Pi coding agent](https://pi.dev) ([earendil-works/pi](https://github.com/earendil-works/pi)) from the official npm package (`@earendil-works/pi-coding-agent`) with `--ignore-scripts`. Terminal coding agent with interactive TUI, print, RPC, and SDK modes. Bakes in the keyless `r5t` provider (`https://llm.r5t.io/v1`, model `qwen3.8-27b`) as the default LLM in `~/.pi/agent/models.json` + `settings.json`.
+- **Pi Coding Agent** (`extensions/pi/`) — Installs the [Pi coding agent](https://pi.dev) ([earendil-works/pi](https://github.com/earendil-works/pi)) from the official npm package (`@earendil-works/pi-coding-agent`) with `--ignore-scripts`. Terminal coding agent with interactive TUI, print, RPC, and SDK modes. Bakes in the keyless `r5t` provider (`https://llm.r5t.io/v1`, model `qwen3.8-27b`) as the default LLM in `~/.pi/agent/models.json` + `settings.json`. Its build pulls the base image `${REGISTRY}/dev-workspace-base:<same git-describe tag>` from the registry (override with `DEV_BASE_IMAGE`), so the base image must be pushed before building pi; publish with `./extensions/pi/build.sh push r5t.io/agentic`.
 
 To use an extension, replace the `tools` container image in your Devfile with the extension image reference.
 
@@ -146,7 +148,7 @@ The Containerfile uses per-arch download stages → parallel install stages → 
 
 3. **Cross-reference** the output against COPY directives in the artifact stages to find missing files.
 
-Note: local nested `buildah`/`podman` builds inside a DevWorkspaces workspace may fail with `potentially insufficient UIDs or GIDs available in user namespace` (e.g. unpacking cosign's `nonroot` user, UID 65532). That is a rootless subuid-range limitation of the workspace environment, not a Containerfile bug. The CI build with full subuid ranges is the source of truth.
+Note: local nested `buildah`/`podman` builds inside a DevWorkspaces workspace may fail with `potentially insufficient UIDs or GIDs available in user namespace` (e.g. unpacking cosign's `nonroot` user, UID 65532). That is a rootless subuid-range limitation of the workspace environment, not a Containerfile bug. A full in-workspace build and push to `r5t.io/agentic` has succeeded (v0.16.0 on 2026-09-08), so running the whole build inside a live workspace is reasonable; for edge failures, the CI build with full subuid ranges is the source of truth.
 
 ## Adding a New Binary Tool to the Base Image
 
@@ -229,7 +231,7 @@ tar -xzf tool.tar.gz -C /usr/local/bin <bin>
 
 The markdown tables in this file and in `README.md` are **column-aligned** (pipes at fixed column positions). Match the alignment of existing rows when inserting one.
 
-Then rebuild (`./base-image/build.sh`), check with `hadolint base-image/Containerfile`, bump the tag in `.devfile.yaml`, and commit.
+Then rebuild (`./base-image/build.sh`), check with `hadolint base-image/Containerfile`, and commit; the `.devfile.yaml` tag bump and release tagging happen later, in *Post-Bump Housekeeping*.
 
 ## Updating Base Image Tool Versions
 
@@ -302,5 +304,13 @@ Then update both `--checksum=sha256:…` values in the tool's two download stage
 
 ### Post-Bump Housekeeping
 
-- Keep the version references in this file (see the Base Image section) and the Toolchain table in `README.md` in sync with the Containerfile.
-- Rebuild and push the base image, then bump the tag in `.devfile.yaml` (see the Self-hosting Devfile section).
+The full release flow, in order:
+
+1. Commit tool bumps one at a time (see *Commit Conventions*), one commit per tool, never batched.
+2. Sync docs: the `Toolchain includes` bullet in the Base Image section and the `## Toolchain` table in `README.md` must match the Containerfile.
+3. Bump the image references in `.devfile.yaml` and in this file's Self-hosting Devfile section to the new tag, in one commit.
+4. Tag the final HEAD: `git tag vN.N.N`. The image tag derives from `git describe --tags --always --dirty` (with the leading `v` stripped), so the tag must exist and the tree must be clean at build time, or the image tag gets a `-dirty` suffix.
+5. Build and push: `./base-image/build.sh push r5t.io/agentic` → `r5t.io/agentic/dev-workspace-base:<tag>`.
+6. Only if `PI_VERSION` changed: `./extensions/pi/build.sh push r5t.io/agentic`. The pi build pulls `${REGISTRY}/dev-workspace-base:<same tag>` from the registry (`DEV_BASE_IMAGE` override), so the base image must be pushed first.
+7. Never rebase across a release tag: a stranded tag makes `git describe` fall back to the last reachable tag and silently degrades the image tag (this happened to `v0.15.0`, which degraded `git describe` on `main` to `v0.14.3-N-g<sha>` until a clean tag was created). If it ever happens, re-tag onto the equivalent new commit.
+8. Agent sessions stop here: local commits, the tag, and the image push are done. Pushing the branch and the tag to origin is the user's job.
