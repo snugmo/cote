@@ -17,7 +17,7 @@ ARG MARKSMAN_VERSION=2026-02-08
 ARG HELM_LS_VERSION=0.5.4
 ARG TOFU_LS_VERSION=0.5.3
 ARG PROTOLS_VERSION=0.7.4
-ARG HERDR_VERSION=0.8.2
+ARG HERDR_VERSION=0.9.0
 ARG AST_GREP_VERSION=0.45.3
 ARG KUBECONFORM_VERSION=0.8.0
 
@@ -534,13 +534,13 @@ RUN --mount=type=bind,dst=/download,from=protols-download,src=/download/ \
 FROM scratch AS herdr-download-amd64
 ARG TARGETARCH
 ARG HERDR_VERSION
-ADD --checksum=sha256:976150a14d490c94b243ea2e1a7eb2dfb67f12e36b182db90936f6728e6aecf4 --chmod=0755 \
+ADD --checksum=sha256:4fa1a01158dd8043da92d31b270780b0dcc10603038d9b61cac4d81ab63fb71f --chmod=0755 \
     https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-x86_64 /download/herdr
 
 FROM scratch AS herdr-download-arm64
 ARG TARGETARCH
 ARG HERDR_VERSION
-ADD --checksum=sha256:f55610658e1c2e0d2aaef730b4b2ab885f7f8ba00285ab372bfb14f2e3d5b40d --chmod=0755 \
+ADD --checksum=sha256:9c8db20fb7e7427b138d5367113f1621ffd319f2f65d6f009e2594029115f0d2 --chmod=0755 \
     https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-aarch64 /download/herdr
 
 # hadolint ignore=DL3006
