@@ -60,7 +60,7 @@ scripts/
 - Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
-- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, SimpleX Chat CLI, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
+- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, SimpleX Chat CLI, nono, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 - Go version is controlled by `ARG GO_VERSION=1.27.1` — override at build time if needed.
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
@@ -223,7 +223,7 @@ tar -xzf tool.tar.gz -C /usr/local/bin <bin>
    ```
 
 2. **Final assembly**: add a `COPY --link --from=<tool>-artifacts / /` line to the `final` stage next to the other toolchains.
-3. **Shell completions**: if the tool has a `completion` subcommand, add it to the completion-generation loops in the `final` stage (currently covers cosign, fj, kubectl-cnpg, cmctl, agctl, gh, bun, fnm, uv, buildah, herdr).
+3. **Shell completions**: if the tool has a `completion` subcommand, add it to the completion-generation loops in the `final` stage (currently covers cosign, fj, kubectl-cnpg, cmctl, agctl, gh, bun, fnm, uv, buildah, herdr, nono).
 
 ### 5. Sync the docs (all surfaces)
 
@@ -281,14 +281,15 @@ These apply whenever an agent session needs network access — both for version 
 | `KUBECONFORM_VERSION`     | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                       |
 | `PI_VERSION`              | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; npm registry is the install source, see note below)                     |
 | `SIMPLEX_CHAT_VERSION`    | `gh api repos/simplex-chat/simplex-chat/releases/latest --jq .tag_name` (no `v` prefix; hash published in the release body; recompute on bump)                             |
+| `NONO_VERSION`            | `gh api repos/nolabs-ai/nono/releases/latest --jq .tag_name` (strip the `v` prefix; hash published in the release's `SHA256SUMS.txt`; recompute on bump)                   |
 
 Note: the pi extension installs the npm package `@earendil-works/pi-coding-agent` (`extensions/pi/Containerfile`), so the npm registry is the source of truth for what actually gets installed: download `https://registry.npmjs.org/@earendil-works%2Fpi-coding-agent/latest`, then `jq .version` to cross-check the ARG.
 
 ### Hash Recomputation on Bumps
 
-Thirteen tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep, gh, herdr, simplex-chat. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
+Fourteen tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep, gh, herdr, simplex-chat, nono. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
 
-**Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, gh).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
+**Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, gh, nono).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
 
    - go: `https://dl.google.com/go/go<ver>.linux-amd64.tar.gz.sha256` and `.../go<ver>.linux-arm64.tar.gz.sha256`
    - uv: `https://github.com/astral-sh/uv/releases/download/<ver>/uv-x86_64-unknown-linux-gnu.tar.gz.sha256` and `.../uv-aarch64-unknown-linux-gnu.tar.gz.sha256`
@@ -298,6 +299,7 @@ Thirteen tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256
    - kubeconform: `https://github.com/yannh/kubeconform/releases/download/v<ver>/CHECKSUMS`
    - agctl: `https://github.com/agentgateway/agentgateway/releases/download/v<ver>/agctl-linux-amd64.sha256` and `.../agctl-linux-arm64.sha256`
    - gh: `https://github.com/cli/cli/releases/download/v<ver>/gh_<ver>_checksums.txt`
+   - nono: `https://github.com/nolabs-ai/nono/releases/download/v<ver>/SHA256SUMS.txt`
 
 **Case 2 — no hash file (marksman, helm-ls, ast-grep, herdr, simplex-chat).** Download each release asset into /tmp with the `download` tool and run `sha256sum /tmp/<asset>` on each file:
 

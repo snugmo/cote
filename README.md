@@ -18,6 +18,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | **[uv](https://github.com/astral-sh/uv)**                        | 0.12.10         | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                 | 3.1.3           | OCI image                                                 |
 | **[SimpleX Chat CLI](https://simplex.chat/docs/cli.html)**       | 7.0.2           | GitHub release (SHA-256 in release notes)                 |
+| **[nono](https://github.com/nolabs-ai/nono)**                    | 0.75.0          | GitHub release (SHA-256SUMS.txt)                          |
 
 **LSP servers**:
 
