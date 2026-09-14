@@ -9,7 +9,7 @@
 ARG TARGETARCH
 # Pinned tool versions for the per-arch download stages (overridable at build)
 ARG GO_VERSION=1.27.1
-ARG UV_VERSION=0.12.12
+ARG UV_VERSION=0.12.13
 ARG GH_VERSION=2.100.0
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
 ARG AGENTGATEWAY_VERSION=1.5.0
@@ -243,13 +243,13 @@ COPY --from=rust-install --chown=1000:1000 /opt/cargo /opt/cargo/
 FROM scratch AS uv-download-amd64
 ARG TARGETARCH
 ARG UV_VERSION
-ADD --checksum=sha256:ab9b309d4586403f024e100abaceb396616e178a553e2500c36087d180f09509 \
+ADD --checksum=sha256:745765a3b6e360ad76743599ae5c42e9278c7edf8bbff9fc76d05bf2623a04dd \
     https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz /download/uv.tar.gz
 
 FROM scratch AS uv-download-arm64
 ARG TARGETARCH
 ARG UV_VERSION
-ADD --checksum=sha256:fe08db50cc1b56cd1da7801065ed1103d27ed3f9571cd122386cfc7faf1b8df5 \
+ADD --checksum=sha256:2eaa5d94f5db7b3a1a092156b9420459e42ab0217d917fe74a876309cef9b5e9 \
     https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-aarch64-unknown-linux-gnu.tar.gz /download/uv.tar.gz
 
 # hadolint ignore=DL3006
