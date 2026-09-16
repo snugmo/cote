@@ -14,7 +14,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | **[Java](https://adoptium.net/temurin/releases)**                | 25              | dnf (Adoptium Temurin repo)                               |
 | **[Maven](https://maven.apache.org)**                            | Fedora 44 stock | dnf                                                       |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)** | Fedora 44 stock | dnf                                                       |
-| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.94.2          | GitHub release, cosign verified                           |
+| **[Crush CLI](https://github.com/charmbracelet/crush)**          | 0.95.0          | GitHub release, cosign verified                           |
 | **[uv](https://github.com/astral-sh/uv)**                        | 0.12.15         | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                 | 3.1.3           | OCI image                                                 |
 | **[SimpleX Chat CLI](https://simplex.chat/docs/cli.html)**       | 7.0.2           | GitHub release (SHA-256 in release notes)                 |
