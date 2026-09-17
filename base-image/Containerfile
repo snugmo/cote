@@ -40,10 +40,11 @@ COPY --from=cosign-bin /ko-app/cosign /usr/local/bin/cosign
 # =============================================================================
 FROM registry.fedoraproject.org/fedora:44 AS base
 
-# Prevent interactive prompts during package installation
+# Set locale to C to avoid warnings about missing translations
 ENV LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8 \
-    FORCE_NONINTERACTIVE=1
+    LC_ALL=C.UTF-8
+# Prevent interactive prompts during package installation
+ARG FORCE_NONINTERACTIVE=1
 
 # Base image tracks the Fedora 44 distro package set; per-package version pins are intentional out-of-scope
 # hadolint ignore=DL3041
