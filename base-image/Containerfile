@@ -57,6 +57,8 @@ RUN mkdir -p /etc/yum.repos.d && \
         diffutils findutils lsof moreutils openssl patch procps time util-linux which \
         # Build tools
         bison byacc clang clang-libs clang-tools-extra cmake flex gcc gcc-c++ gdb llvm make meson m4 ninja-build xxd \
+        # Protobuf
+        protobuf protobuf-c protobuf-compiler protobuf-devel \
         # Shells & editors
         bash bash-completion bash-color-prompt fish nano vim vim-default-editor zsh \
         # Version control & collaboration
