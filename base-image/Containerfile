@@ -768,6 +768,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
 ARG GO_VERSION
 ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
+    GOROOT=/opt/go \
     PATH=/go/bin:/opt/go/bin:$PATH
 
 # Rust env
