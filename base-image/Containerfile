@@ -285,7 +285,8 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     mypy \
     pyright \
     pyrefly \
-    pipx
+    pipx \
+    lola-ai
 
 FROM scratch AS python-artifacts
 COPY --from=python-install /usr/local /usr/local/
@@ -745,6 +746,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     done && \
     gh completion -s bash > /etc/bash_completion.d/gh 2>/dev/null || true && \
     bun completions bash > /etc/bash_completion.d/bun 2>/dev/null || true && \
+    lola completions bash > /etc/bash_completion.d/lola 2>/dev/null || true && \
     /opt/fnm/fnm completions --shell bash > /etc/bash_completion.d/fnm 2>/dev/null || true && \
     uv generate-shell-completion bash > /etc/bash_completion.d/uv 2>/dev/null || true && \
     # Fish completions
@@ -753,6 +755,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     done && \
     gh completion -s fish > /usr/share/fish/vendor_completions.d/gh.fish 2>/dev/null || true && \
     bun completions fish > /usr/share/fish/vendor_completions.d/bun.fish 2>/dev/null || true && \
+    lola completions fish > /usr/share/fish/vendor_completions.d/lola.fish 2>/dev/null || true && \
     /opt/fnm/fnm completions --shell fish > /usr/share/fish/vendor_completions.d/fnm.fish 2>/dev/null || true && \
     uv generate-shell-completion fish > /usr/share/fish/vendor_completions.d/uv.fish 2>/dev/null || true && \
     # Zsh completions
@@ -761,6 +764,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     done && \
     gh completion -s zsh > /usr/share/zsh/site-functions/_gh 2>/dev/null || true && \
     bun completions zsh > /usr/share/zsh/site-functions/_bun 2>/dev/null || true && \
+    lola completions zsh > /usr/share/zsh/site-functions/_lola 2>/dev/null || true && \
     /opt/fnm/fnm completions --shell zsh > /usr/share/zsh/site-functions/_fnm 2>/dev/null || true && \
     uv generate-shell-completion zsh > /usr/share/zsh/site-functions/_uv 2>/dev/null || true && \
     rm -rf /root/.local/share/forgejo-cli
