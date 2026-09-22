@@ -65,7 +65,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Version control & collaboration
         git git-annex git-delta git-filter-repo git-lfs \
         # HTTP & download tools
-        curl openssh-clients wget wget2 \
+        curl openssh-clients openssh-server wget wget2 \
         # Text processing & utilities
         bat file gawk jq less sed strace tree \
         # Python ecosystem
