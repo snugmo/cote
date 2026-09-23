@@ -98,13 +98,13 @@ RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodoc
     && fedora-third-party enable \
     && dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         maven \
-        temurin-17-jdk \
+        temurin-21-jdk \
         temurin-25-jdk \
     && dnf clean all
 
 # Java env
 ENV JAVA_HOME=/usr/lib/jvm/java-25-temurin-jdk \
-    JAVA17_HOME=/usr/lib/jvm/java-17-temurin-jdk
+    JAVA21_HOME=/usr/lib/jvm/java-21-temurin-jdk
 
 # Copy cosign binary from upstream image
 COPY --from=cosign-bin /ko-app/cosign /usr/local/bin/cosign
