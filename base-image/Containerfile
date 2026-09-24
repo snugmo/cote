@@ -819,6 +819,8 @@ EOT
 
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
+# Default shell prompt prefix marking the dev-workspace container; override per-session with SHELL_PROMPT_PREFIX
+ENV SHELL_PROMPT_PREFIX="🏝️"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
 CMD ["tail", "-f", "/dev/null"]
