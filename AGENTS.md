@@ -60,7 +60,7 @@ scripts/
 - Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
-- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, SimpleX Chat CLI, nono, lola, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
+- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer + cargo-binstall), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, SimpleX Chat CLI, nono, lola, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 - Go version is controlled by `ARG GO_VERSION=1.27.1` — override at build time if needed.
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
@@ -163,11 +163,11 @@ The Containerfile is structured as **per-arch download stages → parallel insta
 | --------------------- | ------------------------------------------------- | ---------------------------------------------------------------- |
 | npm global            | `nodejs-install` (`FROM base`, Node 26 via fnm)   | typescript-language-server, yaml-language-server, pnpm, eslint   |
 | `go install`          | `go-install` (`FROM downloader`, Go toolchain)    | gopls, golangci-lint-langserver, golangci-lint                   |
-| rustup component      | `rust-install` (`FROM base`)                      | rust-analyzer                                                    |
+| rustup / cargo        | `rust-install` (`FROM base`)                      | rust-analyzer, cargo-binstall                                    |
 | pip                   | `python-install` (`FROM base`)                    | pyright, ruff, mypy, pyrefly, black, pylint                      |
 | Raw binary download   | `<tool>-download-${TARGETARCH}` + install stage   | protols, marksman, helm-ls, tofu-ls, kubeconform, ast-grep       |
 
-- If the tool is available through a package manager, append it to that stage's existing install command (`npm install -g …`, `go install <pkg>@<ref>`, `rustup component add …`, `pip3 install --no-cache-dir --break-system-packages …`). No new stage needed: the existing artifact stage already captures its output directory.
+- If the tool is available through a package manager, append it to that stage's existing install command (`npm install -g …`, `go install <pkg>@<ref>`, `rustup component add …`, `cargo install <pkg>`, `pip3 install --no-cache-dir --break-system-packages …`). No new stage needed: the existing artifact stage already captures its output directory.
 - Otherwise add three stages: a per-arch pair `FROM scratch AS <tool>-download-amd64`/`-arm64` (each a single `ADD` to a canonical `/download/<name>`), a `FROM <tool>-download-${TARGETARCH} AS <tool>-download` selector with a `# hadolint ignore=DL3006` comment above it, and a `FROM downloader AS <tool>-install` stage that consumes the file via `COPY --from=<tool>-download` when no unpack step is needed, or a bind-mounted `RUN` otherwise (see `kubeconform` for the minimal shape). The version ARGs live in global scope at the top of the file; the download stages redeclare them bare. Place the new stages next to related tools and add the matching `<tool>-artifacts` stage in the `# EXTRAS` block.
 
 ### 2. Pick the verification method

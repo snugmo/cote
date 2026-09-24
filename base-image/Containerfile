@@ -233,8 +233,11 @@ ENV RUSTUP_HOME=/opt/rustup \
     CARGO_HOME=/opt/cargo \
     PATH=/opt/cargo/bin:$PATH
 
+# Rust tools intentionally track latest release versions
 RUN rustup-init -y --profile=default --default-toolchain stable && \
-    rustup component add rust-analyzer
+    rustup component add rust-analyzer && \
+    cargo install cargo-binstall && \
+    rm -rf /opt/cargo/registry /opt/cargo/git
 
 FROM scratch AS rust-artifacts
 COPY --from=rust-install --chown=1000:1000 /opt/rustup /opt/rustup/
