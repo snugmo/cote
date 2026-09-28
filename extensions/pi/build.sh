@@ -21,7 +21,6 @@ REGISTRY="${DEV_REGISTRY:-localhost:5000}"
 IMAGE_NAME="${DEV_IMAGE_NAME:-dev-workspace-pi}"
 VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirty 2>/dev/null || echo 'latest')}"
 TAG="${VERSION#v}"
-BASE_IMAGE="${DEV_BASE_IMAGE:-${REGISTRY}/dev-workspace-base:${TAG}}"
 
 PUSH=false
 if [[ $# -gt 2 ]]; then
@@ -44,6 +43,10 @@ elif [[ -n "${1:-}" ]]; then
     printf '\nAborting.\n'
     exit 2
 fi
+
+# BASE_IMAGE is computed here, after arg parsing, so a registry passed as the
+# second argument applies to the base image reference as well.
+BASE_IMAGE="${DEV_BASE_IMAGE:-${REGISTRY}/dev-workspace-base:${TAG}}"
 
 FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${TAG}"
 
