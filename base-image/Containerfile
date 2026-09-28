@@ -83,7 +83,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Markdown renderer
         glow \
         # Image tools
-        ImageMagick GraphicsMagick librsvg2-tools libsixel-utils potrace \
+        ImageMagick GraphicsMagick exif exiv2 librsvg2-tools libsixel-utils potrace \
         # Container tools
         podman buildah skopeo bubblewrap bwrap-oci fuse-overlayfs \
         # Kubernetes utilities
