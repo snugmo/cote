@@ -378,7 +378,7 @@ RUN --mount=type=bind,dst=/download,from=kubectl-linstor-download,src=/download/
 # =============================================================================
 FROM downloader AS cloudnative-pg-install
 ARG TARGETARCH
-ARG CLOUDNATIVE_PG_VERSION=1.30.0
+ARG CLOUDNATIVE_PG_VERSION=1.30.1
 RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
     curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/kubectl-cnpg_${CLOUDNATIVE_PG_VERSION}_linux_${ARCH}.tar.gz" -o kubectl-cnpg.tar.gz && \
     curl -fsSL "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CLOUDNATIVE_PG_VERSION}/multiple.intoto.jsonl" -o multiple.intoto.jsonl && \
