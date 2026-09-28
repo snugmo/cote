@@ -1,0 +1,46 @@
+# PiG (Pi in Go) extension image
+# Installs PiG (https://pi-in-go.dev, github.com/MichaelKinsy/PiG) — a faithful
+# Go implementation of the Pi coding agent — on top of the dev-workspace base
+# image.
+#
+# Build:
+#   ./build.sh                          # Build only
+#   ./build.sh push <registry>          # Build and push
+#
+# Usage in Devfile:
+#   image: <registry>/dev-workspace-pi-in-go:<tag>
+
+ARG BASE_IMAGE=localhost:5000/dev-workspace-base:latest
+FROM ${BASE_IMAGE}
+
+USER root
+
+ARG PIG_VERSION=0.2.0
+
+# Install the official PiG npm package globally. @pi-in-go/pig is a thin Node
+# launcher (bin/pig.js) whose optionalDependencies pull in the native pig
+# binary for the build platform (@pi-in-go/pig-linux-<arch>), so npm selects the
+# correct architecture automatically and no lifecycle scripts are required (the
+# package ships without a postinstall). npm verifies the published tarball
+# integrity (sha512) against the registry. PiG 0.2.0 tracks Pi 0.87.1
+# (`pig --version` prints `0.2.0+0.87.1`).
+RUN npm install -g --ignore-scripts --no-audit --no-fund \
+      "@pi-in-go/pig@${PIG_VERSION}" && \
+    pig --version
+
+# Create PiG's config directory for the workspace user and bake in the r5t LLM
+# provider (the org's keyless OpenAI-compatible gateway at
+# https://llm.r5t.io/v1) as the default model, so the agent is usable out of the
+# box. PiG keeps its state under ~/.pig (agent dir ~/.pig/agent) and never reads
+# or writes ~/.pi.
+RUN mkdir -p /home/user/.pig/agent && \
+    chown -R user:user /home/user/.pig
+
+COPY --chown=user:user models.json settings.json /home/user/.pig/agent/
+
+USER user
+
+LABEL name="dev-workspace-pi-in-go" \
+      description="Dev workspace base with PiG (Pi in Go) terminal coding agent" \
+      maintainer="Joakim Nohlgard" \
+      io.openshift.tags="dev,workspace,pig,go,agent"

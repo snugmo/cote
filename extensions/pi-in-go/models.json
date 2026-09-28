@@ -1,0 +1,20 @@
+{
+  "providers": {
+    "r5t": {
+      "name": "r5t",
+      "baseUrl": "https://llm.r5t.io/v1",
+      "api": "openai-completions",
+      "apiKey": "r5t",
+      "models": [
+        {
+          "id": "qwen3.8-27b",
+          "name": "Qwen3.8-27B (r5t)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 150000,
+          "maxTokens": 32768
+        }
+      ]
+    }
+  }
+}

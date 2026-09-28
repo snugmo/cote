@@ -21,6 +21,12 @@ extensions/
     settings.json      # Baked-in r5t defaults (model, thinking level)
     build.sh           # Build script for Pi extension
     README.md          # Extension documentation
+  pi-in-go/            # PiG (Pi in Go) coding agent extension
+    Containerfile      # Extends base image with PiG coding agent
+    models.json        # Baked-in r5t LLM provider (keyless OpenAI-compatible)
+    settings.json      # Baked-in r5t defaults (model, thinking level)
+    build.sh           # Build script for PiG extension
+    README.md          # Extension documentation
 devfiles/
   devfile.yaml         # Generic workspace template (Devfile schema 2.2.0)
 .devfile.yaml          # Self-hosting devfile — opens this repo as a workspace
@@ -43,6 +49,8 @@ scripts/
 | Build + push Hermes    | `./extensions/hermes/build.sh push <registry>`            |
 | Build Pi extension     | `./extensions/pi/build.sh`                                |
 | Build + push Pi        | `./extensions/pi/build.sh push <registry>`                |
+| Build PiG extension    | `./extensions/pi-in-go/build.sh`                          |
+| Build + push PiG       | `./extensions/pi-in-go/build.sh push <registry>`          |
 | Apply workspace        | `kubectl apply -f devfiles/devfile.yaml`                  |
 
 ## Key Conventions
@@ -99,6 +107,7 @@ Extensions build on top of the base image to add specific capabilities without p
 
 - **Hermes Agent** (`extensions/hermes/`) — Installs [Hermes Agent](https://hermes-agent.nousresearch.com/) with ACP (Agent Communication Protocol) support for IDE integration. Uses a shallow git clone of the upstream repo (pip installs are unsupported). Works with VS Code (ACP Client extension), Zed (ACP Registry), and JetBrains (ACP plugins).
 - **Pi Coding Agent** (`extensions/pi/`) — Installs the [Pi coding agent](https://pi.dev) ([earendil-works/pi](https://github.com/earendil-works/pi)) from the official npm package (`@earendil-works/pi-coding-agent`) with `--ignore-scripts`. Terminal coding agent with interactive TUI, print, RPC, and SDK modes. Bakes in the keyless `r5t` provider (`https://llm.r5t.io/v1`, model `qwen3.8-27b`) as the default LLM in `~/.pi/agent/models.json` + `settings.json`. Its build pulls the base image `${REGISTRY}/dev-workspace-base:<same git-describe tag>` from the registry (override with `DEV_BASE_IMAGE`), so the base image must be pushed before building pi; publish with `./extensions/pi/build.sh push r5t.io/agentic`.
+- **PiG (Pi in Go)** (`extensions/pi-in-go/`) — Installs [PiG](https://pi-in-go.dev/) ([MichaelKinsy/PiG](https://github.com/MichaelKinsy/PiG)), a faithful Go implementation of the Pi coding agent, from the official npm package (`@pi-in-go/pig`) with `--ignore-scripts`. A single native binary (no Node runtime needed unless running TypeScript extensions) with interactive TUI, print/JSON, RPC, and Go SDK modes; extensions in Go, Rust, Python, or Node, plus Piglets. Bakes in the keyless `r5t` provider (`https://llm.r5t.io/v1`, model `qwen3.8-27b`) as the default LLM in `~/.pig/agent/models.json` + `settings.json`. Its build pulls the base image `${REGISTRY}/dev-workspace-base:<same git-describe tag>` from the registry (override with `DEV_BASE_IMAGE`), so the base image must be pushed before building PiG; publish with `./extensions/pi-in-go/build.sh push r5t.io/agentic`.
 
 To use an extension, replace the `tools` container image in your Devfile with the extension image reference.
 
@@ -112,6 +121,7 @@ To use an extension, replace the `tools` container image in your Devfile with th
 6. **Two devfiles, two purposes**: `devfiles/devfile.yaml` is the reusable template for end users. `.devfile.yaml` is for developing this repo itself. Don't confuse them.
 7. **Hermes credentials**: Hermes agent requires API credentials configured before first use. Run `hermes model` inside the workspace or pre-populate `~/.hermes/.env` via a ConfigMap/Secret.
 8. **Pi credentials**: The baked-in `r5t` provider (`qwen3.8-27b`) needs no API key, so `pi` works out of the box. For any other provider, pre-populate an env var (e.g. `ANTHROPIC_API_KEY`) via a ConfigMap/Secret, or run `pi` and use `/login`. Set `PI_OFFLINE=1` to silence startup network calls (update check, telemetry) in air-gapped workspaces.
+9. **PiG credentials**: The baked-in `r5t` provider (`qwen3.8-27b`) needs no API key, so `pig` works out of the box. For any other provider, pre-populate an env var (e.g. `ANTHROPIC_API_KEY`) via a ConfigMap/Secret, or run `pig` and use `/login`. Set `PIG_OFFLINE=1` (or `PI_OFFLINE=1`) to silence startup network calls (update check, model-catalog fetch) in air-gapped workspaces.
 
 ## Adding New Components
 
@@ -280,10 +290,11 @@ These apply whenever an agent session needs network access — both for version 
 | `AST_GREP_VERSION`        | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix; hash pinned in ADD, recompute on bump)                                                     |
 | `KUBECONFORM_VERSION`     | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                       |
 | `PI_VERSION`              | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; npm registry is the install source, see note below)                     |
+| `PIG_VERSION`             | `gh api repos/MichaelKinsy/PiG/releases/latest --jq .tag_name` (extension image `extensions/pi-in-go/`; npm registry `@pi-in-go/pig` is the install source, see note)      |
 | `SIMPLEX_CHAT_VERSION`    | `gh api repos/simplex-chat/simplex-chat/releases/latest --jq .tag_name` (no `v` prefix; hash published in the release body; recompute on bump)                             |
 | `NONO_VERSION`            | `gh api repos/nolabs-ai/nono/releases/latest --jq .tag_name` (strip the `v` prefix; hash published in the release's `SHA256SUMS.txt`; recompute on bump)                   |
 
-Note: the pi extension installs the npm package `@earendil-works/pi-coding-agent` (`extensions/pi/Containerfile`), so the npm registry is the source of truth for what actually gets installed: download `https://registry.npmjs.org/@earendil-works%2Fpi-coding-agent/latest`, then `jq .version` to cross-check the ARG.
+Note: the pi extension installs the npm package `@earendil-works/pi-coding-agent` (`extensions/pi/Containerfile`), so the npm registry is the source of truth for what actually gets installed: download `https://registry.npmjs.org/@earendil-works%2Fpi-coding-agent/latest`, then `jq .version` to cross-check the ARG. Likewise, the PiG extension installs the npm package `@pi-in-go/pig` (`extensions/pi-in-go/Containerfile`): download `https://registry.npmjs.org/@pi-in-go%2Fpig/latest`, then `jq .version` to cross-check `PIG_VERSION` (the GitHub release tag `v<tag>` sources the release archives).
 
 ### Hash Recomputation on Bumps
 
@@ -320,6 +331,6 @@ The full release flow, in order:
 3. Bump the image references in `.devfile.yaml` and in this file's Self-hosting Devfile section to the new tag, in one commit.
 4. Tag the final HEAD: `git tag vN.N.N`. The image tag derives from `git describe --tags --always --dirty` (with the leading `v` stripped), so the tag must exist and the tree must be clean at build time, or the image tag gets a `-dirty` suffix.
 5. Build and push: `./base-image/build.sh push r5t.io/agentic` → `r5t.io/agentic/dev-workspace-base:<tag>`.
-6. Only if `PI_VERSION` changed: `./extensions/pi/build.sh push r5t.io/agentic`. The pi build pulls `${REGISTRY}/dev-workspace-base:<same tag>` from the registry (`DEV_BASE_IMAGE` override), so the base image must be pushed first.
+6. Only if `PI_VERSION` changed: `./extensions/pi/build.sh push r5t.io/agentic`. The pi build pulls `${REGISTRY}/dev-workspace-base:<same tag>` from the registry (`DEV_BASE_IMAGE` override), so the base image must be pushed first. Likewise, only if `PIG_VERSION` changed: `./extensions/pi-in-go/build.sh push r5t.io/agentic` (the PiG build pulls the same base image tag).
 7. Never rebase across a release tag: a stranded tag makes `git describe` fall back to the last reachable tag and silently degrades the image tag (this happened to `v0.15.0`, which degraded `git describe` on `main` to `v0.14.3-N-g<sha>` until a clean tag was created). If it ever happens, re-tag onto the equivalent new commit.
 8. Agent sessions stop here: local commits, the tag, and the image push are done. Pushing the branch and the tag to origin is the user's job.
