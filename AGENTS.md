@@ -27,6 +27,11 @@ extensions/
     settings.json      # Baked-in r5t defaults (model, thinking level)
     build.sh           # Build script for PiG extension
     README.md          # Extension documentation
+  xpra/                # Xpra remote X11 desktop extension
+    Containerfile      # Extends base image with Xpra, X11, and the xpra-html5 client
+    build.sh           # Build script for Xpra extension
+    xpra-desktop       # Desktop session launcher script
+    README.md          # Extension documentation
 devfiles/
   devfile.yaml         # Generic workspace template (Devfile schema 2.2.0)
 .devfile.yaml          # Self-hosting devfile — opens this repo as a workspace
@@ -51,6 +56,8 @@ scripts/
 | Build + push Pi        | `./extensions/pi/build.sh push <registry>`                |
 | Build PiG extension    | `./extensions/pi-in-go/build.sh`                          |
 | Build + push PiG       | `./extensions/pi-in-go/build.sh push <registry>`          |
+| Build Xpra extension   | `./extensions/xpra/build.sh`                              |
+| Build + push Xpra      | `./extensions/xpra/build.sh push <registry>`              |
 | Apply workspace        | `kubectl apply -f devfiles/devfile.yaml`                  |
 
 ## Key Conventions
@@ -108,6 +115,7 @@ Extensions build on top of the base image to add specific capabilities without p
 - **Hermes Agent** (`extensions/hermes/`) — Installs [Hermes Agent](https://hermes-agent.nousresearch.com/) with ACP (Agent Communication Protocol) support for IDE integration. Uses a shallow git clone of the upstream repo (pip installs are unsupported). Works with VS Code (ACP Client extension), Zed (ACP Registry), and JetBrains (ACP plugins).
 - **Pi Coding Agent** (`extensions/pi/`) — Installs the [Pi coding agent](https://pi.dev) ([earendil-works/pi](https://github.com/earendil-works/pi)) from the official npm package (`@earendil-works/pi-coding-agent`) with `--ignore-scripts`. Terminal coding agent with interactive TUI, print, RPC, and SDK modes. Bakes in the keyless `r5t` provider (`https://llm.r5t.io/v1`, model `qwen3.8-27b`) as the default LLM in `~/.pi/agent/models.json` + `settings.json`. Its build pulls the base image `${REGISTRY}/dev-workspace-base:<same git-describe tag>` from the registry (override with `DEV_BASE_IMAGE`), so the base image must be pushed before building pi; publish with `./extensions/pi/build.sh push r5t.io/agentic`.
 - **PiG (Pi in Go)** (`extensions/pi-in-go/`) — Installs [PiG](https://pi-in-go.dev/) ([MichaelKinsy/PiG](https://github.com/MichaelKinsy/PiG)), a faithful Go implementation of the Pi coding agent, from the official npm package (`@pi-in-go/pig`) with `--ignore-scripts`. A single native binary (no Node runtime needed unless running TypeScript extensions) with interactive TUI, print/JSON, RPC, and Go SDK modes; extensions in Go, Rust, Python, or Node, plus Piglets. Bakes in the keyless `r5t` provider (`https://llm.r5t.io/v1`, model `qwen3.8-27b`) as the default LLM in `~/.pig/agent/models.json` + `settings.json`. Its build pulls the base image `${REGISTRY}/dev-workspace-base:<same git-describe tag>` from the registry (override with `DEV_BASE_IMAGE`), so the base image must be pushed before building PiG; publish with `./extensions/pi-in-go/build.sh push r5t.io/agentic`.
+- **Xpra Remote X11 Desktop** (`extensions/xpra/`) — Installs the [Xpra](https://xpra.org) server (Fedora package, with its headless Xorg/Xdummy + xauth deps) plus X11 desktop support (`xorg-x11-server-Xvfb`, `xset`, `xinput`, `xorg-x11-fonts-Type1`, `openbox`, `xterm`) and the [xpra-html5](https://github.com/Xpra-org/xpra-html5) browser client, installed from the upstream git repo at a pinned commit into `/usr/share/xpra/www` (not on PyPI). The `xpra-desktop` launcher starts a daemonized `start-desktop` session (Xdummy by default, `--xvfb` for Xvfb) running openbox and xterm, served on a TCP/WebSocket port with the HTML5 client — a headless container desktop usable from any browser or a native `xpra` client. Its build pulls the base image `${REGISTRY}/dev-workspace-base:<same git-describe tag>` from the registry (override with `DEV_BASE_IMAGE`), so the base image must be pushed before building; publish with `./extensions/xpra/build.sh push r5t.io/agentic`.
 
 To use an extension, replace the `tools` container image in your Devfile with the extension image reference.
 

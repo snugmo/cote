@@ -69,6 +69,7 @@ Optional add-on images built on the base:
 - **[Hermes agent](extensions/hermes/)** — AI coding agent with ACP support for IDE integration (VS Code, Zed, JetBrains).
 - **[Pi agent](extensions/pi/)** — Terminal coding agent (official `@earendil-works/pi-coding-agent` npm package) with interactive, print, RPC, and SDK modes.
 - **[PiG (Pi in Go) agent](extensions/pi-in-go/)** — Terminal coding agent in Go (official `@pi-in-go/pig` npm package), a faithful port of Pi as a single native binary, with interactive, print, RPC, and Go SDK modes.
+- **[Xpra remote X11 desktop](extensions/xpra/)** — Xpra server + X11 (headless Xdummy/Xvfb, openbox, xterm) and the xpra-html5 browser client; serve a headless desktop from any browser or a native xpra client via the `xpra-desktop` launcher.
 
 ## Usage
 
