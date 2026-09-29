@@ -33,14 +33,27 @@ ARG HTML5_CLIENT_COMMIT=3029a041715cd042a90e2a2a8d4224e8afcb151e
 #    or direct use for lightweight sessions)
 #  - xset, xinput: desktop configuration and diagnostics
 #  - xorg-x11-fonts-Type1: core X fonts (X server text rendering)
+#  - xorg-x11-fonts-misc: classic core bitmap fonts (6x13, 7x13, 9x15,
+#    10x20, ...) used by xterm's font menu and legacy applications
+#  - default-fonts-core: default TrueType fonts (Noto, via fontconfig)
+#    for Xft-based desktop applications
 #  - openbox: minimal window manager for desktop sessions
 #  - xterm: terminal application for the desktop
 #  - brotli: compressed assets in the html5 client build (gzip is in the
 #    base image)
 RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         xpra xorg-x11-server-Xvfb xorg-x11-xauth xset xinput \
-        xorg-x11-fonts-Type1 openbox xterm brotli && \
+        xorg-x11-fonts-Type1 xorg-x11-fonts-misc default-fonts-core \
+        openbox xterm brotli && \
     dnf clean all
+
+# xterm falls back to the core `-misc-fixed-*` XLFD font, which Fedora
+# does not ship; when it fails to load, xterm never maps its window and
+# the desktop stays black. Copy the distro app-defaults (keeping its
+# settings) to /etc and add a `faceName` so xterm renders with an Xft
+# monospace font resolvable via fontconfig.
+RUN install -D -m 0644 /usr/share/X11/app-defaults/XTerm /etc/X11/app-defaults/XTerm && \
+    printf '\n# xpra dev-workspace: use an Xft font (Fedora does not ship core -misc-fixed-* XLFDs)\n*faceName: monospace\n*faceSize: 10\n' >> /etc/X11/app-defaults/XTerm
 
 # Install the xpra-html5 browser client from the pinned commit.
 # ./setup.py install (no args) copies the client to /usr/share/xpra/www,
