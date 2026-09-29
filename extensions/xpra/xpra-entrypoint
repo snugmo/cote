@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# xpra-entrypoint — container entrypoint for the dev-workspace-xpra image.
+#
+# With no arguments the container starts an empty X11 desktop (openbox
+# window manager, no applications) as an Xpra session served on a
+# TCP/WebSocket port, and stays alive until the container is stopped:
+#
+#   browser:  http://<host>:<port>/           (xpra-html5 web client)
+#   native:   xpra attach tcp://<host>:<port>
+#
+# With arguments, the same empty desktop is started as a background
+# daemon and the given command is run directly as the container's
+# foreground process, e.g.:
+#
+#   podman run -it --rm --net host dev-workspace-xpra:latest xterm
+#
+# The command is given the session's DISPLAY, so it renders inside the
+# served desktop, while its stdout/stderr go straight to the container's
+# stdout/stderr (`pod logs`) and its exit code becomes the container's.
+# When the command exits, the container stops and the session with it.
+#
+# Escape hatch: a first argument of `xpra` runs the Xpra CLI directly,
+# bypassing the session wrapper:
+#
+#   podman run --rm dev-workspace-xpra:latest -- xpra list-sessions
+#
+# Environment variables (same names as xpra-desktop):
+#   XPRA_PORT (10000)   TCP/WebSocket port the session is served on
+#   XPRA_WIDTH (1280)   Desktop width
+#   XPRA_HEIGHT (720)   Desktop height
+#   XPRA_DPI (96)       Dots per inch
+#   XPRA_SESSION (:10)  Display name for the desktop session
+#   XPRA_XVFB (0)       1/true to use Xvfb instead of the default Xdummy
+
+set -euo pipefail
+
+# Xpra wants an XDG runtime dir; the image sets one via ENV, this covers
+# other UIDs and makes the dir usable (700, as XDG requires).
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/xdg-runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 700 "$XDG_RUNTIME_DIR"
+
+PORT="${XPRA_PORT:-10000}"
+WIDTH="${XPRA_WIDTH:-1280}"
+HEIGHT="${XPRA_HEIGHT:-720}"
+DPI="${XPRA_DPI:-96}"
+SESSION="${XPRA_SESSION:-:10}"
+XVFB="${XPRA_XVFB:-0}"
+
+# Escape hatch: pass through to the raw Xpra CLI.
+if [[ "${1:-}" == xpra ]]; then
+  exec "$@"
+fi
+
+ARGS=(start-desktop "$SESSION")
+if [[ "$XVFB" == "1" || "$XVFB" == "true" ]]; then
+  # Xvfb instead of the default Xdummy (Xorg with the dummy video driver)
+  ARGS+=(--xvfb=Xvfb)
+fi
+ARGS+=(
+  --bind-tcp="0.0.0.0:${PORT}"
+  --html=on
+  --resize-display="${WIDTH}x${HEIGHT}"
+  --dpi="${DPI}"
+  --start=openbox
+)
+
+if [[ $# -gt 0 ]]; then
+  # Start the session as a background daemon, then run the given command
+  # directly as the container's foreground process (exec'd below).
+  xpra "${ARGS[@]}" --daemon=yes
+
+  # Wait until the session's X server accepts connections (the daemon
+  # returns before the X server is fully up). Local processes need no
+  # X authority for Xpra's X server, so DISPLAY alone is enough.
+  export DISPLAY="$SESSION"
+  for _ in $(seq 1 75); do
+    if xset q >/dev/null 2>&1; then
+      break
+    fi
+    sleep 0.2
+  done
+
+  # The command's stdout/stderr go to the container's stdout/stderr and
+  # its exit code becomes the container's. When it exits, the container
+  # stops, taking the daemonized session with it.
+  exec "$@"
+fi
+
+# No command: serve the empty desktop in the foreground; the container
+# lives on until it is stopped.
+exec xpra "${ARGS[@]}" --daemon=no

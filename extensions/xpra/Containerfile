@@ -80,6 +80,17 @@ RUN git clone --depth 1 https://github.com/Xpra-org/xpra-html5.git /tmp/xpra-htm
 COPY --chown=user:user xpra-desktop /usr/local/bin/xpra-desktop
 RUN chmod +x /usr/local/bin/xpra-desktop
 
+# Container entrypoint: with no arguments, serves an empty X11 desktop
+# (openbox) on a TCP/WebSocket port for the lifetime of the container;
+# with arguments, starts the same desktop as a daemon and runs the given
+# command inside it as the container's foreground process (its
+# stdout/stderr go to the container logs, its exit code becomes the
+# container's). The base image's catatonit ENTRYPOINT stays in place for
+# zombie reaping; this only overrides the default CMD.
+COPY --chown=user:user xpra-entrypoint /usr/local/bin/xpra-entrypoint
+RUN chmod +x /usr/local/bin/xpra-entrypoint
+CMD ["/usr/local/bin/xpra-entrypoint"]
+
 USER user
 
 # Xpra (and other desktop tools) expect an XDG runtime dir; give the
