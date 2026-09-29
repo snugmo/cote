@@ -96,7 +96,7 @@ scripts/
 ### Self-hosting Devfile (`.devfile.yaml`)
 
 - Opens this repository itself as a DevWorkspaces workspace.
-- References the pre-built base image at `r5t.io/agentic/dev-workspace-base:0.28.0` (bump the tag when a new base image is released).
+- References the pre-built base image at `r5t.io/agentic/dev-workspace-base:0.29.0` (bump the tag when a new base image is released).
 - Use this to iterate on the repo configuration inside a live workspace.
 
 ### Build Script (`base-image/build.sh`)
