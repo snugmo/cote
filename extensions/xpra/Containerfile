@@ -40,10 +40,10 @@ ARG HTML5_CLIENT_COMMIT=3029a041715cd042a90e2a2a8d4224e8afcb151e
 #  - additional UI/mono fonts: langpacks-fonts-en (English font bundle),
 #    liberation-fonts-all (Arial/Times/Courier metric substitutes),
 #    adwaita-fonts-all (Adwaita UI font), jetbrains-mono-fonts-all,
-#    Cantarell (fixed + variable), Geist (UI + mono variable), Inter
-#    (variable), linux-libertine-fonts-all (serif),
-#    default-fonts-core-emoji (emoji) — for desktop applications and
-#    terminals
+#    cascadia-fonts-all (Cascadia Code programming font), Cantarell
+#    (fixed + variable), Geist (UI + mono variable), Inter (variable),
+#    linux-libertine-fonts-all (serif), default-fonts-core-emoji (emoji)
+#    — for desktop applications and terminals
 #  - openbox: minimal window manager for desktop sessions
 #  - xterm: terminal application for the desktop
 #  - brotli: compressed assets in the html5 client build (gzip is in the
@@ -52,10 +52,11 @@ RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodoc
         xpra xorg-x11-server-Xvfb xorg-x11-xauth xset xinput \
         xorg-x11-fonts-Type1 xorg-x11-fonts-misc default-fonts-core \
         langpacks-fonts-en liberation-fonts-all adwaita-fonts-all \
-        jetbrains-mono-fonts-all abattis-cantarell-fonts \
-        abattis-cantarell-vf-fonts vercel-geist-vf-fonts \
-        vercel-geist-mono-vf-fonts rsms-inter-vf-fonts \
-        linux-libertine-fonts-all default-fonts-core-emoji \
+        jetbrains-mono-fonts-all cascadia-fonts-all \
+        abattis-cantarell-fonts abattis-cantarell-vf-fonts \
+        vercel-geist-vf-fonts vercel-geist-mono-vf-fonts \
+        rsms-inter-vf-fonts linux-libertine-fonts-all \
+        default-fonts-core-emoji \
         openbox xterm brotli && \
     dnf clean all
 
