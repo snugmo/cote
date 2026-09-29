@@ -72,7 +72,6 @@ xpra stop :10
 ## Notes
 
 - **Xdummy vs Xvfb**: Xpra's default headless backend is Xdummy (Xorg with the dummy video driver), which supports arbitrary DPI and dynamic monitors; `--xvfb` selects plain Xvfb instead.
-- **Fonts**: Fedora does not ship the core `-misc-fixed-*` XLFD fonts that `xterm` uses by default — and `xterm` refuses to map its window when the font fails to load (leaving a black desktop). The image copies the distro `XTerm` app-defaults to `/etc/X11/app-defaults/XTerm` and adds `*faceName: monospace`, so `xterm` renders with the fontconfig default monospace font (Noto Sans Mono) instead.
 - **Desktop vs seamless**: the launcher uses `xpra start-desktop`, which serves the whole virtual display as one desktop. A plain `xpra start <name>` would start a *seamless* session with separate per-app windows instead — either can be served with the same HTML5 client by adding `--bind-tcp` and `--html=on`.
 - **Security**: `--bind-tcp` serves the session over *unencrypted* TCP/WebSocket and the HTML5 client has no built-in authentication (a password can be set with `--pass=...`). Keep the port on a trusted network, or front it with a TLS proxy / ingress before exposing it.
 - **Logs**: session logs go to `$XDG_RUNTIME_DIR/xpra/<display>/server.log` (and `Xorg.log` for the X server).
