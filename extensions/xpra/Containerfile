@@ -46,6 +46,7 @@ ARG HTML5_CLIENT_COMMIT=3029a041715cd042a90e2a2a8d4224e8afcb151e
 #    — for desktop applications and terminals
 #  - openbox: minimal window manager for desktop sessions
 #  - xterm: terminal application for the desktop
+#  - kitty: GPU-accelerated terminal as a richer alternative on the desktop
 #  - brotli: compressed assets in the html5 client build (gzip is in the
 #    base image)
 RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
@@ -57,7 +58,7 @@ RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodoc
         vercel-geist-vf-fonts vercel-geist-mono-vf-fonts \
         rsms-inter-vf-fonts linux-libertine-fonts-all \
         default-fonts-core-emoji \
-        openbox xterm brotli && \
+        openbox xterm kitty brotli && \
     dnf clean all
 
 # xterm falls back to the core `-misc-fixed-*` XLFD font, which Fedora
