@@ -1,0 +1,74 @@
+# Xpra remote X11 desktop extension image
+# Adds Xpra ("screen for X", https://xpra.org) on top of the dev-workspace
+# base image, together with the X11 dependencies and the xpra-html5
+# browser client (https://github.com/Xpra-org/xpra-html5). A headless
+# container can serve a full X11 desktop (Xdummy/Xvfb + openbox + xterm)
+# over a TCP/WebSocket port: point a browser at the port for the HTML5
+# client, or attach with a native xpra client.
+#
+# Build:
+#   ./build.sh                          # Build only
+#   ./build.sh push <registry>          # Build and push
+#
+# Usage in Devfile:
+#   image: <registry>/dev-workspace-xpra:<tag>
+
+ARG BASE_IMAGE=localhost:5000/dev-workspace-base:latest
+FROM ${BASE_IMAGE}
+
+USER root
+
+# The xpra-html5 client is not published on PyPI; upstream builds its
+# distro packages from this git repo (setup.py install). Pin a specific
+# commit (VERSION 22 as of this commit) for reproducible builds.
+ARG HTML5_CLIENT_VERSION=22
+ARG HTML5_CLIENT_COMMIT=3029a041715cd042a90e2a2a8d4224e8afcb151e
+
+# Xpra server and X11 dependencies (Fedora packages):
+#  - xpra: the server (and client). Hard-deps on the headless-capable
+#    xorg-x11-server-Xorg + dummy video driver (Xdummy desktop sessions),
+#    xorg-x11-xauth, xrandr, python3-lz4, python3-pillow, gstreamer
+#    plugins, and pipewire
+#  - xorg-x11-server-Xvfb: alternative headless X server (xpra --xvfb,
+#    or direct use for lightweight sessions)
+#  - xset, xinput: desktop configuration and diagnostics
+#  - xorg-x11-fonts-Type1: core X fonts (X server text rendering)
+#  - openbox: minimal window manager for desktop sessions
+#  - xterm: terminal application for the desktop
+#  - brotli: compressed assets in the html5 client build (gzip is in the
+#    base image)
+RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
+        xpra xorg-x11-server-Xvfb xorg-x11-xauth xset xinput \
+        xorg-x11-fonts-Type1 openbox xterm brotli && \
+    dnf clean all
+
+# Install the xpra-html5 browser client from the pinned commit.
+# ./setup.py install (no args) copies the client to /usr/share/xpra/www,
+# where the xpra server looks for it, and places default-settings.txt in
+# /etc/xpra/html5-client (symlinked from the install dir). No JS
+# minifier is installed, so the client is copied unminified; gzip and
+# brotli compressed copies are still generated.
+RUN git clone --depth 1 https://github.com/Xpra-org/xpra-html5.git /tmp/xpra-html5 && \
+    cd /tmp/xpra-html5 && \
+    git fetch --depth 1 origin "${HTML5_CLIENT_COMMIT}" && \
+    git checkout --detach "${HTML5_CLIENT_COMMIT}" && \
+    ./setup.py install && \
+    cd / && rm -rf /tmp/xpra-html5
+
+# Desktop launcher: starts a headless X11 desktop (Xdummy by default,
+# Xvfb with --xvfb) running openbox + xterm, served by xpra with the
+# HTML5 client on a TCP/WebSocket port.
+COPY --chown=user:user xpra-desktop /usr/local/bin/xpra-desktop
+RUN chmod +x /usr/local/bin/xpra-desktop
+
+USER user
+
+# Xpra (and other desktop tools) expect an XDG runtime dir; give the
+# workspace user a stable one so sessions and their sockets persist across
+# `exec` shells in the container.
+ENV XDG_RUNTIME_DIR=/tmp/xdg-runtime-1000
+
+LABEL name="dev-workspace-xpra" \
+      description="Dev workspace base with Xpra remote X11 desktop and HTML5 web client" \
+      maintainer="Joakim Nohlgard" \
+      io.openshift.tags="dev,workspace,xpra,x11,desktop"

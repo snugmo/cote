@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# xpra-desktop — Start a headless X11 desktop served by Xpra.
+#
+# Starts an Xpra desktop session on a virtual X server (Xdummy by default —
+# Xorg with the dummy video driver; use --xvfb for Xvfb), runs openbox
+# (window manager) and xterm (terminal) inside the session, and serves the
+# session on a TCP/WebSocket port:
+#
+#   browser:  http://<host>:<port>/              (xpra-html5 web client)
+#   native:   xpra attach tcp://<host>:<port>
+#
+# Sessions use display numbers (:10 by default) with the start-desktop
+# mode, which Xpra serves as a full desktop; a plain `xpra start` (or a
+# named session) would start a seamless session with separate per-app
+# windows instead.
+#
+# The session is daemonized by default so it keeps running after the shell
+# that started it exits; use --foreground to run in the foreground
+# (handy for debugging).
+#
+# Usage:
+#   xpra-desktop [PORT] [--width W] [--height H] [--dpi D] [--xvfb]
+#                [--session DISPLAY] [--foreground]
+#
+# Environment variables (alternative to flags):
+#   XPRA_PORT (10000)  XPRA_WIDTH (1280)  XPRA_HEIGHT (720)
+#   XPRA_DPI (96)      XPRA_SESSION (:10)
+
+set -euo pipefail
+
+# Xpra wants an XDG runtime dir; the image sets one via ENV, this covers
+# other UIDs and makes the dir usable (700, as XDG requires).
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/xdg-runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 700 "$XDG_RUNTIME_DIR"
+
+PORT="${XPRA_PORT:-10000}"
+WIDTH="${XPRA_WIDTH:-1280}"
+HEIGHT="${XPRA_HEIGHT:-720}"
+DPI="${XPRA_DPI:-96}"
+SESSION="${XPRA_SESSION:-:10}"
+XVFB=false
+FOREGROUND=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --width)      WIDTH="$2"; shift 2 ;;
+    --height)     HEIGHT="$2"; shift 2 ;;
+    --dpi)        DPI="$2"; shift 2 ;;
+    --session)    SESSION="$2"; shift 2 ;;
+    --xvfb)       XVFB=true; shift ;;
+    --foreground) FOREGROUND=true; shift ;;
+    -h|--help)    sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -*)           echo "unknown option: $1 (try --help)" >&2; exit 2 ;;
+    *)            PORT="$1"; shift ;;
+  esac
+done
+
+ARGS=(start-desktop "$SESSION")
+if $XVFB; then
+  # Xvfb instead of the default Xdummy (Xorg with the dummy video driver)
+  ARGS+=(--xvfb=Xvfb)
+fi
+ARGS+=(
+  --bind-tcp="0.0.0.0:${PORT}"
+  --html=on
+  --resize-display="${WIDTH}x${HEIGHT}"
+  --dpi="${DPI}"
+  --start=openbox
+  --start=xterm
+)
+if $FOREGROUND; then
+  ARGS+=(--no-daemon)
+else
+  ARGS+=(--daemon)
+fi
+
+xpra "${ARGS[@]}"
+
+echo
+echo "Xpra desktop '${SESSION}' is running (port ${PORT})."
+echo "  browser:  http://localhost:${PORT}/"
+echo "  native:   xpra attach tcp://127.0.0.1:${PORT}"
+echo "  status:   xpra list-sessions"
+echo "  stop:     xpra stop ${SESSION}"
