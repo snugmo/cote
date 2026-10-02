@@ -210,8 +210,8 @@ ENV GO_VERSION=${GO_VERSION} \
     GOPATH=/go \
     PATH=/go/bin:/opt/go/bin:$PATH
 
-RUN --mount=type=bind,dst=/download,from=go-download,src=/download/ \
-    tar -C /opt -xzf /download/go.tar.gz
+COPY --from=go-download /download/go.tar.gz /download/go.tar.gz
+RUN tar -C /opt -xzf /download/go.tar.gz
 
 # Go tools intentionally track latest module versions via @latest
 # hadolint ignore=DL3062
@@ -265,8 +265,8 @@ ADD --checksum=sha256:6f66a14e8239871fb477f9746c941fedfa77e8fe28a8bc7c07e1dc7f53
 FROM uv-download-${TARGETARCH} AS uv-download
 
 FROM downloader AS uv-install
-RUN --mount=type=bind,dst=/download,from=uv-download,src=/download/ \
-    mkdir -p /tmp/uv-extract && \
+COPY --from=uv-download /download/uv.tar.gz /download/uv.tar.gz
+RUN mkdir -p /tmp/uv-extract && \
     tar -xzf /download/uv.tar.gz -C /tmp/uv-extract --strip-components=1 && \
     cp /tmp/uv-extract/uv /usr/local/bin/ && \
     cp /tmp/uv-extract/uvx /usr/local/bin/ && \
@@ -326,8 +326,8 @@ ADD --checksum=sha256:7862c86c72f43df3a2d93ddde6f473285b4e2af61b494849846827e513
 FROM github-cli-download-${TARGETARCH} AS github-cli-download
 
 FROM downloader AS github-cli-install
-RUN --mount=type=bind,dst=/download,from=github-cli-download,src=/download/ \
-    mkdir -p /tmp/gh-extract && \
+COPY --from=github-cli-download /download/gh.tar.gz /download/gh.tar.gz
+RUN mkdir -p /tmp/gh-extract && \
     tar -xzf /download/gh.tar.gz -C /tmp/gh-extract && \
     cp /tmp/gh-extract/*/bin/gh /usr/local/bin/gh && \
     chmod +x /usr/local/bin/gh && \
@@ -370,8 +370,8 @@ ADD --checksum=sha256:5fa7f1bd4f0aa745835c049e2c443db49ad1554d50bde645fbb789e1fb
 FROM kubectl-linstor-download-${TARGETARCH} AS kubectl-linstor-download
 
 FROM downloader AS kubectl-linstor-install
-RUN --mount=type=bind,dst=/download,from=kubectl-linstor-download,src=/download/ \
-    tar -xzf /download/kubectl-linstor.tar.gz -C /usr/local/bin kubectl-linstor && \
+COPY --from=kubectl-linstor-download /download/kubectl-linstor.tar.gz /download/kubectl-linstor.tar.gz
+RUN tar -xzf /download/kubectl-linstor.tar.gz -C /usr/local/bin kubectl-linstor && \
     chmod +x /usr/local/bin/kubectl-linstor
 
 # =============================================================================
@@ -513,8 +513,8 @@ ADD --checksum=sha256:d30430f86720100e6fc6d16881fcf16bc9e4cb3c4d221fafc1aa992f01
 FROM tofu-ls-download-${TARGETARCH} AS tofu-ls-download
 
 FROM downloader AS tofu-ls-install
-RUN --mount=type=bind,dst=/download,from=tofu-ls-download,src=/download/ \
-    tar -xzf /download/tofu-ls.tar.gz -C /usr/local/bin && \
+COPY --from=tofu-ls-download /download/tofu-ls.tar.gz /download/tofu-ls.tar.gz
+RUN tar -xzf /download/tofu-ls.tar.gz -C /usr/local/bin && \
     chmod +x /usr/local/bin/tofu-ls
 
 # =============================================================================
@@ -536,8 +536,8 @@ ADD --checksum=sha256:5cb5670dd8393d8f7b09df88261e017519c45239d0523b77eacd83b241
 FROM protols-download-${TARGETARCH} AS protols-download
 
 FROM downloader AS protols-install
-RUN --mount=type=bind,dst=/download,from=protols-download,src=/download/ \
-    tar -xzf /download/protols.tar.gz -C /usr/local/bin protols && \
+COPY --from=protols-download /download/protols.tar.gz /download/protols.tar.gz
+RUN tar -xzf /download/protols.tar.gz -C /usr/local/bin protols && \
     chmod +x /usr/local/bin/protols
 
 # =============================================================================
@@ -580,8 +580,8 @@ ADD --checksum=sha256:b39cfbc58da4b869a88b8a4bc57bd5deb0d24541e704cf7c257da7b53e
 FROM ast-grep-download-${TARGETARCH} AS ast-grep-download
 
 FROM downloader AS ast-grep-install
-RUN --mount=type=bind,dst=/download,from=ast-grep-download,src=/download/ \
-    mkdir -p /tmp/ast-grep && \
+COPY --from=ast-grep-download /download/ast-grep.zip /download/ast-grep.zip
+RUN mkdir -p /tmp/ast-grep && \
     unzip -q /download/ast-grep.zip -d /tmp/ast-grep && \
     cp /tmp/ast-grep/ast-grep /usr/local/bin/ast-grep && \
     chmod +x /usr/local/bin/ast-grep && \
@@ -606,8 +606,8 @@ ADD --checksum=sha256:1f53fc8e81258197a35e8603054162a5af1de8c5af13746c71ab680d95
 FROM kubeconform-download-${TARGETARCH} AS kubeconform-download
 
 FROM downloader AS kubeconform-install
-RUN --mount=type=bind,dst=/download,from=kubeconform-download,src=/download/ \
-    tar -xzf /download/kubeconform.tar.gz -C /usr/local/bin kubeconform && \
+COPY --from=kubeconform-download /download/kubeconform.tar.gz /download/kubeconform.tar.gz
+RUN tar -xzf /download/kubeconform.tar.gz -C /usr/local/bin kubeconform && \
     chmod +x /usr/local/bin/kubeconform
 
 # =============================================================================
@@ -652,8 +652,8 @@ ADD --checksum=sha256:c4a4f4b9ae318574d30d352127a34dcc919c4d6682ee8fbd30bb8d2bd2
 FROM nono-download-${TARGETARCH} AS nono-download
 
 FROM downloader AS nono-install
-RUN --mount=type=bind,dst=/download,from=nono-download,src=/download/ \
-    tar -xzf /download/nono.tar.gz -C /usr/local/bin nono && \
+COPY --from=nono-download /download/nono.tar.gz /download/nono.tar.gz
+RUN tar -xzf /download/nono.tar.gz -C /usr/local/bin nono && \
     chmod +x /usr/local/bin/nono
 
 # =============================================================================
