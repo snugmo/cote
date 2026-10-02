@@ -24,6 +24,11 @@ The final stage assembles everything from the `# EXTRAS` block: each tool contri
 - Subuid/subgid ranges (2000–65000) are configured on the `user` account to enable **rootless buildah/podman inside the container**.
 - All binary downloads are verified as far as possible: where upstreams publish SHA-256s, the download itself is an `ADD --checksum=sha256:…` in the Containerfile; otherwise cosign signatures or SLSA provenance — not all upstreams provide cryptographic signatures.
 
+## Devfiles
+
+- **`devfiles/devfile.yaml`** — the reusable end-user template (Devfile schema `2.2.0`). The `tools` container mounts source and provides the shared toolchain; IDE components are commented out by default (uncomment per-team). Env vars (`GOPATH`, `CARGO_HOME`, `RUSTUP_HOME`, `JAVA_HOME`, `PATH`) are baked into the image, so no `env` block is needed. Persistent volumes (`tools-cache`, `tools-local`) survive pod restarts for pip/npm/cargo caches. The `image` field defaults to `r5t.io/agentic/dev-workspace-base:latest`. The commands section includes `run-tests` (placeholder) and `rebuild-base-image` (runs buildah inside the workspace).
+- **`.devfile.yaml`** — the self-hosting devfile: opens this repo itself as a workspace and references the pre-built base image at `r5t.io/agentic/dev-workspace-base:0.31.0` (bump the tag when a new base image is released). Use it to iterate on the repo configuration inside a live workspace.
+
 ## Verifying Artifact Stages
 
 After changing `COPY` directives in artifact stages, verify they capture all needed files:
