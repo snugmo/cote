@@ -16,7 +16,7 @@ OCI-based coding workspaces for human developers and AI agents. Provides a unive
 | **[Maven](https://maven.apache.org)**                              | Fedora 44 stock | dnf                                                       |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)**   | Fedora 44 stock | dnf                                                       |
 | **[Crush CLI](https://github.com/charmbracelet/crush)**            | 0.97.1          | GitHub release, cosign verified                           |
-| **[uv](https://github.com/astral-sh/uv)**                          | 0.12.21         | GitHub release                                            |
+| **[uv](https://github.com/astral-sh/uv)**                          | 0.12.22         | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                   | 3.1.3           | OCI image                                                 |
 | **[SimpleX Chat CLI](https://simplex.chat/docs/cli.html)**         | 7.0.3           | GitHub release (SHA-256 in release notes)                 |
 | **[nono](https://github.com/nolabs-ai/nono)**                      | 0.79.0          | GitHub release (SHA-256SUMS.txt)                          |
