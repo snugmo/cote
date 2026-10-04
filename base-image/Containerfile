@@ -12,7 +12,7 @@ ARG GO_VERSION=1.27.1
 ARG UV_VERSION=0.12.23
 ARG GH_VERSION=2.102.0
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
-ARG AGENTGATEWAY_VERSION=1.5.0
+ARG AGENTGATEWAY_VERSION=1.6.0
 ARG MARKSMAN_VERSION=2026-02-08
 ARG HELM_LS_VERSION=0.5.4
 ARG TOFU_LS_VERSION=0.5.3
@@ -422,13 +422,13 @@ RUN ARCH=$TARGETARCH && \
 FROM scratch AS agentgateway-download-amd64
 ARG TARGETARCH
 ARG AGENTGATEWAY_VERSION
-ADD --checksum=sha256:19fb6e948991c7eb43c6cee9d7748685a4a372e55aa65dbfdc49492a5ba2fe76 --chmod=0755 \
+ADD --checksum=sha256:318cfa446e142790f43008362f6e61af82ce6ddfa597c6cc451b336709819e4b --chmod=0755 \
     https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-amd64 /download/agctl
 
 FROM scratch AS agentgateway-download-arm64
 ARG TARGETARCH
 ARG AGENTGATEWAY_VERSION
-ADD --checksum=sha256:3c6f36f369ea9395d3214209240b645c4b09931d1249108d73179bd1a2adf706 --chmod=0755 \
+ADD --checksum=sha256:683e605c3bf10b5158d7015b4338c67d142bc9a832c75e6c8b77160035844d1d --chmod=0755 \
     https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-arm64 /download/agctl
 
 # hadolint ignore=DL3006
