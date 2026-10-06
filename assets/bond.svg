@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"> role="img" aria-label="The Bond — terminal and agent inside a workspace">
+  <style>
+    /* Default (light) ink; librsvg and other non-dynamic renderers stop here. */
+    .ink { stroke: #1f2328; }
+    /* Dynamic renderers (browsers) follow the system scheme. */
+    @media (prefers-color-scheme: dark) { .ink { stroke: #e6edf3; } }
+  </style>
+
+  <!-- The Bond: the squishy capsule holding a terminal and an agent, joined by one bond -->
+  <g transform="rotate(-8 128 128)">
+    <!-- the elastic workspace, same bouncy blob -->
+    <path d="M128 38
+             C 172 38, 214 66, 218 110
+             C 222 156, 196 206, 148 214
+             C 100 222, 52 200, 42 152
+             C 34 110, 62 52, 108 40
+             C 114 38.5, 121 38, 128 38 Z"
+          fill="none" class="ink" stroke="#1f2328" stroke-width="12" stroke-linejoin="round"/>
+    <!-- comic-book highlight -->
+    <path d="M84 84 C 92 68, 112 58, 128 56" fill="none" class="ink" stroke="#1f2328" stroke-width="10" stroke-linecap="round" opacity="0.35"/>
+    <!-- the bond: drawn first, ends hidden under the two parties -->
+    <line x1="129" y1="129" x2="172" y2="102" class="ink" stroke="#1f2328" stroke-width="9" stroke-linecap="round"/>
+    <!-- the human: a little terminal window with an accent-colored prompt -->
+    <rect x="60" y="108" width="66" height="56" rx="12" fill="none" class="ink" stroke="#1f2328" stroke-width="8"/>
+    <path d="M74 122 L90 133 L74 144" fill="none" stroke="#f472b6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="96" y1="144" x2="114" y2="144" stroke="#f472b6" stroke-width="7" stroke-linecap="round"/>
+    <!-- the agent: accent particle with a quiet orbit -->
+    <circle cx="172" cy="102" r="32" fill="none" stroke="#f472b6" stroke-width="4" opacity="0.45"
+            stroke-dasharray="4 10" stroke-linecap="round"/>
+    <circle cx="172" cy="102" r="20" fill="#f472b6"/>
+    <!-- caret eyes: ^^ at full size, a friendly speck when small -->
+    <path d="M162 101 L166 96 L170 101" fill="none" class="ink" stroke="#1f2328" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M174 101 L178 96 L182 101" fill="none" class="ink" stroke="#1f2328" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- settle/bounce lines -->
+  <path d="M40 232 q 14 -8 28 0" fill="none" class="ink" stroke="#1f2328" stroke-width="8" stroke-linecap="round" opacity="0.5"/>
+  <path d="M196 232 q 14 -8 28 0" fill="none" class="ink" stroke="#1f2328" stroke-width="8" stroke-linecap="round" opacity="0.5"/>
+</svg>
