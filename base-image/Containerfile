@@ -79,7 +79,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Misc dev utilities
         7zip gzip rsync sqlite tar tmux unzip xdelta xz xxhash zip zstd \
         # Network tools
-        bind-utils grpcurl iproute iputils knot-utils net-tools nmap nmap-ncat oidc-agent-cli socat tcpdump \
+        bind-utils grpcurl iproute iputils knot-utils net-tools nmap nmap-ncat oidc-agent-cli socat slirp4netns tcpdump \
         # Markdown renderer
         glow \
         # Image tools
