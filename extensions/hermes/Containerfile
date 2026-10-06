@@ -44,7 +44,24 @@ USER user
 # Set environment for Hermes
 ENV HERMES_HOME=/home/user/.hermes
 
-LABEL name="dev-workspace-hermes" \
-      description="Dev workspace base with Hermes agent and ACP support for IDE integration" \
-      maintainer="Joakim Nohlgard" \
+# OCI well-known image labels (image-spec annotations.md). VERSION/REVISION/
+# CREATED are passed by build.sh via --build-arg; BASE_IMAGE is the resolved
+# reference of the base image this image extends.
+ARG VERSION=latest
+ARG REVISION=unknown
+ARG CREATED=
+ARG BASE_IMAGE=localhost:5000/dev-workspace-base:latest
+
+LABEL org.opencontainers.image.title="dev-workspace-hermes" \
+      org.opencontainers.image.description="Dev workspace base with Hermes agent and ACP support for IDE integration" \
+      org.opencontainers.image.authors="Joakim Nohlgård" \
+      org.opencontainers.image.vendor="r5t" \
+      org.opencontainers.image.licenses="AGPL-3.0" \
+      org.opencontainers.image.url="https://r5t.io/agentic/agent-workspace" \
+      org.opencontainers.image.documentation="https://r5t.io/agentic/agent-workspace" \
+      org.opencontainers.image.source="https://r5t.io/agentic/agent-workspace.git" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${REVISION}" \
+      org.opencontainers.image.created="${CREATED}" \
+      org.opencontainers.image.base.name="${BASE_IMAGE}" \
       io.openshift.tags="dev,workspace,hermes,acp,agent"

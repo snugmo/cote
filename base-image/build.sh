@@ -22,6 +22,9 @@ usage() {
 REGISTRY="${DEV_REGISTRY:-localhost:5000}"
 IMAGE_NAME="${DEV_IMAGE_NAME:-dev-workspace-base}"
 VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirty 2>/dev/null || echo 'latest')}"
+# Values for the org.opencontainers.image.* well-known labels (see Containerfile)
+REVISION="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo 'unknown')"
+CREATED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 JOBS="${DEV_JOBS:-}"
 TAG="${VERSION#v}"
 
@@ -65,6 +68,9 @@ BUILD_ARGS=(
     --storage-opt ignore_chown_errors=true
     -t "${FULL_IMAGE}"
     -f "${SCRIPT_DIR}/Containerfile"
+    --build-arg VERSION="${TAG}"
+    --build-arg REVISION="${REVISION}"
+    --build-arg CREATED="${CREATED}"
 )
 if [[ -n "${JOBS}" ]]; then
     BUILD_ARGS+=(--jobs "${JOBS}")

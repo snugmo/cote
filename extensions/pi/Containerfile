@@ -34,7 +34,24 @@ COPY --chown=user:user models.json settings.json /home/user/.pi/agent/
 
 USER user
 
-LABEL name="dev-workspace-pi" \
-      description="Dev workspace base with Pi coding agent for terminal, RPC, and SDK integrations" \
-      maintainer="Joakim Nohlgard" \
+# OCI well-known image labels (image-spec annotations.md). VERSION/REVISION/
+# CREATED are passed by build.sh via --build-arg; BASE_IMAGE is the resolved
+# reference of the base image this image extends.
+ARG VERSION=latest
+ARG REVISION=unknown
+ARG CREATED=
+ARG BASE_IMAGE=localhost:5000/dev-workspace-base:latest
+
+LABEL org.opencontainers.image.title="dev-workspace-pi" \
+      org.opencontainers.image.description="Dev workspace base with Pi coding agent for terminal, RPC, and SDK integrations" \
+      org.opencontainers.image.authors="Joakim Nohlgård" \
+      org.opencontainers.image.vendor="r5t" \
+      org.opencontainers.image.licenses="AGPL-3.0" \
+      org.opencontainers.image.url="https://r5t.io/agentic/agent-workspace" \
+      org.opencontainers.image.documentation="https://r5t.io/agentic/agent-workspace" \
+      org.opencontainers.image.source="https://r5t.io/agentic/agent-workspace.git" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${REVISION}" \
+      org.opencontainers.image.created="${CREATED}" \
+      org.opencontainers.image.base.name="${BASE_IMAGE}" \
       io.openshift.tags="dev,workspace,pi,agent"

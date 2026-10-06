@@ -829,7 +829,22 @@ WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
 CMD ["tail", "-f", "/dev/null"]
 
-LABEL name="dev-workspace-base" \
-      description="Base development environment for agentic developer workspaces" \
-      maintainer="Joakim Nohlgård" \
+# OCI well-known image labels (image-spec annotations.md). VERSION/REVISION/
+# CREATED are passed by build.sh via --build-arg; the defaults keep ad-hoc
+# `buildah build -f` invocations valid.
+ARG VERSION=latest
+ARG REVISION=unknown
+ARG CREATED=
+
+LABEL org.opencontainers.image.title="dev-workspace-base" \
+      org.opencontainers.image.description="Base development environment for agentic developer workspaces" \
+      org.opencontainers.image.authors="Joakim Nohlgård" \
+      org.opencontainers.image.vendor="r5t" \
+      org.opencontainers.image.licenses="AGPL-3.0" \
+      org.opencontainers.image.url="https://r5t.io/agentic/agent-workspace" \
+      org.opencontainers.image.documentation="https://r5t.io/agentic/agent-workspace" \
+      org.opencontainers.image.source="https://r5t.io/agentic/agent-workspace.git" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${REVISION}" \
+      org.opencontainers.image.created="${CREATED}" \
       io.openshift.tags="dev,workspace,toolchain"
