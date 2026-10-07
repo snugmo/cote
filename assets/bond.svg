@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"> role="img" aria-label="The Bond — terminal and agent inside a workspace">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="The Bond — terminal and agent inside a workspace">
   <style>
     /* Default (light) ink; librsvg and other non-dynamic renderers stop here. */
     .ink { stroke: #1f2328; }
