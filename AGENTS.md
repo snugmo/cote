@@ -63,7 +63,7 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 ### Self-hosting Devfile (`.devfile.yaml`)
 
 - Opens this repository itself as a DevWorkspaces workspace.
-- References the pre-built base image at `r5t.io/agentic/dev-workspace-base:0.33.0` (bump the tag when a new base image is released).
+- References the pre-built base image at `r5t.io/agentic/dev-workspace-base:0.34.0` (bump the tag when a new base image is released).
 
 ### Build Script (`base-image/build.sh`)
 
