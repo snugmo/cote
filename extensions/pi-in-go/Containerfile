@@ -15,15 +15,15 @@ FROM ${BASE_IMAGE}
 
 USER root
 
-ARG PIG_VERSION=0.4.0
+ARG PIG_VERSION=0.4.1
 
 # Install the official PiG npm package globally. @pi-in-go/pig is a thin Node
 # launcher (bin/pig.js) whose optionalDependencies pull in the native pig
 # binary for the build platform (@pi-in-go/pig-linux-<arch>), so npm selects the
 # correct architecture automatically and no lifecycle scripts are required (the
 # package ships without a postinstall). npm verifies the published tarball
-# integrity (sha512) against the registry. PiG 0.4.0 tracks Pi 1.0.0
-# (`pig --version` prints `0.4.0+1.0.0`).
+# integrity (sha512) against the registry. PiG 0.4.1 tracks Pi 1.0.3
+# (`pig --version` prints `0.4.1+1.0.3`).
 RUN npm install -g --ignore-scripts --no-audit --no-fund \
       "@pi-in-go/pig@${PIG_VERSION}" && \
     pig --version
