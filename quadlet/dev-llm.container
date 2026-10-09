@@ -1,0 +1,88 @@
+# dev-llm.container
+#
+# Quadlet (Podman) unit that runs the cote base dev image as a *user* systemd
+# service. Install location on your host:
+#     ~/.config/containers/systemd/dev-llm.container
+# (or $XDG_CONFIG_HOME/containers/systemd/ when XDG_CONFIG_HOME is set)
+#
+# It generates the user service "dev-llm.service", which owns a rootless
+# podman container also named "dev-llm" -- so `podman exec dev-llm ...` keeps
+# working exactly as it does today.
+#
+# This is the systemd-ified version of your current one-liner:
+#   podman run -d --replace --name=dev-llm --hostname=dev-llm \
+#     --userns=keep-id:uid=1000,gid=1000 \
+#     -v dev-projects:/projects/ -w /projects -v dev-home:/home/user \
+#     -e TERM -e COLORTERM <image>:<tag>
+#
+# From now on you don't run `podman run` yourself -- you drive it with systemd:
+#     systemctl --user start   dev-llm
+#     systemctl --user stop    dev-llm
+#     systemctl --user restart dev-llm
+# (Quadlet injects -d --sdnotify=conmon --replace --rm --cgroups=split into the
+#  underlying podman command automatically; see the [Container] note below.)
+
+[Unit]
+Description=cote base dev container (dev-llm)
+
+[Container]
+# <image>:<tag> -- set this to the image you actually run.
+# Default here is the cote base image; change it as needed.
+# Must stay a *fully-qualified* reference (registry/repo:tag) because
+# AutoUpdate below requires it.
+Image=ghcr.io/snugmo/cote:latest-base
+
+# Mark the image as updatable from the registry
+# (--label io.containers.autoupdate=registry). With the moving
+# latest-base tag, `podman auto-update --user` re-pulls it in place;
+# add --upgrade to have it restart this unit afterwards. Distro
+# packages sometimes bundle a podman-auto-update timer for doing
+# this on a schedule instead of manually.
+AutoUpdate=registry
+
+# --name / --hostname  (keep the container name so `podman exec dev-llm` works)
+ContainerName=dev-llm
+HostName=dev-llm
+
+# --userns  (rootless keep-id: map host 1000:1000 -> container 1000:1000)
+UserNS=keep-id:uid=1000,gid=1000
+
+# -w /projects
+WorkingDir=/projects
+
+# -v dev-projects:/projects   (named volume; reuses the existing one if present)
+Volume=dev-projects:/projects
+# -v dev-home:/home/user      (named volume; persists config across upgrades)
+Volume=dev-home:/home/user
+
+# -e TERM -e COLORTERM
+# A *user* service is started by the `systemd --user` daemon, which has NO shell
+# environment (no TERM/COLORTERM), so a pass-through `Environment=TERM` would be
+# empty and useless here. Hardcode the two values that give color support in
+# `podman exec` without needing to add -e to the exec line.
+Environment=TERM=xterm-256color
+Environment=COLORTERM=truecolor
+
+# Lifecycle flags: Quadlet *always* appends to the generated `podman run`:
+#     --replace --rm --cgroups=split --sdnotify=conmon -d
+#   * --replace : the first `systemctl --user start dev-llm` takes over your
+#                 existing manually-created `dev-llm` container (removes it
+#                 first). Because dev-projects/dev-home are *named* volumes,
+#                 they carry over and all your data persists across the switch.
+#   * --rm / -d / --sdnotify=conmon : clean, systemd-managed start/stop
+#                 (conmon reports readiness to systemd; the container is
+#                 removed on stop, and named volumes are left untouched).
+# Put any extra `podman run` flags you need here (escape hatch):
+#PodmanArgs=--log-level=warning
+
+[Service]
+# Restart only on a crash; a clean `systemctl stop` stays stopped.
+# Use Restart=always if you want it to respawn on any exit.
+Restart=on-failure
+# Give the initial image pull headroom (10 min). Safe to drop once it is cached.
+TimeoutStartSec=600
+
+[Install]
+# For a *user* unit, start at login. default.target is the user-level target
+# (the system-level multi-user.target does not exist in a user manager):
+WantedBy=default.target
