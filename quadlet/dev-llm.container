@@ -6,14 +6,14 @@
 # (or $XDG_CONFIG_HOME/containers/systemd/ when XDG_CONFIG_HOME is set)
 #
 # It generates the user service "dev-llm.service", which owns a rootless
-# podman container also named "dev-llm" -- so `podman exec dev-llm ...` keeps
-# working exactly as it does today.
+# podman container named "snugmo" -- `podman exec snugmo ...` is how you
+# get a shell in the workspace.
 #
-# This is the systemd-ified version of your current one-liner:
-#   podman run -d --replace --name=dev-llm --hostname=dev-llm \
+# The systemd-ified equivalent of this manual one-liner:
+#   podman run -d --replace --name=snugmo --hostname=snugmo \
 #     --userns=keep-id:uid=1000,gid=1000 \
 #     -v dev-projects:/projects/ -w /projects -v dev-home:/home/user \
-#     -e TERM -e COLORTERM <image>:<tag>
+#     -e TERM=xterm-256color -e COLORTERM=truecolor <image>:<tag>
 #
 # From now on you don't run `podman run` yourself -- you drive it with systemd:
 #     systemctl --user start   dev-llm
@@ -23,7 +23,7 @@
 #  underlying podman command automatically; see the [Container] note below.)
 
 [Unit]
-Description=cote base dev container (dev-llm)
+Description=cote base dev container (snugmo)
 
 [Container]
 # <image>:<tag> -- set this to the image you actually run.
@@ -40,9 +40,9 @@ Image=ghcr.io/snugmo/cote:latest-base
 # this on a schedule instead of manually.
 AutoUpdate=registry
 
-# --name / --hostname  (keep the container name so `podman exec dev-llm` works)
-ContainerName=dev-llm
-HostName=dev-llm
+# --name / --hostname
+ContainerName=snugmo
+HostName=snugmo
 
 # --userns  (rootless keep-id: map host 1000:1000 -> container 1000:1000)
 UserNS=keep-id:uid=1000,gid=1000
@@ -65,10 +65,13 @@ Environment=COLORTERM=truecolor
 
 # Lifecycle flags: Quadlet *always* appends to the generated `podman run`:
 #     --replace --rm --cgroups=split --sdnotify=conmon -d
-#   * --replace : the first `systemctl --user start dev-llm` takes over your
-#                 existing manually-created `dev-llm` container (removes it
-#                 first). Because dev-projects/dev-home are *named* volumes,
-#                 they carry over and all your data persists across the switch.
+#   * --replace : if a previous `snugmo` container is still around (e.g. a
+#                 failed stop), it is removed and recreated on start.
+#                 Note that a container with a *different* name (such as an
+#                 older manually-created `dev-llm`) is NOT touched; remove
+#                 it yourself (`podman rm dev-llm`) once snugmo is running --
+#                 the dev-projects / dev-home *named* volumes are shared, so
+#                 all data carries over.
 #   * --rm / -d / --sdnotify=conmon : clean, systemd-managed start/stop
 #                 (conmon reports readiness to systemd; the container is
 #                 removed on stop, and named volumes are left untouched).
