@@ -30,7 +30,7 @@ RUN npm install -g --ignore-scripts --no-audit --no-fund \
 
 # Create PiG's config directory for the workspace user and bake in the r5t LLM
 # provider (the org's keyless OpenAI-compatible gateway at
-# https://llm.r5t.io/v1) as the default model, so the agent is usable out of the
+# https://llm.example.com/v1) as the default model, so the agent is usable out of the
 # box. PiG keeps its state under ~/.pig (agent dir ~/.pig/agent) and never reads
 # or writes ~/.pi.
 RUN mkdir -p /home/user/.pig/agent && \

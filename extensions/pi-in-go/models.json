@@ -2,7 +2,7 @@
   "providers": {
     "r5t": {
       "name": "r5t",
-      "baseUrl": "https://llm.r5t.io/v1",
+      "baseUrl": "https://llm.example.com/v1",
       "api": "openai-completions",
       "apiKey": "r5t",
       "models": [

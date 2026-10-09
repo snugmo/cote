@@ -37,7 +37,7 @@
   "providers": {
     "llamacpp": {
       "name": "llama.cpp",
-      "base_url": "https://llm.r5t.io",
+      "base_url": "https://llm.example.com",
       "type": "llamacpp"
     }
   }

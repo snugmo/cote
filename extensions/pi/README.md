@@ -6,7 +6,7 @@ Pi is a minimal terminal coding harness with `read`, `write`, `edit`, and `bash`
 
 Installed from the official npm package (`@earendil-works/pi-coding-agent`) with `--ignore-scripts`, as recommended upstream. The published package ships an `npm-shrinkwrap.json` pinning all transitive dependencies, and npm verifies the tarball integrity (sha512) against the registry.
 
-The image bakes in the **r5t** LLM provider (the org's keyless OpenAI-compatible gateway at `https://llm.r5t.io/v1`) with the `qwen3.8-27b` model as the default, so the agent is usable out of the box (see [Built-in r5t LLM](#built-in-r5t-llm)).
+The image bakes in the **r5t** LLM provider (the org's keyless OpenAI-compatible gateway at `https://llm.example.com/v1`) with the `qwen3.8-27b` model as the default, so the agent is usable out of the box (see [Built-in r5t LLM](#built-in-r5t-llm)).
 
 ## Build
 
@@ -55,7 +55,7 @@ pi -p "Summarize the changes in this repo"
 
 `~/.pi/agent/models.json` registers a provider named `r5t`:
 
-- **Endpoint**: `https://llm.r5t.io/v1/chat/completions` (OpenAI-compatible, **no auth required** — the config carries a dummy `apiKey` that the server ignores; pi only requires *some* key for a provider's models to appear)
+- **Endpoint**: `https://llm.example.com/v1/chat/completions` (OpenAI-compatible, **no auth required** — the config carries a dummy `apiKey` that the server ignores; pi only requires *some* key for a provider's models to appear)
 - **Model**: `qwen3.8-27b` (Qwen 3.8 27B served by vLLM 0.27), 150k token context window, 32k max output tokens
 - **Thinking**: the model is a reasoning model. The vLLM deployment accepts `reasoning_effort` values `none`, `low`, `medium`, and `xhigh` (default). Pi's thinking levels map onto that set:
 
