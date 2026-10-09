@@ -3,7 +3,7 @@
 # project-specific tools.
 #
 # Usage:
-#   1. Build & push the base image:  ./base-image/build.sh push <registry>
+#   1. Build & push the base image:  ./base-image/build.sh push
 #   2. Update the image reference below to match your registry
 #   3. Apply to your cluster:  kubectl apply -f devfile.yaml
 #   4. Or import via the DevWorkspaces dashboard
@@ -14,13 +14,13 @@
 schemaVersion: 2.2.0
 
 metadata:
-  name: agent-workspace
+  name: cote
 
 projects:
   - name: workspace
     git:
       remotes:
-        origin: "https://codeberg.org/r5t/agent-workspace.git"
+        origin: "https://github.com/Snugmo/cote.git"
     checkoutFrom:
       revision: main
     clonePath: "{{.ProjectsRoot}}/{{.ProjectName}}"
@@ -31,7 +31,7 @@ components:
   # ------------------------------------------------------------------
   - name: tools
     container:
-      image: "r5t.io/agentic/dev-workspace-base:latest"
+      image: "ghcr.io/snugmo/cote:latest-base"
       mountSources: true
       memoryRequest: "512M"
       memoryLimit: "2Gi"
@@ -83,5 +83,5 @@ commands:
   - id: rebuild-base-image
     exec:
       component: tools
-      commandLine: "buildah build -t dev-workspace-base:latest -f base-image/Containerfile base-image/"
+      commandLine: "buildah build -t cote:latest-base -f base-image/Containerfile base-image/"
       workingDir: "${PROJECTS_ROOT}"

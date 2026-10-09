@@ -1,6 +1,6 @@
-# Dev Workspace Images
+# Cote
 
-OCI-based coding workspaces for human developers and AI agents. Provides a universal toolchain with compilers, package managers, LSP servers, and shell utilities — no IDEs baked in, so you can plug in whatever editor or agent you prefer.
+OCI-based coding workspaces for human developers and AI agents, from the [Snugmo](https://github.com/Snugmo) GitHub org. Provides a universal toolchain with compilers, package managers, LSP servers, and shell utilities — no IDEs baked in, so you can plug in whatever editor or agent you prefer.
 
 ## Toolchain
 
@@ -81,7 +81,7 @@ The recommended way to run these images in Kubernetes:
 
 ```bash
 # Build and push the base image
-./base-image/build.sh push <registry>
+./base-image/build.sh push
 
 # Apply a workspace
 kubectl apply -f devfiles/devfile.yaml
@@ -94,19 +94,19 @@ See [AGENTS.md](AGENTS.md) for Devfile conventions and gotchas.
 Run directly with podman — mount your code, preserve caches, and enable rootless containers via FUSE:
 
 ```bash
-podman run -d --replace --name=dev-workspace \
+podman run -d --replace --name=cote \
   --security-opt=label=disable \
   --userns=keep-id:uid=1000,gid=1000 \
   -v ~/workspace:/projects/ -w /projects \
   --device=/dev/fuse \
   -v dev-home:/home/user \
-  r5t.io/agentic/dev-workspace-base:latest
+  ghcr.io/snugmo/cote:latest-base
 ```
 
 By default the container runs `tail -f /dev/null` to stay alive, so `exec` into it to start a shell inside the container namespace:
 
 ```bash
-podman exec -ti -e TERM -e COLORTERM dev-workspace "${SHELL}"
+podman exec -ti -e TERM -e COLORTERM cote "${SHELL}"
 ```
 
 ## Design

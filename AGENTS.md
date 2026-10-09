@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-OCI-based coding workspaces for [DevWorkspaces Operator](https://devfile.io/) — designed for both human developers and AI coding agents. Workspaces are composed from a shared base OCI image plus pluggable IDE and project-specific components.
+**cote** — OCI-based coding workspaces for [DevWorkspaces Operator](https://devfile.io/), from the [Snugmo](https://github.com/Snugmo) GitHub org, designed for both human developers and AI coding agents. Workspaces are composed from a shared base OCI image plus pluggable IDE and project-specific components.
 
 ## Structure
 
@@ -26,13 +26,13 @@ docs/                  # On-demand reference docs — read when relevant (see be
 
 ## Essential Commands
 
-| Task               | Command                                   |
-| ------------------ | ----------------------------------------- |
-| Build base image   | `./base-image/build.sh`                   |
-| Build + push       | `./base-image/build.sh push <registry>`   |
-| Publish base image | `./base-image/build.sh push r5t.io/agentic` |
-| Build an extension | `./extensions/<name>/build.sh`            |
-| Apply workspace    | `kubectl apply -f devfiles/devfile.yaml`  |
+| Task                  | Command                                      |
+| --------------------- | -------------------------------------------- |
+| Build base image      | `./base-image/build.sh`                      |
+| Build + push          | `./base-image/build.sh push`                 |
+| Build + push (custom) | `./base-image/build.sh push <registry>`      |
+| Build an extension    | `./extensions/<name>/build.sh`               |
+| Apply workspace       | `kubectl apply -f devfiles/devfile.yaml`     |
 
 Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=` (see `base-image/build.sh`). Per-extension build/publish/credential details are in [docs/extensions.md](docs/extensions.md).
 
@@ -58,18 +58,18 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 - Uses Devfile schema `2.2.0`.
 - The `tools` container mounts source code and provides the shared toolchain; IDE components are commented out by default (uncomment per-team).
 - Env vars (`GOPATH`, `CARGO_HOME`, `RUSTUP_HOME`, `JAVA_HOME`, `PATH`) are baked into the image — no `env` block needed.
-- The `image` field in the `tools` component defaults to `r5t.io/agentic/dev-workspace-base:latest`.
+- The `image` field in the `tools` component defaults to `ghcr.io/snugmo/cote:latest-base`.
 
 ### Self-hosting Devfile (`.devfile.yaml`)
 
 - Opens this repository itself as a DevWorkspaces workspace.
-- References the pre-built base image at `r5t.io/agentic/dev-workspace-base:0.34.0` (bump the tag when a new base image is released).
+- References the pre-built base image at `ghcr.io/snugmo/cote:0.34.0-base` (bump the tag when a new base image is released).
 
 ### Build Script (`base-image/build.sh`)
 
 - Uses `buildah` (not `docker`) — rootless, works in CI without a Docker daemon.
-- Tag defaults to the latest git tag via `git describe --tags --always --dirty` (falls back to `latest`).
-- Registry defaults to `localhost:5000` (local dev / CI); publish with `./base-image/build.sh push r5t.io/agentic`.
+- The tag is the git-describe version (`git describe --tags --always --dirty`, leading `v` stripped, falls back to `latest`) plus a `-base` suffix, so the image ref is `ghcr.io/snugmo/cote:<tag>-base` — e.g. `0.34.0-base`.
+- Registry defaults to `ghcr.io/snugmo`; `./base-image/build.sh push` publishes to GitHub Container Registry. For local dev / CI use `DEV_REGISTRY=localhost:5000`.
 
 ### Extensions (`extensions/`)
 

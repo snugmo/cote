@@ -2,7 +2,7 @@ schemaVersion: 2.2.0
 components:
   - name: tools
     container:
-      image: "r5t.io/agentic/dev-workspace-base:0.34.0"
+      image: "ghcr.io/snugmo/cote:0.34.0-base"
       mountSources: true
       memoryRequest: "4Gi"
       memoryLimit: "8Gi"
