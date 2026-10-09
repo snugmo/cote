@@ -1,12 +1,12 @@
-# dev-llm.container
+# snugmo.container
 #
 # Quadlet (Podman) unit that runs the cote base dev image as a *user* systemd
 # service. Install location on your host:
-#     ~/.config/containers/systemd/dev-llm.container
+#     ~/.config/containers/systemd/snugmo.container
 # (or $XDG_CONFIG_HOME/containers/systemd/ when XDG_CONFIG_HOME is set)
 #
-# It generates the user service "dev-llm.service", which owns a rootless
-# podman container named "snugmo" -- `podman exec snugmo ...` is how you
+# It generates the user service "snugmo.service", which owns a rootless
+# podman container of the same name -- `podman exec snugmo ...` is how you
 # get a shell in the workspace.
 #
 # The systemd-ified equivalent of this manual one-liner:
@@ -16,9 +16,9 @@
 #     -e TERM=xterm-256color -e COLORTERM=truecolor <image>:<tag>
 #
 # From now on you don't run `podman run` yourself -- you drive it with systemd:
-#     systemctl --user start   dev-llm
-#     systemctl --user stop    dev-llm
-#     systemctl --user restart dev-llm
+#     systemctl --user start   snugmo
+#     systemctl --user stop    snugmo
+#     systemctl --user restart snugmo
 # (Quadlet injects -d --sdnotify=conmon --replace --rm --cgroups=split into the
 #  underlying podman command automatically; see the [Container] note below.)
 
