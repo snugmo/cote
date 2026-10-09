@@ -17,7 +17,7 @@ usage() {
 }
 
 # Configurable via environment or defaults
-REGISTRY="${DEV_REGISTRY:-localhost:5000}"
+REGISTRY="${DEV_REGISTRY:-ghcr.io/snugmo}"
 IMAGE_NAME="${DEV_IMAGE_NAME:-dev-workspace-hermes}"
 VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirty 2>/dev/null || echo 'latest')}"
 # Values for the org.opencontainers.image.* well-known labels (see Containerfile)
@@ -49,7 +49,7 @@ fi
 
 # BASE_IMAGE is computed here, after arg parsing, so a registry passed as the
 # second argument applies to the base image reference as well.
-BASE_IMAGE="${DEV_BASE_IMAGE:-${REGISTRY}/dev-workspace-base:${TAG}}"
+BASE_IMAGE="${DEV_BASE_IMAGE:-${REGISTRY}/cote:${TAG}-base}"
 
 FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${TAG}"
 

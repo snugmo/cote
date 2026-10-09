@@ -1,6 +1,6 @@
 # Xpra Remote X11 Desktop Extension
 
-Installs [Xpra](https://xpra.org) ("screen for X") on top of the dev-workspace base image, together with the X11 dependencies and the [xpra-html5](https://github.com/Xpra-org/xpra-html5) browser client. A headless container can serve a full X11 desktop (Xdummy/Xvfb + openbox + xterm) over a TCP/WebSocket port: point any browser at the port for the HTML5 client, or attach with a native `xpra` client.
+Installs [Xpra](https://xpra.org) ("screen for X") on top of the cote base image, together with the X11 dependencies and the [xpra-html5](https://github.com/Xpra-org/xpra-html5) browser client. A headless container can serve a full X11 desktop (Xdummy/Xvfb + openbox + xterm) over a TCP/WebSocket port: point any browser at the port for the HTML5 client, or attach with a native `xpra` client.
 
 What the image adds (all inside the container build, base image untouched):
 
@@ -25,7 +25,7 @@ What the image adds (all inside the container build, base image untouched):
 
 | Variable         | Default                  | Description          |
 | ---------------- | ------------------------ | -------------------- |
-| `DEV_REGISTRY`   | `localhost:5000`         | Target registry      |
+| `DEV_REGISTRY`   | `ghcr.io/snugmo`          | Target registry      |
 | `DEV_IMAGE_NAME` | `dev-workspace-xpra`     | Image name           |
 | `DEV_VERSION`    | git tag                  | Image tag            |
 | `DEV_BASE_IMAGE` | auto                     | Base image reference |

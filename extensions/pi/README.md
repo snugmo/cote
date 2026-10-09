@@ -1,6 +1,6 @@
 # Pi Coding Agent Extension
 
-Installs the [Pi coding agent](https://pi.dev) ([earendil-works/pi](https://github.com/earendil-works/pi)) on top of the dev-workspace base image.
+Installs the [Pi coding agent](https://pi.dev) ([earendil-works/pi](https://github.com/earendil-works/pi)) on top of the cote base image.
 
 Pi is a minimal terminal coding harness with `read`, `write`, `edit`, and `bash` tools by default. It runs in four modes: interactive TUI, print/JSON, RPC for process integration, and an SDK for embedding. Extend it with TypeScript extensions, skills, prompt templates, themes, and pi packages (npm or git).
 
@@ -22,7 +22,7 @@ The image bakes in the **r5t** LLM provider (the org's keyless OpenAI-compatible
 
 | Variable         | Default                | Description          |
 | ---------------- | ---------------------- | -------------------- |
-| `DEV_REGISTRY`   | `localhost:5000`       | Target registry      |
+| `DEV_REGISTRY`   | `ghcr.io/snugmo`        | Target registry      |
 | `DEV_IMAGE_NAME` | `dev-workspace-pi`     | Image name           |
 | `DEV_VERSION`    | git tag                | Image tag            |
 | `DEV_BASE_IMAGE` | auto                   | Base image reference |

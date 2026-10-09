@@ -1,6 +1,6 @@
 # Hermes Agent Extension
 
-Installs [Hermes Agent](https://hermes-agent.nousresearch.com/) with ACP (Agent Communication Protocol) support on top of the dev-workspace base image.
+Installs [Hermes Agent](https://hermes-agent.nousresearch.com/) with ACP (Agent Communication Protocol) support on top of the cote base image.
 
 Uses a shallow git clone of the upstream repo with an editable install — pip/uv package installs are [explicitly unsupported](https://hermes-agent.nousresearch.com/docs/getting-started/platform-support) by the Hermes team.
 
@@ -26,7 +26,7 @@ ACP enables Hermes to run as a stdio-based agent server that IDEs can connect to
 
 | Variable         | Default                | Description          |
 | ---------------- | ---------------------- | -------------------- |
-| `DEV_REGISTRY`   | `localhost:5000`       | Target registry      |
+| `DEV_REGISTRY`   | `ghcr.io/snugmo`        | Target registry      |
 | `DEV_IMAGE_NAME` | `dev-workspace-hermes` | Image name           |
 | `DEV_VERSION`    | git tag                | Image tag            |
 | `DEV_BASE_IMAGE` | auto                   | Base image reference |

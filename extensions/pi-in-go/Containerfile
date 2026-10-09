@@ -10,7 +10,7 @@
 # Usage in Devfile:
 #   image: <registry>/dev-workspace-pi-in-go:<tag>
 
-ARG BASE_IMAGE=localhost:5000/dev-workspace-base:latest
+ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
 
 USER root
@@ -46,16 +46,16 @@ USER user
 ARG VERSION=latest
 ARG REVISION=unknown
 ARG CREATED=
-ARG BASE_IMAGE=localhost:5000/dev-workspace-base:latest
+ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 
 LABEL org.opencontainers.image.title="dev-workspace-pi-in-go" \
       org.opencontainers.image.description="Dev workspace base with PiG (Pi in Go) terminal coding agent" \
       org.opencontainers.image.authors="Joakim Nohlgård" \
-      org.opencontainers.image.vendor="r5t" \
+      org.opencontainers.image.vendor="Snugmo" \
       org.opencontainers.image.licenses="AGPL-3.0" \
-      org.opencontainers.image.url="https://r5t.io/agentic/agent-workspace" \
-      org.opencontainers.image.documentation="https://r5t.io/agentic/agent-workspace" \
-      org.opencontainers.image.source="https://r5t.io/agentic/agent-workspace.git" \
+      org.opencontainers.image.url="https://github.com/Snugmo/cote" \
+      org.opencontainers.image.documentation="https://github.com/Snugmo/cote" \
+      org.opencontainers.image.source="https://github.com/Snugmo/cote.git" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.created="${CREATED}" \

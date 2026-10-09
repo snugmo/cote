@@ -1,6 +1,6 @@
 # PiG (Pi in Go) Extension
 
-Installs [PiG](https://pi-in-go.dev/) ([MichaelKinsy/PiG](https://github.com/MichaelKinsy/PiG)) on top of the dev-workspace base image. PiG is a faithful Go implementation of the [Pi coding agent](https://pi.dev) — the same small core, re-implemented as a single native binary, tracking Pi's behavior with explicit parity evidence. It starts in ~21 ms (vs ~300 ms for Pi) with about a quarter of the peak memory, and no Node.js runtime is required unless you run TypeScript extensions.
+Installs [PiG](https://pi-in-go.dev/) ([MichaelKinsy/PiG](https://github.com/MichaelKinsy/PiG)) on top of the cote base image. PiG is a faithful Go implementation of the [Pi coding agent](https://pi.dev) — the same small core, re-implemented as a single native binary, tracking Pi's behavior with explicit parity evidence. It starts in ~21 ms (vs ~300 ms for Pi) with about a quarter of the peak memory, and no Node.js runtime is required unless you run TypeScript extensions.
 
 PiG runs in four modes: interactive TUI, print/JSON, RPC for process integration, and a Go SDK for embedding. Extend it with Go, Rust, Python, or Node extensions (Pi's own TypeScript/JavaScript extensions run unchanged), skills, prompt templates, themes, packages, and Piglets.
 
@@ -22,7 +22,7 @@ The image bakes in the **r5t** LLM provider (the org's keyless OpenAI-compatible
 
 | Variable         | Default                  | Description          |
 | ---------------- | ------------------------ | -------------------- |
-| `DEV_REGISTRY`   | `localhost:5000`         | Target registry      |
+| `DEV_REGISTRY`   | `ghcr.io/snugmo`          | Target registry      |
 | `DEV_IMAGE_NAME` | `dev-workspace-pi-in-go` | Image name           |
 | `DEV_VERSION`    | git tag                  | Image tag            |
 | `DEV_BASE_IMAGE` | auto                     | Base image reference |
