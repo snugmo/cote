@@ -43,7 +43,7 @@ ARG CREATED=
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 
 LABEL org.opencontainers.image.title="dev-workspace-pi" \
-      org.opencontainers.image.description="Dev workspace base with Pi coding agent for terminal, RPC, and SDK integrations" \
+      org.opencontainers.image.description="cote dev workspace with Pi coding agent for terminal, RPC, and SDK integrations and a built-in keyless example LLM provider" \
       org.opencontainers.image.authors="Joakim Nohlgård" \
       org.opencontainers.image.vendor="Snugmo" \
       org.opencontainers.image.licenses="AGPL-3.0" \

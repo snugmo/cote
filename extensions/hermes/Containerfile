@@ -53,7 +53,7 @@ ARG CREATED=
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 
 LABEL org.opencontainers.image.title="dev-workspace-hermes" \
-      org.opencontainers.image.description="Dev workspace base with Hermes agent and ACP support for IDE integration" \
+      org.opencontainers.image.description="cote dev workspace with Hermes agent and ACP support for IDE integration" \
       org.opencontainers.image.authors="Joakim Nohlgård" \
       org.opencontainers.image.vendor="Snugmo" \
       org.opencontainers.image.licenses="AGPL-3.0" \

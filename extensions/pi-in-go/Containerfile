@@ -49,7 +49,7 @@ ARG CREATED=
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 
 LABEL org.opencontainers.image.title="dev-workspace-pi-in-go" \
-      org.opencontainers.image.description="Dev workspace base with PiG (Pi in Go) terminal coding agent" \
+      org.opencontainers.image.description="cote dev workspace with PiG (Pi in Go) terminal coding agent and a built-in keyless example LLM provider" \
       org.opencontainers.image.authors="Joakim Nohlgård" \
       org.opencontainers.image.vendor="Snugmo" \
       org.opencontainers.image.licenses="AGPL-3.0" \
