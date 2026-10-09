@@ -1,5 +1,10 @@
 # Cote
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/cote-banner-dark.svg">
+  <img src="assets/cote-banner-light.svg" alt="cote — a snug little home for your agents' dev environment" width="100%">
+</picture>
+
 > A snug little home for your agents' dev environment.
 
 `cote` is the base image for the [Snugmo](https://github.com/snugmo) agent development environment.
