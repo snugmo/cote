@@ -58,7 +58,9 @@ Volume=dev-home:/home/user
 # --tmpfs: a fresh (wiped on every start) runtime dir inside the container,
 # plus the matching XDG_RUNTIME_DIR env, so anything that expects a proper
 # XDG runtime dir (dbus, agents, socket-hungry tools) finds one.
-Tmpfs=/run/user/1000
+# :U chowns the mount to the container user (1000:1000, mode 1777) so it
+# is actually writable -- a plain --tmpfs would be root-owned.
+Tmpfs=/run/user/1000:U
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
 # -e TERM -e COLORTERM
