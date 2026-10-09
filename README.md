@@ -2,7 +2,7 @@
 
 > A snug little home for your agents' dev environment.
 
-`cote` is the base image for the [Snugmo](https://github.com/Snugmo) agent development environment.
+`cote` is the base image for the [Snugmo](https://github.com/snugmo) agent development environment.
 It provides the shell, tools, and context your agents need to work.
 
 [![ghcr.io/snugmo/cote](https://ghcr.io/api/v1/snugmo/cote/ocis)](https://ghcr.io/snugmo/cote)

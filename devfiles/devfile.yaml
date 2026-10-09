@@ -20,7 +20,7 @@ projects:
   - name: workspace
     git:
       remotes:
-        origin: "https://github.com/Snugmo/cote.git"
+        origin: "https://github.com/snugmo/cote.git"
     checkoutFrom:
       revision: main
     clonePath: "{{.ProjectsRoot}}/{{.ProjectName}}"

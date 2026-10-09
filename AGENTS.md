@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**cote** — OCI-based coding workspaces for [DevWorkspaces Operator](https://devfile.io/), from the [Snugmo](https://github.com/Snugmo) GitHub org, designed for both human developers and AI coding agents. Workspaces are composed from a shared base OCI image plus pluggable IDE and project-specific components.
+**cote** — OCI-based coding workspaces for [DevWorkspaces Operator](https://devfile.io/), from the [Snugmo](https://github.com/snugmo) GitHub org, designed for both human developers and AI coding agents. Workspaces are composed from a shared base OCI image plus pluggable IDE and project-specific components.
 
 ## Structure
 
