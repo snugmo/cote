@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+     role="img" aria-label="cote — an agent at home in its shell">
+  <style>
+    :root {
+      --snugmo-ink: #1f2328;
+      --snugmo-frame-fill: #ffffff;
+      --snugmo-frame-stroke: #d0d7de;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --snugmo-ink: #e6edf3;
+        --snugmo-frame-fill: #0d1117;
+        --snugmo-frame-stroke: #30363d;
+      }
+    }
+    .ink { stroke: var(--snugmo-ink); }
+  </style>
+  <circle class="frame" cx="128" cy="128" r="120"
+          fill="var(--snugmo-frame-fill)" stroke="var(--snugmo-frame-stroke)" stroke-width="6"/>
+  <g transform="translate(128 128) scale(0.95) translate(-128 -128)">
+    <g transform="rotate(-8 128 128)">
+      <path class="ink" d="M128 38C 172 38, 214 66, 218 110C 222 156,
+        196 206, 148 214C 100 222, 52 200, 42 152C 34 110,
+        62 52, 108 40C 114 38.5, 121 38, 128 38 Z"
+        fill="none" stroke-width="12" stroke-linejoin="round"/>
+      <path class="ink" d="M84 84 C 92 68, 112 58, 128 56"
+        fill="none" stroke-width="10" stroke-linecap="round" opacity="0.35"/>
+    </g>
+    <g transform="rotate(-4 128 140)">
+      <path class="ink" d="M74 186 Q 128 179, 182 186"
+        fill="none" stroke-width="8" stroke-linecap="round"/>
+      <path class="ink" d="M85 186 L85 120 M171 186 L171 120"
+        fill="none" stroke-width="9" stroke-linecap="round"/>
+      <path class="ink" d="M67 131 L128 70 L189 131"
+        fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="128" cy="113" r="25" fill="none" stroke="#f472b6"
+        stroke-width="4" opacity="0.45" stroke-dasharray="4 10" stroke-linecap="round"/>
+      <circle cx="128" cy="113" r="17" fill="#f472b6"/>
+      <path class="ink" d="M119.5 114 L123 109 L126.5 114" fill="none"
+        stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="ink" d="M129.5 114 L133 109 L136.5 114" fill="none"
+        stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M106 149 L118 157 L106 165" fill="none"
+        stroke="#f472b6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="126" y1="166" x2="149" y2="165"
+        stroke="#f472b6" stroke-width="7" stroke-linecap="round"/>
+    </g>
+    <path class="ink" d="M-14 0 q 18 -8 30 0" fill="none"
+      stroke-width="8" stroke-linecap="round" opacity="0.5"
+      transform="translate(215 50) rotate(50)"/>
+    <path class="ink" d="M-8 0 q 9 -5 18 0" fill="none"
+      stroke-width="6" stroke-linecap="round" opacity="0.3"
+      transform="translate(235 89) rotate(70)"/>
+    <path class="ink" d="M-14 0 q 19 -8 38 0" fill="none"
+      stroke-width="8" stroke-linecap="round" opacity="0.5"
+      transform="translate(50 210) rotate(225)"/>
+    <path class="ink" d="M-8 0 q 9 -5 18 0" fill="none"
+      stroke-width="6" stroke-linecap="round" opacity="0.3"
+      transform="translate(24 174) rotate(246)"/>
+  </g>
+</svg>
