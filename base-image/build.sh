@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Build and optionally push the base dev workspace image.
+# Build and optionally push the Cote base image.
 # Usage:
 #   ./build.sh                          # Build only
 #   ./build.sh push                     # Build and push
-#   ./build.sh push myregistry.io/dev   # Build and push to custom registry
+#   ./build.sh push myregistry.io       # Build and push to custom registry
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,14 +19,14 @@ usage() {
 }
 
 # Configurable via environment or defaults
-REGISTRY="${DEV_REGISTRY:-localhost:5000}"
-IMAGE_NAME="${DEV_IMAGE_NAME:-dev-workspace-base}"
+REGISTRY="${DEV_REGISTRY:-ghcr.io/snugmo}"
+IMAGE_NAME="${DEV_IMAGE_NAME:-cote}"
 VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirty 2>/dev/null || echo 'latest')}"
 # Values for the org.opencontainers.image.* well-known labels (see Containerfile)
 REVISION="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo 'unknown')"
 CREATED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 JOBS="${DEV_JOBS:-}"
-TAG="${VERSION#v}"
+TAG="${VERSION#v}-base"
 
 PUSH=false
 if [[ $# -gt 2 ]]; then
@@ -52,7 +52,7 @@ fi
 
 FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${TAG}"
 
-printf '=== Dev Workspace Base Image ===\n'
+printf '=== Cote Base Image ===\n'
 printf 'Registry:  %s\n' "${REGISTRY}"
 printf 'Image:     %s\n' "${IMAGE_NAME}"
 printf 'Tag:       %s\n' "${TAG}"
@@ -68,7 +68,7 @@ BUILD_ARGS=(
     --storage-opt ignore_chown_errors=true
     -t "${FULL_IMAGE}"
     -f "${SCRIPT_DIR}/Containerfile"
-    --build-arg VERSION="${TAG}"
+    --build-arg VERSION="${VERSION#v}"
     --build-arg REVISION="${REVISION}"
     --build-arg CREATED="${CREATED}"
 )
