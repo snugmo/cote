@@ -1,5 +1,5 @@
 # Xpra remote X11 desktop extension image
-# Adds Xpra ("screen for X", https://xpra.org) on top of the dev-workspace
+# Adds Xpra ("screen for X", https://xpra.org) on top of the cote
 # base image, together with the X11 dependencies and the xpra-html5
 # browser client (https://github.com/Xpra-org/xpra-html5). A headless
 # container can serve a full X11 desktop (Xdummy/Xvfb + openbox + xterm)
@@ -11,7 +11,7 @@
 #   ./build.sh push <registry>          # Build and push
 #
 # Usage in Devfile:
-#   image: <registry>/dev-workspace-xpra:<tag>
+#   image: <registry>/cote-xpra:<tag>
 
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
@@ -110,7 +110,7 @@ ARG REVISION=unknown
 ARG CREATED=
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 
-LABEL org.opencontainers.image.title="dev-workspace-xpra" \
+LABEL org.opencontainers.image.title="cote-xpra" \
       org.opencontainers.image.description="cote dev workspace with Xpra remote X11 desktop and HTML5 web client" \
       org.opencontainers.image.authors="Joakim Nohlgård" \
       org.opencontainers.image.vendor="Snugmo" \

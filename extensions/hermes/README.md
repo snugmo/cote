@@ -27,7 +27,7 @@ ACP enables Hermes to run as a stdio-based agent server that IDEs can connect to
 | Variable         | Default                | Description          |
 | ---------------- | ---------------------- | -------------------- |
 | `DEV_REGISTRY`   | `ghcr.io/snugmo`        | Target registry      |
-| `DEV_IMAGE_NAME` | `dev-workspace-hermes` | Image name           |
+| `DEV_IMAGE_NAME` | `cote-hermes` | Image name           |
 | `DEV_VERSION`    | git tag                | Image tag            |
 | `DEV_BASE_IMAGE` | auto                   | Base image reference |
 
@@ -39,7 +39,7 @@ Replace the `tools` container image:
 components:
   - name: tools
     container:
-      image: <registry>/dev-workspace-hermes:<tag>
+      image: <registry>/cote-hermes:<tag>
 ```
 
 ## IDE Setup

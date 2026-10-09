@@ -26,7 +26,7 @@ What the image adds (all inside the container build, base image untouched):
 | Variable         | Default                  | Description          |
 | ---------------- | ------------------------ | -------------------- |
 | `DEV_REGISTRY`   | `ghcr.io/snugmo`          | Target registry      |
-| `DEV_IMAGE_NAME` | `dev-workspace-xpra`     | Image name           |
+| `DEV_IMAGE_NAME` | `cote-xpra`     | Image name           |
 | `DEV_VERSION`    | git tag                  | Image tag            |
 | `DEV_BASE_IMAGE` | auto                     | Base image reference |
 
@@ -38,7 +38,7 @@ Replace the `tools` container image:
 components:
   - name: tools
     container:
-      image: <registry>/dev-workspace-xpra:<tag>
+      image: <registry>/cote-xpra:<tag>
 ```
 
 ## Container Entrypoint
@@ -48,7 +48,7 @@ The image's `CMD` is `/usr/local/bin/xpra-entrypoint` (the base image's `cataton
 ```bash
 # No arguments: an empty X11 desktop (openbox) served on port 10000;
 # the container stays alive until it is stopped.
-podman run -it --rm -p 10000:10000 dev-workspace-xpra:latest
+podman run -it --rm -p 10000:10000 cote-xpra:latest
 #   browser:  http://localhost:10000/
 #   native:   xpra attach tcp://<host>:10000
 
@@ -57,13 +57,13 @@ podman run -it --rm -p 10000:10000 dev-workspace-xpra:latest
 # its stdout/stderr go to the container logs (`pod logs`) and its
 # exit code becomes the container's. The container (and the session)
 # exits when the command exits.
-podman run -it --rm -p 10000:10000 dev-workspace-xpra:latest xterm
+podman run -it --rm -p 10000:10000 cote-xpra:latest xterm
 ```
 
 Escape hatch: a first argument of `xpra` runs the raw Xpra CLI:
 
 ```bash
-podman run --rm dev-workspace-xpra:latest -- xpra list-sessions
+podman run --rm cote-xpra:latest -- xpra list-sessions
 ```
 
 Environment variables (same names as `xpra-desktop`):

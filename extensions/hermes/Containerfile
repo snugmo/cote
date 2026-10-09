@@ -7,7 +7,7 @@
 #   ./build.sh push <registry>          # Build and push
 #
 # Usage in Devfile:
-#   image: <registry>/dev-workspace-hermes:<tag>
+#   image: <registry>/cote-hermes:<tag>
 
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
@@ -52,7 +52,7 @@ ARG REVISION=unknown
 ARG CREATED=
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 
-LABEL org.opencontainers.image.title="dev-workspace-hermes" \
+LABEL org.opencontainers.image.title="cote-hermes" \
       org.opencontainers.image.description="cote dev workspace with Hermes agent and ACP support for IDE integration" \
       org.opencontainers.image.authors="Joakim Nohlgård" \
       org.opencontainers.image.vendor="Snugmo" \

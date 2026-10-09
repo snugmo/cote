@@ -18,7 +18,7 @@ usage() {
 
 # Configurable via environment or defaults
 REGISTRY="${DEV_REGISTRY:-ghcr.io/snugmo}"
-IMAGE_NAME="${DEV_IMAGE_NAME:-dev-workspace-pi}"
+IMAGE_NAME="${DEV_IMAGE_NAME:-cote-pi}"
 VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirty 2>/dev/null || echo 'latest')}"
 # Values for the org.opencontainers.image.* well-known labels (see Containerfile)
 REVISION="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo 'unknown')"

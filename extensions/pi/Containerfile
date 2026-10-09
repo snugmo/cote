@@ -7,7 +7,7 @@
 #   ./build.sh push <registry>          # Build and push
 #
 # Usage in Devfile:
-#   image: <registry>/dev-workspace-pi:<tag>
+#   image: <registry>/cote-pi:<tag>
 
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
@@ -42,7 +42,7 @@ ARG REVISION=unknown
 ARG CREATED=
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 
-LABEL org.opencontainers.image.title="dev-workspace-pi" \
+LABEL org.opencontainers.image.title="cote-pi" \
       org.opencontainers.image.description="cote dev workspace with Pi coding agent for terminal, RPC, and SDK integrations and a built-in keyless example LLM provider" \
       org.opencontainers.image.authors="Joakim Nohlgård" \
       org.opencontainers.image.vendor="Snugmo" \

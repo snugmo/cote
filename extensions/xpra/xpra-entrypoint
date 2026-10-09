@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# xpra-entrypoint — container entrypoint for the dev-workspace-xpra image.
+# xpra-entrypoint — container entrypoint for the cote-xpra image.
 #
 # With no arguments the container starts an empty X11 desktop (openbox
 # window manager, no applications) as an Xpra session served on a
@@ -12,7 +12,7 @@
 # daemon and the given command is run directly as the container's
 # foreground process, e.g.:
 #
-#   podman run -it --rm --net host dev-workspace-xpra:latest xterm
+#   podman run -it --rm --net host cote-xpra:latest xterm
 #
 # The command is given the session's DISPLAY, so it renders inside the
 # served desktop, while its stdout/stderr go straight to the container's
@@ -22,7 +22,7 @@
 # Escape hatch: a first argument of `xpra` runs the Xpra CLI directly,
 # bypassing the session wrapper:
 #
-#   podman run --rm dev-workspace-xpra:latest -- xpra list-sessions
+#   podman run --rm cote-xpra:latest -- xpra list-sessions
 #
 # Environment variables (same names as xpra-desktop):
 #   XPRA_PORT (10000)   TCP/WebSocket port the session is served on

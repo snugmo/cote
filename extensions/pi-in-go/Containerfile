@@ -1,6 +1,6 @@
 # PiG (Pi in Go) extension image
 # Installs PiG (https://pi-in-go.dev, github.com/MichaelKinsy/PiG) — a faithful
-# Go implementation of the Pi coding agent — on top of the dev-workspace base
+# Go implementation of the Pi coding agent — on top of the cote base
 # image.
 #
 # Build:
@@ -8,7 +8,7 @@
 #   ./build.sh push <registry>          # Build and push
 #
 # Usage in Devfile:
-#   image: <registry>/dev-workspace-pi-in-go:<tag>
+#   image: <registry>/cote-pi-in-go:<tag>
 
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
@@ -48,7 +48,7 @@ ARG REVISION=unknown
 ARG CREATED=
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 
-LABEL org.opencontainers.image.title="dev-workspace-pi-in-go" \
+LABEL org.opencontainers.image.title="cote-pi-in-go" \
       org.opencontainers.image.description="cote dev workspace with PiG (Pi in Go) terminal coding agent and a built-in keyless example LLM provider" \
       org.opencontainers.image.authors="Joakim Nohlgård" \
       org.opencontainers.image.vendor="Snugmo" \

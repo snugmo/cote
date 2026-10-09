@@ -710,7 +710,7 @@ COPY --from=nono-install /usr/local/bin/nono /usr/local/bin/
 # =============================================================================
 # FINAL — assemble all toolchains into workspace image
 # =============================================================================
-# Dev-workspace image must ship a full OS environment, not a scratch attack surface
+# The cote image must ship a full OS environment, not a scratch attack surface
 # hadolint ignore=DL3007
 FROM base AS final
 
@@ -823,7 +823,7 @@ EOT
 
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
-# Default shell prompt prefix marking the dev-workspace container; override per-session with SHELL_PROMPT_PREFIX
+# Default shell prompt prefix marking the cote container; override per-session with SHELL_PROMPT_PREFIX
 ENV SHELL_PROMPT_PREFIX="🏝️"
 WORKDIR /projects
 ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]

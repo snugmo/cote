@@ -23,7 +23,7 @@ The image bakes in the **example** LLM provider (a keyless OpenAI-compatible gat
 | Variable         | Default                | Description          |
 | ---------------- | ---------------------- | -------------------- |
 | `DEV_REGISTRY`   | `ghcr.io/snugmo`        | Target registry      |
-| `DEV_IMAGE_NAME` | `dev-workspace-pi`     | Image name           |
+| `DEV_IMAGE_NAME` | `cote-pi`     | Image name           |
 | `DEV_VERSION`    | git tag                | Image tag            |
 | `DEV_BASE_IMAGE` | auto                   | Base image reference |
 
@@ -35,7 +35,7 @@ Replace the `tools` container image:
 components:
   - name: tools
     container:
-      image: <registry>/dev-workspace-pi:<tag>
+      image: <registry>/cote-pi:<tag>
 ```
 
 ## Quick Start
