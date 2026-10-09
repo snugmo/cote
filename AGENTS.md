@@ -43,7 +43,7 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 - Make small, logically contained commits; one per meaningful change, committed as you go.
 - Prefix every commit subject with a single emoji representing the change, followed by the conventional type prefix used in this repo (`feat(base-image):`, `chore(base-image):`, `docs:`, `fix:`, …); keep subjects under 72 characters. Use `feat(base-image):` when a change adds a new capability to the base image (a new language, tool, or package), and `chore(base-image):` for maintenance such as version bumps and internal adjustments. Examples: `✨ feat(base-image): add Temurin 25 JDK to base image`, `📦 chore(base-image): update herdr from 0.8.1 to 0.8.2`, `✏️ docs: …`, `🐛 fix: …`.
 - End commit messages with an `Assisted-by: <agent>:<model>` trailer, where `<agent>` is the coding agent doing the committing (no "generated with" line).
-- An optional `scripts/git-hooks/commit-msg` hook (install: `ln -sf ../../scripts/git-hooks/commit-msg .git/hooks/commit-msg`) auto-appends `Assisted-by:`, `Model:`, and `Agent-Session:` trailers when `AGENT=goose`; it is a no-op for every other agent and does not validate the emoji/conventional format.
+- An optional `scripts/git-hooks/commit-msg` hook (install: `ln -sf ../../scripts/git-hooks/commit-msg .git/hooks/commit-msg`) auto-appends `Assisted-by:` and `Agent-Session:` trailers when `AGENT=goose`; it is a no-op for every other agent and does not validate the emoji/conventional format.
 
 ### Base Image (`base-image/Containerfile`)
 

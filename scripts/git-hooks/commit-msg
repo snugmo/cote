@@ -8,7 +8,6 @@
 # already contain an Assisted-by trailer, this hook appends:
 #
 #   Assisted-by: goose:<model>
-#   Model: <model>
 #   Agent-Session: <session-id>   (if AGENT_SESSION_ID is set)
 
 set -euo pipefail
@@ -42,7 +41,6 @@ fi
 git interpret-trailers --in-place \
   --if-exists=doNothing \
   --trailer="Assisted-by: ${AGENT}:${model}" \
-  --trailer="Model: ${model}" \
   "${msg_file}"
 
 if [ -n "${session_id:-}" ]; then
