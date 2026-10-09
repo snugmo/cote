@@ -1,6 +1,17 @@
 # Cote
 
-OCI-based coding workspaces for human developers and AI agents, from the [Snugmo](https://github.com/Snugmo) GitHub org. Provides a universal toolchain with compilers, package managers, LSP servers, and shell utilities — no IDEs baked in, so you can plug in whatever editor or agent you prefer.
+> A snug little home for your agents' dev environment.
+
+`cote` is the base image for the [Snugmo](https://github.com/Snugmo) agent development environment.
+It provides the shell, tools, and context your agents need to work.
+
+[![ghcr.io/snugmo/cote](https://ghcr.io/api/v1/snugmo/cote/ocis)](https://ghcr.io/snugmo/cote)
+
+## What's inside
+
+- A curated, opinionated set of CLI tools and language runtimes
+- Pre-wired context and conventions so agents start productive immediately
+- A single, stable image tag your whole team can trust
 
 ## Toolchain
 
