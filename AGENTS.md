@@ -76,8 +76,8 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 Extensions add capabilities on top of the base image without polluting it. To use one, point the Devfile `tools` image at the extension image.
 
 - **Hermes** (`extensions/hermes/`) — Hermes agent with ACP support (VS Code, Zed, JetBrains).
-- **Pi** (`extensions/pi/`) — terminal coding agent (npm `@earendil-works/pi-coding-agent`), keyless `r5t` default.
-- **PiG / Pi in Go** (`extensions/pi-in-go/`) — Go port of Pi (npm `@pi-in-go/pig`), single native binary, keyless `r5t` default.
+- **Pi** (`extensions/pi/`) — terminal coding agent (npm `@earendil-works/pi-coding-agent`), keyless `example` default.
+- **PiG / Pi in Go** (`extensions/pi-in-go/`) — Go port of Pi (npm `@pi-in-go/pig`), single native binary, keyless `example` default.
 - **Xpra** (`extensions/xpra/`) — headless X11 desktop + xpra-html5 browser client.
 
 Full detail, build/publish, and credential notes: see [docs/extensions.md](docs/extensions.md).

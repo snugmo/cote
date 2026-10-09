@@ -1,14 +1,14 @@
 {
   "providers": {
-    "r5t": {
-      "name": "r5t",
+    "example": {
+      "name": "example",
       "baseUrl": "https://llm.example.com/v1",
       "api": "openai-completions",
-      "apiKey": "r5t",
+      "apiKey": "example",
       "models": [
         {
           "id": "qwen3.8-27b",
-          "name": "Qwen3.8-27B (r5t)",
+          "name": "Qwen3.8-27B (example)",
           "reasoning": true,
           "input": ["text"],
           "contextWindow": 150000,

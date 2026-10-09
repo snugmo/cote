@@ -25,7 +25,7 @@ RUN npm install -g --ignore-scripts --no-audit --no-fund \
       "@earendil-works/pi-coding-agent@${PI_VERSION}" && \
     pi --version
 
-# Create Pi config directory for the workspace user and bake in the r5t
+# Create Pi config directory for the workspace user and bake in the example
 # LLM provider (keyless OpenAI-compatible endpoint) as the default model
 RUN mkdir -p /home/user/.pi/agent && \
     chown -R user:user /home/user/.pi

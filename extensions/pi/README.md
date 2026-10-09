@@ -6,7 +6,7 @@ Pi is a minimal terminal coding harness with `read`, `write`, `edit`, and `bash`
 
 Installed from the official npm package (`@earendil-works/pi-coding-agent`) with `--ignore-scripts`, as recommended upstream. The published package ships an `npm-shrinkwrap.json` pinning all transitive dependencies, and npm verifies the tarball integrity (sha512) against the registry.
 
-The image bakes in the **r5t** LLM provider (the org's keyless OpenAI-compatible gateway at `https://llm.example.com/v1`) with the `qwen3.8-27b` model as the default, so the agent is usable out of the box (see [Built-in r5t LLM](#built-in-r5t-llm)).
+The image bakes in the **example** LLM provider (a keyless OpenAI-compatible gateway at `https://llm.example.com/v1`) with the `qwen3.8-27b` model as the default, so the agent is usable out of the box (see [Built-in example LLM](#built-in-example-llm)).
 
 ## Build
 
@@ -41,7 +41,7 @@ components:
 ## Quick Start
 
 ```bash
-# No API key needed: the r5t provider is baked in as the default
+# No API key needed: the example provider is baked in as the default
 pi
 
 # Non-interactive (print) mode
@@ -51,9 +51,9 @@ pi -p "Summarize the changes in this repo"
 # or set ANTHROPIC_API_KEY and select its model with /model or --model)
 ```
 
-## Built-in r5t LLM
+## Built-in example LLM
 
-`~/.pi/agent/models.json` registers a provider named `r5t`:
+`~/.pi/agent/models.json` registers a provider named `example`:
 
 - **Endpoint**: `https://llm.example.com/v1/chat/completions` (OpenAI-compatible, **no auth required** — the config carries a dummy `apiKey` that the server ignores; pi only requires *some* key for a provider's models to appear)
 - **Model**: `qwen3.8-27b` (Qwen 3.8 27B served by vLLM 0.27), 150k token context window, 32k max output tokens
@@ -67,7 +67,7 @@ pi -p "Summarize the changes in this repo"
   | `xhigh`    | `xhigh`            | maximum reasoning                |
   | others     | (clamped)          | `minimal`→`low`, `high`→`xhigh`, `max`→`xhigh` |
 
-`~/.pi/agent/settings.json` sets `defaultProvider: r5t`, `defaultModel: qwen3.8-27b`, and `defaultThinkingLevel: medium`, so a bare `pi` run uses thinking at moderate effort. Override per run:
+`~/.pi/agent/settings.json` sets `defaultProvider: example`, `defaultModel: qwen3.8-27b`, and `defaultThinkingLevel: medium`, so a bare `pi` run uses thinking at moderate effort. Override per run:
 
 ```bash
 pi --thinking off            # disable thinking for this run
@@ -89,8 +89,8 @@ Pi is a terminal agent. From an IDE, run it in a terminal pane, or integrate it 
 
 Pi uses `~/.pi/agent/` for global configuration (pre-created for the workspace user):
 
-- Settings: `~/.pi/agent/settings.json` (pre-filled with the r5t defaults)
-- Custom providers: `~/.pi/agent/models.json` (pre-filled with the r5t provider)
+- Settings: `~/.pi/agent/settings.json` (pre-filled with the example defaults)
+- Custom providers: `~/.pi/agent/models.json` (pre-filled with the example provider)
 - Project trust decisions: `~/.pi/agent/trust.json`
 - Project-local settings: `.pi/settings.json` in each repo
 
@@ -113,5 +113,5 @@ These can also be set in the Devfile `env` block or `~/.pi/agent/settings.json` 
 
 ```bash
 pi update --self   # update the npm installation
-pi update --models # refresh the built-in provider model catalogs (does not touch the user-level r5t entry in models.json)
+pi update --models # refresh the built-in provider model catalogs (does not touch the user-level example entry in models.json)
 ```

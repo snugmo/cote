@@ -6,7 +6,7 @@ PiG runs in four modes: interactive TUI, print/JSON, RPC for process integration
 
 Installed from the official npm package (`@pi-in-go/pig`) with `--ignore-scripts`. The package is a thin Node launcher whose `optionalDependencies` pull in the native `pig` binary for the build platform, so npm selects the correct architecture automatically and no lifecycle scripts are needed (upstream publishes the package without a `postinstall`). npm verifies the published tarball integrity (sha512) against the registry. PiG 0.4.1 tracks Pi 1.0.3 (`pig --version` prints `0.4.1+1.0.3`).
 
-The image bakes in the **r5t** LLM provider (the org's keyless OpenAI-compatible gateway at `https://llm.example.com/v1`) with the `qwen3.8-27b` model as the default, so the agent is usable out of the box (see [Built-in r5t LLM](#built-in-r5t-llm)).
+The image bakes in the **example** LLM provider (a keyless OpenAI-compatible gateway at `https://llm.example.com/v1`) with the `qwen3.8-27b` model as the default, so the agent is usable out of the box (see [Built-in example LLM](#built-in-example-llm)).
 
 ## Build
 
@@ -41,7 +41,7 @@ components:
 ## Quick Start
 
 ```bash
-# No API key needed: the r5t provider is baked in as the default
+# No API key needed: the example provider is baked in as the default
 pig
 
 # Non-interactive (print) mode
@@ -52,15 +52,15 @@ pig -p "Summarize the changes in this repo"
 # or --model)
 ```
 
-## Built-in r5t LLM
+## Built-in example LLM
 
-`~/.pig/agent/models.json` registers a provider named `r5t`:
+`~/.pig/agent/models.json` registers a provider named `example`:
 
 - **Endpoint**: `https://llm.example.com/v1` (OpenAI-compatible, **no auth required** — the config carries a dummy `apiKey` that the server ignores; PiG only requires *some* key for a provider's models to appear)
 - **Model**: `qwen3.8-27b` (Qwen 3.8 27B served by vLLM 0.27), 150k token context window, 32k max output tokens
-- **Reasoning**: the model is a reasoning model. Verified end-to-end, the r5t deployment accepts PiG's thinking levels `off`, `medium`, and `xhigh` (and the full `off → minimal → low → medium → high → xhigh → max` set cycles on the model)
+- **Reasoning**: the model is a reasoning model. Verified end-to-end, the `llm.example.com` deployment accepts PiG's thinking levels `off`, `medium`, and `xhigh` (and the full `off → minimal → low → medium → high → xhigh → max` set cycles on the model)
 
-`~/.pig/agent/settings.json` sets `defaultProvider: r5t`, `defaultModel: qwen3.8-27b`, and `defaultThinkingLevel: medium`, so a bare `pig` run uses thinking at moderate effort. Override per run:
+`~/.pig/agent/settings.json` sets `defaultProvider: example`, `defaultModel: qwen3.8-27b`, and `defaultThinkingLevel: medium`, so a bare `pig` run uses thinking at moderate effort. Override per run:
 
 ```bash
 pig --thinking off            # disable thinking for this run
@@ -84,8 +84,8 @@ PiG also exposes `pig auth`, `pig status`, and `pig verify` (verify the binary, 
 
 PiG keeps all of its state under `~/.pig` (pre-created for the workspace user) and never reads or writes `~/.pi`:
 
-- Settings: `~/.pig/agent/settings.json` (pre-filled with the r5t defaults)
-- Custom endpoints and models: `~/.pig/agent/models.json` (pre-filled with the r5t provider)
+- Settings: `~/.pig/agent/settings.json` (pre-filled with the example defaults)
+- Custom endpoints and models: `~/.pig/agent/models.json` (pre-filled with the example provider)
 - Stored API keys and OAuth tokens: `~/.pig/agent/auth.json`
 - Project trust decisions: `~/.pig/agent/trust.json`
 - Extensions / skills / prompts / themes: `~/.pig/agent/extensions/`, `skills/`, `prompts/`, `themes/`
