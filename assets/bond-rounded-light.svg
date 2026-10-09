@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+     role="img" aria-label="snugmo — terminal and agent inside a workspace">
+  <rect x="8" y="8" width="240" height="240" rx="48"
+        fill="#ffffff" stroke="#d0d7de" stroke-width="6"/>
+  <g transform="translate(128 128) scale(0.95) translate(-128 -128)">
+    <g transform="rotate(-8 128 128)">
+      <path d="M128 38C 172 38, 214 66, 218 110C 222 156,
+        196 206, 148 214C 100 222, 52 200, 42 152C 34 110,
+        62 52, 108 40C 114 38.5, 121 38, 128 38 Z"
+        fill="none" stroke="#1f2328" stroke-width="12" stroke-linejoin="round"/>
+      <path d="M84 84 C 92 68, 112 58, 128 56"
+        fill="none" stroke="#1f2328" stroke-width="10" stroke-linecap="round" opacity="0.35"/>
+      <line x1="129" y1="129" x2="172" y2="102"
+        stroke="#1f2328" stroke-width="9" stroke-linecap="round"/>
+      <rect x="60" y="108" width="66" height="56" rx="12"
+        fill="none" stroke="#1f2328" stroke-width="8"/>
+      <path d="M74 122 L90 133 L74 144" fill="none"
+        stroke="#f472b6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="96" y1="144" x2="114" y2="144"
+        stroke="#f472b6" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="172" cy="102" r="32" fill="none" stroke="#f472b6"
+        stroke-width="4" opacity="0.45" stroke-dasharray="4 10" stroke-linecap="round"/>
+      <circle cx="172" cy="102" r="20" fill="#f472b6"/>
+      <path d="M162 101 L166 96 L170 101" fill="none"
+        stroke="#1f2328" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M174 101 L178 96 L182 101" fill="none"
+        stroke="#1f2328" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <path d="M-14 0 q 18 -8 30 0" fill="none"
+      stroke="#1f2328" stroke-width="8" stroke-linecap="round" opacity="0.5"
+      transform="translate(215 50) rotate(50)"/>
+    <path d="M-14 0 q 19 -8 38 0" fill="none"
+      stroke="#1f2328" stroke-width="8" stroke-linecap="round" opacity="0.5"
+      transform="translate(50 210) rotate(225)"/>
+  </g>
+</svg>
