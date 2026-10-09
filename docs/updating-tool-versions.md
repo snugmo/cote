@@ -83,8 +83,8 @@ The full release flow, in order:
 1. Commit tool bumps one at a time (see [Commit Conventions](../AGENTS.md#commit-conventions)), one commit per tool, never batched.
 2. Sync docs: the `Toolchain includes` bullet in the Base Image section of [AGENTS.md](../AGENTS.md) and the `## Toolchain` table in [README.md](../README.md) must match the Containerfile.
 3. Bump the image references in `.devfile.yaml` and in [AGENTS.md](../AGENTS.md) → *Self-hosting Devfile* to the new tag, in one commit.
-4. Tag the final HEAD: `git tag vN.N.N`. The image tag derives from `git describe --tags --always --dirty` (with the leading `v` stripped), so the tag must exist and the tree must be clean at build time, or the image tag gets a `-dirty` suffix.
-5. Build and push: `./base-image/build.sh push r5t.io/agentic` → `r5t.io/agentic/dev-workspace-base:<tag>`.
-6. Only if `PI_VERSION` changed: `./extensions/pi/build.sh push r5t.io/agentic`. The pi build pulls `${REGISTRY}/dev-workspace-base:<same tag>` from the registry (`DEV_BASE_IMAGE` override), so the base image must be pushed first. Likewise, only if `PIG_VERSION` changed: `./extensions/pi-in-go/build.sh push r5t.io/agentic` (the PiG build pulls the same base image tag).
+4. Tag the final HEAD: `git tag vN.N.N`. The image tag derives from `git describe --tags --always --dirty` (with the leading `v` stripped and a `-base` suffix), so the tag must exist and the tree must be clean at build time, or the image tag gets a `-dirty` suffix.
+5. Build and push: `./base-image/build.sh push` → `ghcr.io/snugmo/cote:<tag>-base`.
+6. Only if `PI_VERSION` changed: `./extensions/pi/build.sh push`. The pi build pulls `${REGISTRY}/cote:<same tag>-base` from the registry (`DEV_BASE_IMAGE` override), so the base image must be pushed first. Likewise, only if `PIG_VERSION` changed: `./extensions/pi-in-go/build.sh push` (the PiG build pulls the same base image tag).
 7. Never rebase across a release tag: a stranded tag makes `git describe` fall back to the last reachable tag and silently degrades the image tag (this happened to `v0.15.0`, which degraded `git describe` on `main` to `v0.14.3-N-g<sha>` until a clean tag was created). If it ever happens, re-tag onto the equivalent new commit.
 8. Agent sessions stop here: local commits, the tag, and the image push are done. Pushing the branch and the tag to origin is the user's job.
