@@ -19,8 +19,6 @@ extensions/
 devfiles/
   devfile.yaml         # Generic workspace template (Devfile schema 2.2.0)
 .devfile.yaml          # Self-hosting devfile — opens this repo as a workspace
-scripts/
-  git-hooks/commit-msg # Optional commit-msg hook (adds goose agent trailers)
 docs/                  # On-demand reference docs — read when relevant (see below)
 ```
 
@@ -43,8 +41,6 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 - Make small, logically contained commits; one per meaningful change, committed as you go.
 - Subject: `<emoji> <type>: <summary>` — a conventional type prefix (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, …), optionally with a scope naming the affected component when the change is component-specific (`(base-image)`, `(hermes)`, `(pi)`, `(pi-in-go)`, `(quadlet)`, …), and a summary under 72 characters. `feat` adds a new capability (a new language, tool, or package); `chore` covers maintenance such as version bumps and internal adjustments. The single emoji is chosen per change to capture what actually changed; there is no fixed set of allowed emojis.
 - End commit messages with an `Assisted-by: <agent>:<model>` trailer, where `<agent>` is the coding agent doing the committing (no "generated with" line).
-- An optional `scripts/git-hooks/commit-msg` hook (install: `ln -sf ../../scripts/git-hooks/commit-msg .git/hooks/commit-msg`) auto-appends `Assisted-by:` and `Agent-Session:` trailers when `AGENT=goose`; it is a no-op for every other agent and does not validate the emoji/conventional format.
-
 ### Base Image (`base-image/Containerfile`)
 
 - **No IDEs** — IDEs and AI agents are Devfile components or extension images, never baked into the base image.
