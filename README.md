@@ -119,7 +119,7 @@ podman run -d --replace --name=cote \
   ghcr.io/snugmo/cote:latest-base
 ```
 
-By default the container runs `tail -f /dev/null` to stay alive, so `exec` into it to start a shell inside the container namespace:
+With no command the container runs `catatonit -P` — a pause container that just stays alive — so `exec` into it to start a shell inside the container namespace:
 
 ```bash
 podman exec -ti -e TERM -e COLORTERM cote "${SHELL}"

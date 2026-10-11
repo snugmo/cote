@@ -43,7 +43,7 @@ components:
 
 ## Container Entrypoint
 
-The image's `CMD` is `/usr/local/bin/xpra-entrypoint` (the base image's `catatonit` entrypoint stays in place for zombie reaping):
+The image's `CMD` is `/usr/local/bin/xpra-entrypoint` (the base image's entrypoint — `catatonit` via `cote-entrypoint` — stays in place for zombie reaping):
 
 ```bash
 # No arguments: an empty X11 desktop (openbox) served on port 10000;

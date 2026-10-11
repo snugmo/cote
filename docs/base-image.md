@@ -20,7 +20,7 @@ The final stage assembles everything from the `# EXTRAS` block: each tool contri
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
 - Go version is controlled by `ARG GO_VERSION=1.27.1` — override at build time if needed.
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
-- ENTRYPOINT uses `catatonit` (from podman) for zombie process reaping; CMD defaults to `tail -f /dev/null` so the container stays alive for `exec`.
+- `ENTRYPOINT` is `/usr/local/bin/cote-entrypoint`, a small trampoline that `exec`s `catatonit` (from podman): with no command it runs `catatonit -P` — a pause container that idles with no child process, so the container stays alive for `exec` — and with a command it runs `catatonit -- <command>` for zombie reaping and signal forwarding.
 - Subuid/subgid ranges (2000–65000) are configured on the `user` account to enable **rootless buildah/podman inside the container**.
 - All binary downloads are verified as far as possible: where upstreams publish SHA-256s, the download itself is an `ADD --checksum=sha256:…` in the Containerfile; otherwise cosign signatures or SLSA provenance — not all upstreams provide cryptographic signatures.
 
