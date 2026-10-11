@@ -89,8 +89,9 @@ RUN chmod +x /usr/local/bin/xpra-desktop
 # with arguments, starts the same desktop as a daemon and runs the given
 # command inside it as the container's foreground process (its
 # stdout/stderr go to the container logs, its exit code becomes the
-# container's). The base image's catatonit ENTRYPOINT stays in place for
-# zombie reaping; this only overrides the default CMD.
+# container's). The base image's entrypoint (catatonit, via
+# cote-entrypoint) stays in place for zombie reaping; this only
+# overrides the default CMD.
 COPY --chown=user:user xpra-entrypoint /usr/local/bin/xpra-entrypoint
 RUN chmod +x /usr/local/bin/xpra-entrypoint
 CMD ["/usr/local/bin/xpra-entrypoint"]

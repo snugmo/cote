@@ -826,8 +826,23 @@ ENV PATH="/home/user/.local/bin:$PATH"
 # Default shell prompt prefix marking the cote container; override per-session with SHELL_PROMPT_PREFIX
 ENV SHELL_PROMPT_PREFIX="🏝️"
 WORKDIR /projects
-ENTRYPOINT ["/usr/libexec/podman/catatonit","--"]
-CMD ["tail", "-f", "/dev/null"]
+# Entrypoint: a small trampoline around catatonit (from podman). With no
+# command the container runs `catatonit -P` — a pause container that just
+# idles until stopped or exec'd into, with no child process in the process
+# tree. With a command, catatonit is the init that reaps its zombies and
+# forwards signals to it.
+COPY --chown=user:user <<-'EOT' /usr/local/bin/cote-entrypoint
+#!/bin/sh
+# cote-entrypoint: catatonit as pause container or reaping init.
+# No command: pause mode — no child process, no signal handling.
+if [ "$#" -eq 0 ]; then
+    exec /usr/libexec/podman/catatonit -P
+fi
+# Command given: the `--` keeps a leading dash from being parsed as a flag.
+exec /usr/libexec/podman/catatonit -- "$@"
+EOT
+RUN chmod +x /usr/local/bin/cote-entrypoint
+ENTRYPOINT ["/usr/local/bin/cote-entrypoint"]
 
 # OCI well-known image labels (image-spec annotations.md). VERSION/REVISION/
 # CREATED are passed by build.sh via --build-arg; the defaults keep ad-hoc
