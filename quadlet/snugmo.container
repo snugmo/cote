@@ -63,6 +63,17 @@ Volume=dev-home:/home/user
 Tmpfs=/run/user/1000:U
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
+# The XDG base directories, spelled out at their spec defaults. Tools that
+# honor them (JetBrains Toolbox/IDEs, among others) then see the same paths
+# a shell does, and one place to repoint them if a directory ever has to move.
+# XDG_STATE_HOME is the home for logs/history/recent-files style state.
+Environment=XDG_CONFIG_HOME=/home/user/.config
+Environment=XDG_DATA_HOME=/home/user/.local/share
+Environment=XDG_CACHE_HOME=/home/user/.cache
+Environment=XDG_STATE_HOME=/home/user/.local/state
+Environment=XDG_CONFIG_DIRS=/etc/xdg
+Environment=XDG_DATA_DIRS=/usr/local/share:/usr/share
+
 # -e TERM -e COLORTERM
 # A *user* service is started by the `systemd --user` daemon, which has NO shell
 # environment (no TERM/COLORTERM), so a pass-through `Environment=TERM` would be
