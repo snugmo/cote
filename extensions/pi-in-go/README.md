@@ -4,7 +4,7 @@ Installs [PiG](https://pi-in-go.dev/) ([MichaelKinsy/PiG](https://github.com/Mic
 
 PiG runs in four modes: interactive TUI, print/JSON, RPC for process integration, and a Go SDK for embedding. Extend it with Go, Rust, Python, or Node extensions (Pi's own TypeScript/JavaScript extensions run unchanged), skills, prompt templates, themes, packages, and Piglets.
 
-Installed from the official npm package (`@pi-in-go/pig`) with `--ignore-scripts`. The package is a thin Node launcher whose `optionalDependencies` pull in the native `pig` binary for the build platform, so npm selects the correct architecture automatically and no lifecycle scripts are needed (upstream publishes the package without a `postinstall`). npm verifies the published tarball integrity (sha512) against the registry. PiG 0.4.1 tracks Pi 1.0.3 (`pig --version` prints `0.4.1+1.0.3`).
+Installed from the official npm package (`@pi-in-go/pig`) with `--ignore-scripts`. The package is a thin Node launcher whose `optionalDependencies` pull in the native `pig` binary for the build platform, so npm selects the correct architecture automatically and no lifecycle scripts are needed (upstream publishes the package without a `postinstall`). npm verifies the published tarball integrity (sha512) against the registry. PiG 0.5.0 tracks Pi 1.3.0 (`pig --version` prints `0.5.0+1.3.0.1402973a`).
 
 The image bakes in the **example** LLM provider (a keyless OpenAI-compatible gateway at `https://llm.example.com/v1`) with the `qwen3.8-27b` model as the default, so the agent is usable out of the box (see [Built-in example LLM](#built-in-example-llm)).
 
