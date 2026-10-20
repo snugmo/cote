@@ -29,7 +29,7 @@ FROM ghcr.io/sigstore/cosign/cosign:v3.1.3 AS cosign-bin
 # =============================================================================
 # DOWNLOADER — curl-only base for download-based install stages
 # =============================================================================
-FROM docker.io/curlimages/curl@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777 AS downloader
+FROM docker.io/curlimages/curl@sha256:a134550be58ab783810e613ae96fd253c38f7bdd16d9bf9be350700c7a29ac06 AS downloader
 # Intermediate stage only: root needed to place cosign in /usr/local/bin for verification steps
 # hadolint ignore=DL3002
 USER root
