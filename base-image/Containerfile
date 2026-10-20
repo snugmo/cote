@@ -19,6 +19,7 @@ ARG TOFU_LS_VERSION=0.5.3
 ARG PROTOLS_VERSION=0.7.4
 ARG HERDR_VERSION=0.9.5
 ARG AST_GREP_VERSION=0.51.0
+ARG SHFMT_VERSION=3.14.1
 ARG KUBECONFORM_VERSION=0.8.0
 ARG SIMPLEX_CHAT_VERSION=7.0.3
 ARG NONO_VERSION=0.80.0
@@ -73,9 +74,9 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Rust
         rustup \
         # Language servers & search tools
-        fd-find hadolint ripgrep shellcheck shfmt the_silver_searcher yq \
+        fd-find hadolint ripgrep shellcheck the_silver_searcher yq \
         # Identity, encryption, integrity
-        age ca-certificates gnupg2 gpgme openssl-devel openssl-devel-engine sequoia-sop sequoia-sq \
+        age ca-certificates gnupg2 gpgme openssl3-devel openssl3-devel-engine sequoia-sop sequoia-sq \
         # Misc dev utilities
         7zip gzip rsync sqlite tar tmux unzip xdelta xz xxhash zip zstd \
         # Network tools
@@ -93,9 +94,18 @@ RUN mkdir -p /etc/yum.repos.d && \
     && dnf clean all
 
 # hadolint ignore=DL3041
+# Fedora 45 ships dnf5: the adoptium repo definition lands in
+# /usr/share/dnf5/repos.d and fedora-third-party enables it through
+# /etc/dnf/repos.override.d. Its baseurl uses $releasever, but Adoptium
+# only publishes RPMs up to the fedora/44 release dir, so pin it with a
+# second override file (verified: maven and both Temurin JDKs install).
 RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         adoptium-temurin-java-repository.noarch \
     && fedora-third-party enable \
+    && printf '%s\n' \
+        "[adoptium-temurin-java-repository]" \
+        "baseurl=https://packages.adoptium.net/artifactory/rpm/fedora/44/\$basearch" \
+        > /etc/dnf/repos.override.d/10-adoptium-pin.repo \
     && dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         maven \
         temurin-21-jdk \
@@ -590,6 +600,29 @@ RUN mkdir -p /tmp/ast-grep && \
     rm -rf /tmp/ast-grep
 
 # =============================================================================
+# SHFMT — install shell formatter from mvdan/sh GitHub release
+# =============================================================================
+# shfmt was removed from the Fedora 45 package set; upstream is actively
+# maintained, so pin the statically linked release binary instead
+FROM scratch AS shfmt-download-amd64
+ARG TARGETARCH
+ARG SHFMT_VERSION
+ADD --checksum=sha256:76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf --chmod=0755 \
+    https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64 /download/shfmt
+
+FROM scratch AS shfmt-download-arm64
+ARG TARGETARCH
+ARG SHFMT_VERSION
+ADD --checksum=sha256:5f2db09dae91fca848f7adbdd014632e921a383863a2ad7e0450ad3aba0c6489 --chmod=0755 \
+    https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_arm64 /download/shfmt
+
+# hadolint ignore=DL3006
+FROM shfmt-download-${TARGETARCH} AS shfmt-download
+
+FROM downloader AS shfmt-install
+COPY --from=shfmt-download /download/shfmt /usr/local/bin/shfmt
+
+# =============================================================================
 # KUBECONFORM — install Kubernetes manifest validator from GitHub release
 # =============================================================================
 FROM scratch AS kubeconform-download-amd64
@@ -700,6 +733,9 @@ COPY --from=herdr-install /usr/local/bin/herdr /usr/local/bin/
 FROM scratch AS ast-grep-artifacts
 COPY --from=ast-grep-install /usr/local/bin/ast-grep /usr/local/bin/
 
+FROM scratch AS shfmt-artifacts
+COPY --from=shfmt-install /usr/local/bin/shfmt /usr/local/bin/
+
 FROM scratch AS kubeconform-artifacts
 COPY --from=kubeconform-install /usr/local/bin/kubeconform /usr/local/bin/
 
@@ -738,6 +774,7 @@ COPY --link --from=tofu-ls-artifacts / /
 COPY --link --from=protols-artifacts / /
 COPY --link --from=herdr-artifacts / /
 COPY --link --from=ast-grep-artifacts / /
+COPY --link --from=shfmt-artifacts / /
 COPY --link --from=kubeconform-artifacts / /
 COPY --link --from=simplex-chat-artifacts / /
 COPY --link --from=nono-artifacts / /
