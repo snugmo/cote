@@ -59,12 +59,12 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 ### Self-hosting Devfile (`.devfile.yaml`)
 
 - Opens this repository itself as a DevWorkspaces workspace.
-- References the pre-built base image at `ghcr.io/snugmo/cote:0.34.0-base` (bump the tag when a new base image is released).
+- References the pre-built base image at `ghcr.io/snugmo/cote:0.35.0-base` (bump the tag when a new base image is released).
 
 ### Build Script (`base-image/build.sh`)
 
 - Uses `buildah` (not `docker`) — rootless, works in CI without a Docker daemon.
-- The tag is the git-describe version (`git describe --tags --always --dirty`, leading `v` stripped, falls back to `latest`) plus a `-base` suffix, so the image ref is `ghcr.io/snugmo/cote:<tag>-base` — e.g. `0.34.0-base`.
+- The tag is the git-describe version (`git describe --tags --always --dirty`, leading `v` stripped, falls back to `latest`) plus a `-base` suffix, so the image ref is `ghcr.io/snugmo/cote:<tag>-base` — e.g. `0.35.0-base`.
 - Registry defaults to `ghcr.io/snugmo`; `./base-image/build.sh push` publishes to GitHub Container Registry. For local dev / CI use `DEV_REGISTRY=localhost:5000`.
 
 ### Extensions (`extensions/`)

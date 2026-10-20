@@ -2,7 +2,7 @@ schemaVersion: 2.2.0
 components:
   - name: tools
     container:
-      image: "ghcr.io/snugmo/cote:0.34.0-base"
+      image: "ghcr.io/snugmo/cote:0.35.0-base"
       mountSources: true
       memoryRequest: "4Gi"
       memoryLimit: "8Gi"
