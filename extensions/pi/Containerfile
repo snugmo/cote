@@ -14,7 +14,7 @@ FROM ${BASE_IMAGE}
 
 USER root
 
-ARG PI_VERSION=1.1.0
+ARG PI_VERSION=1.3.0
 
 # Install the official Pi coding agent npm package globally (upstream's
 # documented install). --ignore-scripts is recommended by upstream: pi does
