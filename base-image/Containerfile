@@ -21,7 +21,7 @@ ARG HERDR_VERSION=0.9.5
 ARG AST_GREP_VERSION=0.51.0
 ARG KUBECONFORM_VERSION=0.8.0
 ARG SIMPLEX_CHAT_VERSION=7.0.3
-ARG NONO_VERSION=0.79.0
+ARG NONO_VERSION=0.80.0
 
 # Cosign binary from upstream image (defined first so downloader can reference it)
 FROM ghcr.io/sigstore/cosign/cosign:v3.1.3 AS cosign-bin
@@ -639,13 +639,13 @@ COPY --from=simplex-chat-download /download/simplex-chat /usr/local/bin/simplex-
 FROM scratch AS nono-download-amd64
 ARG TARGETARCH
 ARG NONO_VERSION
-ADD --checksum=sha256:36dfeeb6e8c6a30c43f80ba239e2460af43047c008153af527fdd893c1f02392 \
+ADD --checksum=sha256:6da665b61999570c10dffc7da78828fe1fb7f3cac53319e505cebecaef17037f \
     https://github.com/nolabs-ai/nono/releases/download/v${NONO_VERSION}/nono-v${NONO_VERSION}-x86_64-unknown-linux-gnu.tar.gz /download/nono.tar.gz
 
 FROM scratch AS nono-download-arm64
 ARG TARGETARCH
 ARG NONO_VERSION
-ADD --checksum=sha256:c4a4f4b9ae318574d30d352127a34dcc919c4d6682ee8fbd30bb8d2bd2e0e85d \
+ADD --checksum=sha256:d2a24c8c37714f85c829b5586ffd81fc2acf336c95372d881ba62140884f22cb \
     https://github.com/nolabs-ai/nono/releases/download/v${NONO_VERSION}/nono-v${NONO_VERSION}-aarch64-unknown-linux-gnu.tar.gz /download/nono.tar.gz
 
 # hadolint ignore=DL3006
