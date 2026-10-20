@@ -119,8 +119,10 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
     curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/crush_${CRUSH_VERSION}_Linux_${ARCH}.tar.gz" -o crush.tar.gz && \
     curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/checksums.txt" -o checksums.txt && \
     curl -fsSL "https://github.com/charmbracelet/crush/releases/download/v${CRUSH_VERSION}/checksums.txt.sigstore.json" -o checksums.txt.sigstore.json && \
+    # Crush releases moved from the meta repo's goreleaser workflow to a
+    # per-tag release workflow in the crush repo (0.98.1)
     cosign verify-blob \
-      --certificate-identity 'https://github.com/charmbracelet/meta/.github/workflows/goreleaser.yml@refs/heads/main' \
+      --certificate-identity 'https://github.com/charmbracelet/crush/.github/workflows/release.yml@refs/tags/v'"${CRUSH_VERSION}" \
       --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       --bundle checksums.txt.sigstore.json \
       checksums.txt && \
