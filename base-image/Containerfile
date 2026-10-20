@@ -38,7 +38,7 @@ COPY --from=cosign-bin /ko-app/cosign /usr/local/bin/cosign
 # =============================================================================
 # BASE — system packages only (rarely changes)
 # =============================================================================
-FROM registry.fedoraproject.org/fedora:44 AS base
+FROM registry.fedoraproject.org/fedora:45 AS base
 
 # Set locale to C to avoid warnings about missing translations
 ENV LANG=C.UTF-8 \
@@ -46,7 +46,7 @@ ENV LANG=C.UTF-8 \
 # Prevent interactive prompts during package installation
 ARG FORCE_NONINTERACTIVE=1
 
-# Base image tracks the Fedora 44 distro package set; per-package version pins are intentional out-of-scope
+# Base image tracks the Fedora 45 distro package set; per-package version pins are intentional out-of-scope
 # hadolint ignore=DL3041
 RUN mkdir -p /etc/yum.repos.d && \
     dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
@@ -616,7 +616,7 @@ RUN tar -xzf /download/kubeconform.tar.gz -C /usr/local/bin kubeconform && \
 # SIMPLEX-CHAT — install terminal chat CLI from GitHub release
 # =============================================================================
 # Prebuilt for Ubuntu 22.04 (the variant upstream's install.sh ships); its
-# dynamic dependencies (glibc, libcrypto.so.3, libgmp, libz) are all present on Fedora 44
+# dynamic dependencies (glibc, libcrypto.so.3, libgmp, libz) are all present on Fedora 45
 FROM scratch AS simplex-chat-download-amd64
 ARG TARGETARCH
 ARG SIMPLEX_CHAT_VERSION
