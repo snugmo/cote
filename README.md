@@ -25,12 +25,12 @@ It provides the shell, tools, and context your agents need to work.
 | **[Go](https://go.dev)**                                           | 1.27.3          | go.dev/dl                                                 |
 | **[Node.js](https://nodejs.org)**                                  | 26              | [fnm](https://github.com/Schniz/fnm)                      |
 | **[Bun](https://bun.sh)**                                          | latest          | [oven-sh/bun](https://github.com/oven-sh/bun) (OCI image) |
-| **[Python](https://python.org)**                                   | Fedora 44 stock | dnf                                                       |
+| **[Python](https://python.org)**                                   | Fedora 45 stock | dnf                                                       |
 | **[Rust](https://rust-lang.org)**                                  | stable          | [rustup](https://github.com/rust-lang/rustup)             |
 | **[cargo-binstall](https://github.com/cargo-bins/cargo-binstall)** | latest          | crates.io (`cargo install`)                               |
 | **[Java](https://adoptium.net/temurin/releases)**                  | 25              | dnf (Adoptium Temurin repo)                               |
-| **[Maven](https://maven.apache.org)**                              | Fedora 44 stock | dnf                                                       |
-| **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)**   | Fedora 44 stock | dnf                                                       |
+| **[Maven](https://maven.apache.org)**                              | Fedora 45 stock | dnf                                                       |
+| **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)**   | Fedora 45 stock | dnf                                                       |
 | **[Crush CLI](https://github.com/charmbracelet/crush)**            | 0.98.1          | GitHub release, cosign verified                           |
 | **[uv](https://github.com/astral-sh/uv)**                          | 0.13.3          | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                   | 3.1.3           | OCI image                                                 |

@@ -8,7 +8,7 @@
 
 ```
 base-image/
-  Containerfile        # Base dev toolchain OCI image (Fedora 44, no IDEs)
+  Containerfile        # Base dev toolchain OCI image (Fedora 45, no IDEs)
   build.sh             # Buildah wrapper with registry/tag config
 extensions/
   hermes/              # Hermes agent + ACP support extension
@@ -44,7 +44,7 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 ### Base Image (`base-image/Containerfile`)
 
 - **No IDEs** — IDEs and AI agents are Devfile components or extension images, never baked into the base image.
-- Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`), not UBI; runs as non-root user `user` (UID 1000).
+- Based on **Fedora 45** (`registry.fedoraproject.org/fedora:45`), not UBI; runs as non-root user `user` (UID 1000).
 - Ships a broad toolchain (compilers, Go, Node.js, Python, Rust, Java, LSP servers, linters, k8s/cloud & shell utils) — see [README.md](README.md) `## Toolchain` for the full list with versions.
 - All binary downloads are verified as far as possible (SHA-256 `ADD --checksum=…`, cosign signatures, or SLSA provenance).
 - Build internals — Containerfile stage architecture, `build.sh`, bun digest, `catatonit` entrypoint, subuid ranges, and verifying artifact stages: see [docs/base-image.md](docs/base-image.md).

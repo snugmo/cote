@@ -1,6 +1,6 @@
 # Base Image Build Reference
 
-> **On-demand reference** — read when building or editing `base-image/`. The always-relevant facts (no IDEs, Fedora 44, non-root UID 1000) live in [AGENTS.md](../AGENTS.md); the deep build mechanics live here.
+> **On-demand reference** — read when building or editing `base-image/`. The always-relevant facts (no IDEs, Fedora 45, non-root UID 1000) live in [AGENTS.md](../AGENTS.md); the deep build mechanics live here.
 
 ## Containerfile architecture
 
@@ -13,7 +13,7 @@ The final stage assembles everything from the `# EXTRAS` block: each tool contri
 ## Facts
 
 - **No IDEs** — IDEs and AI agents are Devfile components or extension images, never baked into the base image.
-- Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
+- Based on **Fedora 45** (`registry.fedoraproject.org/fedora:45`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
 - **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.3, Rust (via rustup + rust-analyzer + cargo-binstall), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, SimpleX Chat CLI, nono, lola, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
