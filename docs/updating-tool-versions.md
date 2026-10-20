@@ -42,6 +42,7 @@ These apply whenever an agent session needs network access — both for version 
 | `PROTOLS_VERSION`         | `gh api repos/kralicky/protols/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                        |
 | `HERDR_VERSION`           | `gh api repos/herdrdev/herdr/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                                       |
 | `AST_GREP_VERSION`        | `gh api repos/ast-grep/ast-grep/releases/latest --jq .tag_name` (no `v` prefix; hash pinned in ADD, recompute on bump)                                                     |
+| `SHFMT_VERSION`           | `gh api repos/mvdan/sh/releases/latest --jq .tag_name` (strip the `v` prefix; hash pinned in ADD; recompute on bump)                                                       |
 | `KUBECONFORM_VERSION`     | `gh api repos/yannh/kubeconform/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                       |
 | `PI_VERSION`              | `gh api repos/earendil-works/pi/releases/latest --jq .tag_name` (extension image `extensions/pi/`; npm registry is the install source, see note below)                     |
 | `PIG_VERSION`             | `gh api repos/MichaelKinsy/PiG/releases/latest --jq .tag_name` (extension image `extensions/pi-in-go/`; npm registry `@pi-in-go/pig` is the install source, see note)      |
