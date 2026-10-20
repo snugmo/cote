@@ -16,9 +16,9 @@ The final stage assembles everything from the `# EXTRAS` block: each tool contri
 - Based on **Fedora 44** (`registry.fedoraproject.org/fedora:44`) — not UBI.
 - Runs as non-root user `user` (UID 1000) to match DevWorkspaces security defaults.
 - Uses `dnf` (not `microdnf`) for package installs; always `dnf clean all` after installs to keep layers small.
-- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.1, Rust (via rustup + rust-analyzer + cargo-binstall), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, SimpleX Chat CLI, nono, lola, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
+- **Toolchain includes**: GCC, Clang/LLVM, Go 1.27.3, Rust (via rustup + rust-analyzer + cargo-binstall), Node.js 26, Python 3, Java (Temurin 25 JDK), Maven, Crush CLI, SimpleX Chat CLI, nono, lola, plus LSP servers (`gopls`, `golangci-lint-langserver`, `typescript-language-server`, `pyright`, `pyrefly`, `ruff server`, `yaml-language-server`, `marksman`, `helm-ls`, `tofu-ls`, `protols`, `bash-language-server`, `dockerfile-language-server`, `clangd`, `rust-analyzer`).
 - LSP servers are installed globally so they are available to any IDE component without reinstallation.
-- Go version is controlled by `ARG GO_VERSION=1.27.1` — override at build time if needed.
+- Go version is controlled by `ARG GO_VERSION=1.27.3` — override at build time if needed.
 - Bun binary is copied from `oven/bun` distroless OCI image (pinned by sha256 digest).
 - `ENTRYPOINT` is `/usr/local/bin/cote-entrypoint`, a small trampoline that `exec`s `catatonit` (from podman): with no command it runs `catatonit -P` — a pause container that idles with no child process, so the container stays alive for `exec` — and with a command it runs `catatonit -- <command>` for zombie reaping and signal forwarding.
 - Subuid/subgid ranges (2000–65000) are configured on the `user` account to enable **rootless buildah/podman inside the container**.
