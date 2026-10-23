@@ -10,7 +10,7 @@ ARG TARGETARCH
 # Pinned tool versions for the per-arch download stages (overridable at build)
 ARG GO_VERSION=1.27.3
 ARG UV_VERSION=0.13.5
-ARG GH_VERSION=2.102.0
+ARG GH_VERSION=2.103.1
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
 ARG AGENTGATEWAY_VERSION=1.6.0
 ARG MARKSMAN_VERSION=2026-02-08
@@ -325,13 +325,13 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=aarch64; fi && \
 FROM scratch AS github-cli-download-amd64
 ARG TARGETARCH
 ARG GH_VERSION
-ADD --checksum=sha256:bb766f710eef8ede859c18578c72c327597cd4c8a85b06001b1f3843c6019386 \
+ADD --checksum=sha256:57500f347b5e84efb6578c9b644eeb3b4e54046762635a939dd0ee2cca1c1add \
     https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz /download/gh.tar.gz
 
 FROM scratch AS github-cli-download-arm64
 ARG TARGETARCH
 ARG GH_VERSION
-ADD --checksum=sha256:7862c86c72f43df3a2d93ddde6f473285b4e2af61b494849846827e513ef6484 \
+ADD --checksum=sha256:25b1287471a73a3cca32e5d2d2798ae26abea0243db1b9e4a8c1be506fad1bfe \
     https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_arm64.tar.gz /download/gh.tar.gz
 
 # hadolint ignore=DL3006
