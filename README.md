@@ -31,9 +31,9 @@ It provides the shell, tools, and context your agents need to work.
 | **[Java](https://adoptium.net/temurin/releases)**                  | 25              | dnf (Adoptium Temurin repo)                               |
 | **[Maven](https://maven.apache.org)**                              | Fedora 45 stock | dnf                                                       |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)**   | Fedora 45 stock | dnf                                                       |
-| **[Crush CLI](https://github.com/charmbracelet/crush)**            | 0.98.1          | GitHub release, cosign verified                           |
-| **[uv](https://github.com/astral-sh/uv)**                          | 0.13.3          | GitHub release                                            |
-| **[cosign](https://github.com/sigstore/cosign)**                   | 3.1.3           | OCI image                                                 |
+| **[Crush CLI](https://github.com/charmbracelet/crush)**            | 0.98.2          | GitHub release, cosign verified                           |
+| **[uv](https://github.com/astral-sh/uv)**                          | 0.13.5          | GitHub release                                            |
+| **[cosign](https://github.com/sigstore/cosign)**                   | 3.1.4           | OCI image                                                 |
 | **[SimpleX Chat CLI](https://simplex.chat/docs/cli.html)**         | 7.0.3           | GitHub release (SHA-256 in release notes)                 |
 | **[nono](https://github.com/nolabs-ai/nono)**                      | 0.80.0          | GitHub release (SHA-256SUMS.txt)                          |
 | **[Lola](https://docs.getlola.dev)**                               | latest          | PyPI (`lola-ai`)                                          |
@@ -74,7 +74,7 @@ It provides the shell, tools, and context your agents need to work.
 | [pyrefly](https://github.com/facebook/pyrefly)             | Python (type checker)                             | `.py`                                         |
 | [black](https://github.com/psf/black)                      | Python (formatter)                                | `.py`                                         |
 
-**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.40.0), `kubectl-cnpg` (1.30.1), `kubectl-linstor` (0.3.2), `cmctl` (2.6.1), `agctl` (1.6.0), `mcp-cli` (0.3.0), `fj` (0.7.0), `gh` (2.102.0), `kubeconform` (0.8.0).
+**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.41.1), `kubectl-cnpg` (1.30.1), `kubectl-linstor` (0.3.2), `cmctl` (2.6.1), `agctl` (1.6.0), `mcp-cli` (0.3.0), `fj` (0.7.0), `gh` (2.103.1), `kubeconform` (0.8.0).
 
 **Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `bat`, `glow`, `tmux`, `herdr` (0.9.5), `age`, `gnupg2`, `ImageMagick`, `librsvg2-tools`, `libsixel-utils`, `potrace`, `exif`, `exiv2`.
 
