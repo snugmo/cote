@@ -12,6 +12,9 @@
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
 
+# Both named users exist in the image (root is universal, user is created in
+# the base image), so DL3066's host-resolution concern is a false positive.
+# hadolint ignore=DL3066
 USER root
 
 ARG PI_VERSION=1.4.0
@@ -32,6 +35,7 @@ RUN mkdir -p /home/user/.pi/agent && \
 
 COPY --chown=user:user models.json settings.json /home/user/.pi/agent/
 
+# hadolint ignore=DL3066
 USER user
 
 # OCI well-known image labels (image-spec annotations.md). VERSION/REVISION/

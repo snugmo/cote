@@ -16,6 +16,9 @@
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
 
+# Both named users exist in the image (root is universal, user is created in
+# the base image), so DL3066's host-resolution concern is a false positive.
+# hadolint ignore=DL3066
 USER root
 
 # The xpra-html5 client is not published on PyPI; upstream builds its
@@ -52,6 +55,7 @@ ARG HTML5_CLIENT_COMMIT=3029a041715cd042a90e2a2a8d4224e8afcb151e
 #  - kitty: GPU-accelerated terminal as a richer alternative on the desktop
 #  - brotli: compressed assets in the html5 client build (gzip is in the
 #    base image)
+# hadolint ignore=DL3041
 RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         xpra xorg-x11-server-Xvfb xorg-x11-xauth xset xinput \
         xorg-x11-fonts-Type1 xorg-x11-fonts-misc default-fonts-core \
@@ -71,6 +75,7 @@ RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodoc
 # /etc/xpra/html5-client (symlinked from the install dir). No JS
 # minifier is installed, so the client is copied unminified; gzip and
 # brotli compressed copies are still generated.
+# hadolint ignore=DL3003
 RUN git clone --depth 1 https://github.com/Xpra-org/xpra-html5.git /tmp/xpra-html5 && \
     cd /tmp/xpra-html5 && \
     git fetch --depth 1 origin "${HTML5_CLIENT_COMMIT}" && \
@@ -96,6 +101,7 @@ COPY --chown=user:user xpra-entrypoint /usr/local/bin/xpra-entrypoint
 RUN chmod +x /usr/local/bin/xpra-entrypoint
 CMD ["/usr/local/bin/xpra-entrypoint"]
 
+# hadolint ignore=DL3066
 USER user
 
 # Xpra (and other desktop tools) expect an XDG runtime dir; give the
