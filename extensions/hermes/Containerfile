@@ -12,6 +12,9 @@
 ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
 
+# Both named users exist in the image (root is universal, user is created in
+# the base image), so DL3066's host-resolution concern is a false positive.
+# hadolint ignore=DL3066
 USER root
 
 ARG HERMES_VERSION=v2026.9.24
@@ -22,11 +25,12 @@ ARG HERMES_VERSION=v2026.9.24
 # skills are skipped — users configure credentials and browser tools at runtime.
 RUN git clone --depth 1 --branch "${HERMES_VERSION}" \
       https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent && \
-    cd /opt/hermes-agent && \
     # Create venv with system Python via uv (already in base image)
-    uv venv .venv --python 3 && \
-    # Install Hermes with ACP extra only (no browser, no matrix, no RL)
-    UV_PROJECT_ENVIRONMENT=.venv uv pip install -e '.[acp]' && \
+    uv venv /opt/hermes-agent/.venv --python 3 && \
+    # Install Hermes with ACP extra only (no browser, no matrix, no RL);
+    # VIRTUAL_ENV (not UV_PROJECT_ENVIRONMENT) is what uv pip honors
+    VIRTUAL_ENV=/opt/hermes-agent/.venv \
+      uv pip install -e '/opt/hermes-agent[acp]' && \
     # Create hermes launcher in /usr/local/bin (FHS layout, matches upstream)
     mkdir -p /usr/local/bin && \
     printf '#!/usr/bin/env bash\nunset PYTHONPATH\nunset PYTHONHOME\nexec "/opt/hermes-agent/.venv/bin/hermes" "$@"\n' > /usr/local/bin/hermes && \
@@ -39,6 +43,7 @@ RUN git clone --depth 1 --branch "${HERMES_VERSION}" \
 RUN mkdir -p /home/user/.hermes/skills && \
     chown -R user:user /home/user/.hermes
 
+# hadolint ignore=DL3066
 USER user
 
 # Set environment for Hermes
