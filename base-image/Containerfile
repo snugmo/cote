@@ -31,8 +31,10 @@ FROM ghcr.io/sigstore/cosign/cosign:v3.1.4 AS cosign-bin
 # DOWNLOADER — curl-only base for download-based install stages
 # =============================================================================
 FROM docker.io/curlimages/curl@sha256:11e64e28c5f58c8d93ee95fcf22ac055f48b0bc440e0ce7d8013bbb5ad6aa8ac AS downloader
-# Intermediate stage only: root needed to place cosign in /usr/local/bin for verification steps
-# hadolint ignore=DL3002
+# Intermediate stage only: root needed to place cosign in /usr/local/bin for
+# verification steps. `root` (and `user` below) exist in every cote image, so
+# DL3066's host-resolution concern is a false positive here.
+# hadolint ignore=DL3002,DL3066
 USER root
 COPY --from=cosign-bin /ko-app/cosign /usr/local/bin/cosign
 
@@ -93,12 +95,12 @@ RUN mkdir -p /etc/yum.repos.d && \
         foot-terminfo kitty-terminfo \
     && dnf clean all
 
-# hadolint ignore=DL3041
 # Fedora 45 ships dnf5: the adoptium repo definition lands in
 # /usr/share/dnf5/repos.d and fedora-third-party enables it through
 # /etc/dnf/repos.override.d. Its baseurl uses $releasever, but Adoptium
 # only publishes RPMs up to the fedora/44 release dir, so pin it with a
 # second override file (verified: maven and both Temurin JDKs install).
+# hadolint ignore=DL3041
 RUN dnf install --setopt=install_weak_deps=false --nodocs --setopt=tsflags=nodocs -y \
         adoptium-temurin-java-repository.noarch \
     && fedora-third-party enable \
@@ -752,31 +754,59 @@ COPY --from=nono-install /usr/local/bin/nono /usr/local/bin/
 # hadolint ignore=DL3007
 FROM base AS final
 
-# Assemble toolchains from artifact stages
+# Assemble toolchains from artifact stages. Each artifact stage is a full
+# root filesystem (base image + its tool), so merging them means one
+# full-filesystem COPY per stage — deliberate: the cote image ships a full
+# OS environment, not a scratch attack surface (docs/base-image.md).
+# hadolint ignore=DL3067
 COPY --link --from=crush-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=nodejs-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=bun-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=go-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=rust-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=uv-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=python-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=forgejo-cli-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=kubeseal-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=kubectl-linstor-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=cloudnative-pg-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=cert-manager-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=agentgateway-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=github-cli-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=mcp-cli-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=marksman-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=helm-ls-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=tofu-ls-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=protols-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=herdr-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=ast-grep-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=shfmt-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=kubeconform-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=simplex-chat-artifacts / /
+# hadolint ignore=DL3067
 COPY --link --from=nono-artifacts / /
 
 # Generate shell completions for CLI tools
@@ -860,6 +890,9 @@ COPY <<-'EOT' /etc/containers/containers.conf
 	runtime="crun"
 EOT
 
+# Blank line after the heredoc terminator is required: hadolint's parser
+# fails to read the next instruction otherwise
+# hadolint ignore=DL3066
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
 # Default shell prompt prefix marking the cote container; override per-session with SHELL_PROMPT_PREFIX
@@ -870,7 +903,7 @@ WORKDIR /projects
 # idles until stopped or exec'd into, with no child process in the process
 # tree. With a command, catatonit is the init that reaps its zombies and
 # forwards signals to it.
-COPY --chown=user:user <<-'EOT' /usr/local/bin/cote-entrypoint
+COPY --chown=user:user --chmod=0755 <<-'EOT' /usr/local/bin/cote-entrypoint
 #!/bin/sh
 # cote-entrypoint: catatonit as pause container or reaping init.
 # No command: pause mode — no child process, no signal handling.
@@ -880,7 +913,9 @@ fi
 # Command given: the `--` keeps a leading dash from being parsed as a flag.
 exec /usr/libexec/podman/catatonit -- "$@"
 EOT
-RUN chmod +x /usr/local/bin/cote-entrypoint
+
+# Blank line after the heredoc terminator is required: hadolint's parser
+# fails to read the next instruction otherwise
 ENTRYPOINT ["/usr/local/bin/cote-entrypoint"]
 
 # OCI well-known image labels (image-spec annotations.md). VERSION/REVISION/
