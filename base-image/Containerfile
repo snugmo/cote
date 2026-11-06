@@ -60,7 +60,7 @@ RUN mkdir -p /etc/yum.repos.d && \
         # Base shell tools
         diffutils findutils lsof moreutils openssl patch procps time util-linux which \
         # Build tools
-        bison byacc clang clang-libs clang-tools-extra cmake flex gcc gcc-c++ gdb llvm make meson m4 ninja-build xxd \
+        bison byacc clang clang-libs clang-tools-extra cmake flex gcc gcc-c++ gdb llvm make meson m4 ninja-build \
         # Protobuf
         protobuf protobuf-c protobuf-compiler protobuf-devel \
         # Shells & editors
@@ -70,17 +70,17 @@ RUN mkdir -p /etc/yum.repos.d && \
         # HTTP & download tools
         curl openssh-clients openssh-server wget wget2 \
         # Text processing & utilities
-        bat file gawk jq less sed strace tree \
+        bat gawk jq less sed xmlstarlet xq xxd yq \
         # Python ecosystem
         python3 python3-devel python3-pip python3-wheel \
         # Rust
         rustup \
         # Language servers & search tools
-        fd-find hadolint ripgrep shellcheck the_silver_searcher yq \
+        fd-find file hadolint ripgrep shellcheck the_silver_searcher tree \
         # Identity, encryption, integrity
         age ca-certificates gnupg2 gpgme openssl3-devel openssl3-devel-engine sequoia-sop sequoia-sq \
         # Misc dev utilities
-        7zip gzip rsync sqlite tar tmux unzip xdelta xz xxhash zip zstd \
+        7zip gzip rsync sqlite strace tar tmux unzip xdelta xz xxhash zip zstd \
         # Network tools
         bind-utils grpcurl iproute iputils knot-utils net-tools nmap nmap-ncat oidc-agent-cli socat slirp4netns tcpdump \
         # Markdown renderer
