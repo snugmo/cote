@@ -30,7 +30,7 @@ FROM ghcr.io/sigstore/cosign/cosign:v3.1.4 AS cosign-bin
 # =============================================================================
 # DOWNLOADER — curl-only base for download-based install stages
 # =============================================================================
-FROM docker.io/curlimages/curl@sha256:11e64e28c5f58c8d93ee95fcf22ac055f48b0bc440e0ce7d8013bbb5ad6aa8ac AS downloader
+FROM docker.io/curlimages/curl@sha256:3fb7e13e5d179a845c97d78204f3f1064d1907037f26a3ebf91710571151fd93 AS downloader
 # Intermediate stage only: root needed to place cosign in /usr/local/bin for
 # verification steps. `root` (and `user` below) exist in every cote image, so
 # DL3066's host-resolution concern is a false positive here.
