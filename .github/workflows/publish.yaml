@@ -1,0 +1,245 @@
+name: Publish
+
+# Build and publish the cote images to the configured registry (quay.io)
+# as multi-arch manifests (linux/amd64 + linux/arm64).
+#
+# Images and tags:
+#   <registry>/<namespace>/cote            base image         <v>-base, latest-base
+#   <registry>/<namespace>/cote-hermes     Hermes agent       <v>, latest
+#   <registry>/<namespace>/cote-pi         Pi coding agent    <v>, latest
+#   <registry>/<namespace>/cote-pi-in-go   PiG coding agent   <v>, latest
+#   <registry>/<namespace>/cote-xpra       Xpra desktop       <v>, latest
+#
+# Triggers:
+#   - push of a release tag (vX.Y.Z): publishes <v> (plus <v>-base for the
+#     base image) and moves the latest / latest-base pointers.
+#   - manual workflow_dispatch: publishes the version from the input (default:
+#     git describe, e.g. 0.38.0-3-gabc123) without touching latest, so dev
+#     builds never clobber a release pointer.
+#
+# Secrets:
+#   REGISTRY_SERVER     quay.io
+#   REGISTRY_NAMESPACE  snugmo
+#   REGISTRY_USERNAME   quay.io robot account name
+#   REGISTRY_PASSWORD   quay.io robot token (write access to all five repos)
+#
+# Strategy: each arch is built natively on a matching GitHub-hosted runner
+# (no qemu cross-emulation, so the dnf-heavy base stage runs at native
+# speed), pushes a per-arch tag (<v>-base-<arch> / <v>-<arch>), and a final
+# job merges the two per-arch images into the multi-arch manifest with
+# `docker buildx imagetools create`. Extension images pull the matching
+# per-arch base tag, so they only depend on the base builds.
+#
+# Notes:
+#   - ARM64 GitHub-hosted runners are free for public repos; for private
+#     repos they require ARM billing/credits (or a Team/Enterprise plan).
+#   - provenance/sbom attestations are disabled: attestation manifests
+#     complicate imagetools merging and consumer tooling.
+#   - The Containerfiles must stay buildable by both buildah (local dev)
+#     and BuildKit (this workflow) — they share one file.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 0.38.0). Default: git describe"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ${{ secrets.REGISTRY_SERVER }}
+  NAMESPACE: ${{ secrets.REGISTRY_NAMESPACE }}
+
+jobs:
+  meta:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      is-release: ${{ steps.resolve.outputs.is-release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: resolve
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"
+            is_release=true
+          else
+            version="${DISPATCH_VERSION#v}"
+            if [ -z "$version" ]; then
+              version="$(git describe --tags --always --dirty | sed 's/^v//')"
+            fi
+            is_release=false
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::Could not resolve a version (no tags found?)"
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "is-release=${is_release}" >> "$GITHUB_OUTPUT"
+
+  build-base:
+    name: Build base (${{ matrix.arch }})
+    needs: meta
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - id: stamp
+        run: echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./base-image
+          file: ./base-image/Containerfile
+          platforms: linux/${{ matrix.arch }}
+          push: true
+          provenance: false
+          sbom: false
+          tags: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/cote:${{ needs.meta.outputs.version }}-base-${{ matrix.arch }}
+          build-args: VERSION=${{ needs.meta.outputs.version }},REVISION=${{ github.sha }},CREATED=${{ steps.stamp.outputs.created }}
+
+  merge-base:
+    name: Publish base manifest
+    needs: [meta, build-base]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Create multi-arch manifest
+        run: |
+          image="${REGISTRY}/${NAMESPACE}/cote"
+          version="${{ needs.meta.outputs.version }}"
+          latest=()
+          if [ "${{ needs.meta.outputs.is-release }}" = "true" ]; then
+            latest=(-t "${image}:latest-base")
+          fi
+          docker buildx imagetools create \
+            -t "${image}:${version}-base" \
+            "${latest[@]}" \
+            "${image}:${version}-base-amd64" \
+            "${image}:${version}-base-arm64"
+
+  build-ext:
+    name: Build ${{ matrix.image }} (${{ matrix.arch }})
+    needs: [meta, build-base]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: cote-hermes
+            dir: extensions/hermes
+            arch: amd64
+            runner: ubuntu-latest
+          - image: cote-hermes
+            dir: extensions/hermes
+            arch: arm64
+            runner: ubuntu-24.04-arm
+          - image: cote-pi
+            dir: extensions/pi
+            arch: amd64
+            runner: ubuntu-latest
+          - image: cote-pi
+            dir: extensions/pi
+            arch: arm64
+            runner: ubuntu-24.04-arm
+          - image: cote-pi-in-go
+            dir: extensions/pi-in-go
+            arch: amd64
+            runner: ubuntu-latest
+          - image: cote-pi-in-go
+            dir: extensions/pi-in-go
+            arch: arm64
+            runner: ubuntu-24.04-arm
+          - image: cote-xpra
+            dir: extensions/xpra
+            arch: amd64
+            runner: ubuntu-latest
+          - image: cote-xpra
+            dir: extensions/xpra
+            arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - id: stamp
+        run: echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.dir }}
+          file: ${{ matrix.dir }}/Containerfile
+          platforms: linux/${{ matrix.arch }}
+          push: true
+          provenance: false
+          sbom: false
+          tags: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ matrix.image }}:${{ needs.meta.outputs.version }}-${{ matrix.arch }}
+          build-args: BASE_IMAGE=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/cote:${{ needs.meta.outputs.version }}-base-${{ matrix.arch }},VERSION=${{ needs.meta.outputs.version }},REVISION=${{ github.sha }},CREATED=${{ steps.stamp.outputs.created }}
+
+  merge-ext:
+    name: Publish ${{ matrix.image }} manifest
+    needs: [meta, build-ext]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [cote-hermes, cote-pi, cote-pi-in-go, cote-xpra]
+    steps:
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Create multi-arch manifest
+        run: |
+          image="${REGISTRY}/${NAMESPACE}/${{ matrix.image }}"
+          version="${{ needs.meta.outputs.version }}"
+          latest=()
+          if [ "${{ needs.meta.outputs.is-release }}" = "true" ]; then
+            latest=(-t "${image}:latest")
+          fi
+          docker buildx imagetools create \
+            -t "${image}:${version}" \
+            "${latest[@]}" \
+            "${image}:${version}-amd64" \
+            "${image}:${version}-arm64"

@@ -13,7 +13,7 @@
 
 ## Build & publish
 
-Each extension's `build.sh` mirrors `base-image/build.sh` (buildah, tag from `git describe`, registry override). Because an extension build pulls the base image `${REGISTRY}/cote:<same tag>-base` from the registry (override with `DEV_BASE_IMAGE`), **the base image must be pushed first**. Publish with `./extensions/<name>/build.sh push`.
+The `Publish` workflow (`.github/workflows/publish.yaml`) is the canonical publish path — it builds the base image and all four extensions for `linux/amd64` + `linux/arm64` and pushes multi-arch manifests to quay.io (see AGENTS.md → *CI Publishing*). The per-extension `build.sh` scripts are for **local builds only** (buildah, tag from `git describe`, registry override). Because an extension build pulls the base image `${REGISTRY}/cote:<same tag>-base` from the registry (override with `DEV_BASE_IMAGE`), **the base image must be pushed first**. Publish a single extension locally with `./extensions/<name>/build.sh push`.
 
 ## Credentials / gotchas
 

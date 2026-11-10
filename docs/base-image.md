@@ -24,6 +24,17 @@ The final stage assembles everything from the `# EXTRAS` block: each tool contri
 - Subuid/subgid ranges (2000–65000) are configured on the `user` account to enable **rootless buildah/podman inside the container**.
 - All binary downloads are verified as far as possible: where upstreams publish SHA-256s, the download itself is an `ADD --checksum=sha256:…` in the Containerfile; otherwise cosign signatures or SLSA provenance — not all upstreams provide cryptographic signatures.
 
+## CI publishing (quay.io)
+
+The `Publish` workflow (`.github/workflows/publish.yaml`) is the source of truth for publishing images. On a `vX.Y.Z` tag push (or a manual workflow_dispatch run) it builds the base image and all four extension images for `linux/amd64` and `linux/arm64` and publishes them to `quay.io/snugmo` as multi-arch manifests.
+
+- Each arch builds **natively** on a matching GitHub-hosted runner (`ubuntu-latest` for amd64, `ubuntu-24.04-arm` for arm64) — no qemu cross-emulation, so the dnf-heavy base stage runs at native speed. (ARM64 GitHub-hosted runners are free for public repos; for private repos they require ARM billing/credits or a Team/Enterprise plan.)
+- Each arch push produces a per-arch tag — `cote:<v>-base-<arch>` for the base image, `cote-<name>:<v>-<arch>` for extensions; extension images pull the matching per-arch base image, so they only depend on the base builds — and a final job merges the two per-arch images into the multi-arch manifest with `docker buildx imagetools create`.
+- A tag push publishes `<v>-base` / `<v>` and moves the `latest` / `latest-base` pointers; manual runs publish the git-describe version without touching `latest`, so a dev build can never clobber a release pointer.
+- Required secrets: `REGISTRY_SERVER`, `REGISTRY_NAMESPACE`, `REGISTRY_USERNAME`, `REGISTRY_PASSWORD` (a quay.io robot account with write access to all five image repos).
+- BuildKit provenance/SBOM attestations are disabled: attestation manifests complicate `imagetools` merging and consumer tooling.
+- All five Containerfiles lead with `# syntax=docker/dockerfile:1`, which tells BuildKit to pull the latest stable Dockerfile frontend (currently 1.28.0) instead of its bundled default — the minimum frontend version that supports `COPY --link` is 1.4, and the major-only tag keeps us on the current stable without manual bumps. buildah (local `build.sh`) ignores the directive and uses its own parser, so the same file must stay buildable by **both** — keep it free of tool-specific syntax. `COPY --link` is the one flag both parsers accept: undocumented in the Dockerfile reference, in BuildKit it performs a data copy rather than a snapshot merge (moby/buildkit#7375, fine at release-build frequency), and in buildah support landed after v1.32 (buildah#5096; the dev environment ships 1.43.4).
+
 ## Devfiles
 
 - **`devfiles/devfile.yaml`** — the reusable end-user template (Devfile schema `2.2.0`). The `tools` container mounts source and provides the shared toolchain; IDE components are commented out by default (uncomment per-team). Env vars (`GOPATH`, `CARGO_HOME`, `RUSTUP_HOME`, `JAVA_HOME`, `PATH`) are baked into the image, so no `env` block is needed. Persistent volumes (`tools-cache`, `tools-local`) survive pod restarts for pip/npm/cargo caches. The `image` field defaults to `ghcr.io/snugmo/cote:latest-base`. The commands section includes `run-tests` (placeholder) and `rebuild-base-image` (runs buildah inside the workspace).

@@ -30,6 +30,7 @@ docs/                  # On-demand reference docs — read when relevant (see be
 | Build + push          | `./base-image/build.sh push`                 |
 | Build + push (custom) | `./base-image/build.sh push <registry>`      |
 | Build an extension    | `./extensions/<name>/build.sh`               |
+| Publish to quay.io    | push a `vX.Y.Z` tag, or run the `Publish` workflow |
 | Apply workspace       | `kubectl apply -f devfiles/devfile.yaml`     |
 
 Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=` (see `base-image/build.sh`). Per-extension build/publish/credential details are in [docs/extensions.md](docs/extensions.md).
@@ -63,9 +64,16 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 
 ### Build Script (`base-image/build.sh`)
 
-- Uses `buildah` (not `docker`) — rootless, works in CI without a Docker daemon.
+- Uses `buildah` (not `docker`) — rootless, no Docker daemon needed; the script is for local builds (the CI publish pipeline uses BuildKit/docker buildx instead).
 - The tag is the git-describe version (`git describe --tags --always --dirty`, leading `v` stripped, falls back to `latest`) plus a `-base` suffix, so the image ref is `ghcr.io/snugmo/cote:<tag>-base` — e.g. `0.38.0-base`.
-- Registry defaults to `ghcr.io/snugmo`; `./base-image/build.sh push` publishes to GitHub Container Registry. For local dev / CI use `DEV_REGISTRY=localhost:5000`.
+- Registry defaults to `ghcr.io/snugmo`; `./base-image/build.sh push` publishes to GitHub Container Registry. For local dev use `DEV_REGISTRY=localhost:5000`.
+
+### CI Publishing (`.github/workflows/publish.yaml`)
+
+- Publishes the base image and all four extensions to `quay.io/snugmo` as multi-arch manifests (linux/amd64 + linux/arm64): each arch builds natively on a matching GitHub-hosted runner, pushes a per-arch tag (`<v>-base-<arch>` / `<v>-<arch>`), and a final job merges them with `docker buildx imagetools create`.
+- Triggers: a `vX.Y.Z` tag push (publishes `<v>` / `<v>-base` and moves `latest` / `latest-base`) and manual workflow_dispatch runs (git-describe version, does not touch `latest`).
+- Requires the secrets `REGISTRY_SERVER`, `REGISTRY_NAMESPACE`, `REGISTRY_USERNAME`, `REGISTRY_PASSWORD` (a quay.io robot account with write access to all five image repos).
+- All five Containerfiles lead with `# syntax=docker/dockerfile:1`, which tells BuildKit to pull the latest stable Dockerfile frontend (newer than its bundled default) so the parser is new enough for `COPY --link`. buildah (local `build.sh`) ignores the directive and uses its own parser, so the same file must stay buildable by both — keep it free of tool-specific syntax; `COPY --link` is the one shared extension both parsers accept.
 
 ### Extensions (`extensions/`)
 
