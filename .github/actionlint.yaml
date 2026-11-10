@@ -1,0 +1,10 @@
+# actionlint configuration.
+#
+# ubuntu-26.04 and ubuntu-26.04-arm are GA GitHub-hosted runner labels, but
+# some actionlint releases ship a stale built-in label list and report them
+# as unknown. Declare them here so actionlint accepts the labels used in
+# .github/workflows/publish.yaml.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+    - ubuntu-26.04-arm
