@@ -95,6 +95,8 @@ RUN mkdir -p /etc/yum.repos.d && \
         ImageMagick GraphicsMagick exif exiv2 librsvg2-tools libsixel-utils potrace \
         # Container tools
         podman buildah skopeo bubblewrap bwrap-oci fuse-overlayfs \
+        # Docker CLI / BuildKit stack (CLI front-end plus buildkit, buildx, compose, container runtimes)
+        docker-buildx docker-cli docker-buildkit docker-compose containerd crun runc rootlesskit tini-static catatonit \
         # Kubernetes utilities
         kustomize helm kubernetes1.36-client awscli2 opentofu \
         # Misc extras
