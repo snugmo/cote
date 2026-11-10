@@ -33,8 +33,6 @@ These apply whenever an agent session needs network access — both for version 
 | `KUBESEAL_VERSION`        | `gh api repos/bitnami/sealed-secrets/releases/latest --jq .tag_name` (verified with cosign signature, no hash to update)                                                   |
 | `KUBECTL_LINSTOR_VERSION` | `gh api repos/piraeusdatastore/kubectl-linstor/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                     |
 | `CLOUDNATIVE_PG_VERSION`  | `gh api repos/cloudnative-pg/cloudnative-pg/releases/latest --jq .tag_name`                                                                                                |
-| `CERT_MANAGER_VERSION`    | `gh api repos/cert-manager/cmctl/releases/latest --jq .tag_name`                                                                                                           |
-| `AGENTGATEWAY_VERSION`    | `gh api repos/agentgateway/agentgateway/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                            |
 | `MCP_CLI_VERSION`         | `gh api repos/philschmid/mcp-cli/releases/latest --jq .tag_name` (no linux-arm64 asset upstream; build-time `checksums.txt` fallback)                                      |
 | `MARKSMAN_VERSION`        | `gh api repos/artempyanykh/marksman/releases/latest --jq .tag_name` (date-based tag, `2026-02-08`; used bare in the URL, no `v`; hash pinned in ADD, recompute on bump)    |
 | `HELM_LS_VERSION`         | `gh api repos/mrjosh/helm-ls/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                                       |
@@ -53,9 +51,9 @@ Note: the pi extension installs the npm package `@earendil-works/pi-coding-agent
 
 ## Hash Recomputation on Bumps
 
-Fourteen tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, marksman, helm-ls, ast-grep, gh, herdr, simplex-chat, nono. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
+Thirteen tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256:…` lines of their per-arch download stages: go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, marksman, helm-ls, ast-grep, gh, herdr, simplex-chat, nono. After bumping one of their global `ARG <TOOL>_VERSION` lines, update both `--checksum` values.
 
-**Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, agctl, gh, nono).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
+**Case 1 — upstream publishes a hash file (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, gh, nono).** Download only the hash file with the `download` tool (no binary fetch needed) and read the new hashes:
 
    - go: `https://dl.google.com/go/go<ver>.linux-amd64.tar.gz.sha256` and `.../go<ver>.linux-arm64.tar.gz.sha256`
    - uv: `https://github.com/astral-sh/uv/releases/download/<ver>/uv-x86_64-unknown-linux-gnu.tar.gz.sha256` and `.../uv-aarch64-unknown-linux-gnu.tar.gz.sha256`
@@ -63,7 +61,6 @@ Fourteen tools pin per-architecture SHA-256 hashes in the `ADD --checksum=sha256
    - tofu-ls: `https://github.com/opentofu/tofu-ls/releases/download/v<ver>/tofu-ls_v<ver>_checksums.txt`
    - protols: `https://github.com/kralicky/protols/releases/download/v<ver>/checksums.txt`
    - kubeconform: `https://github.com/yannh/kubeconform/releases/download/v<ver>/CHECKSUMS`
-   - agctl: `https://github.com/agentgateway/agentgateway/releases/download/v<ver>/agctl-linux-amd64.sha256` and `.../agctl-linux-arm64.sha256`
    - gh: `https://github.com/cli/cli/releases/download/v<ver>/gh_<ver>_checksums.txt`
    - nono: `https://github.com/nolabs-ai/nono/releases/download/v<ver>/SHA256SUMS.txt`
 

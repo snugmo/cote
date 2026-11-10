@@ -19,7 +19,6 @@ ARG GO_VERSION=1.27.3
 ARG UV_VERSION=0.13.7
 ARG GH_VERSION=2.103.3
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
-ARG AGENTGATEWAY_VERSION=1.7.0
 ARG MARKSMAN_VERSION=2026-02-08
 ARG HELM_LS_VERSION=0.5.4
 ARG TOFU_LS_VERSION=0.5.3
@@ -417,49 +416,6 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
     rm -f kubectl-cnpg.tar.gz multiple.intoto.jsonl
 
 # =============================================================================
-# CERT-MANAGER — install cmctl CLI with cosign verification
-# =============================================================================
-FROM downloader AS cert-manager-install
-ARG TARGETARCH
-ARG CERT_MANAGER_VERSION=2.6.2
-RUN ARCH=$TARGETARCH && \
-    curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/cmctl_linux_${ARCH}.tar.gz" -o cmctl.tar.gz && \
-    curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/checksums.txt" -o checksums.txt && \
-    curl -fsSL "https://github.com/cert-manager/cmctl/releases/download/v${CERT_MANAGER_VERSION}/checksums.txt.cosign.bundle" -o checksums.txt.cosign.bundle && \
-    cosign verify-blob \
-      --certificate-identity 'https://github.com/cert-manager/cmctl/.github/workflows/release.yaml@refs/tags/v'"${CERT_MANAGER_VERSION}" \
-      --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-      --bundle checksums.txt.cosign.bundle \
-      checksums.txt && \
-    EXPECTED=$(awk -v f="cmctl_linux_${ARCH}.tar.gz" '$0 ~ (f "$") { print $1; exit }' checksums.txt) && \
-    printf '%s\n' "${EXPECTED}  cmctl.tar.gz" > expected.sum && \
-    sha256sum -c expected.sum && rm -f expected.sum && \
-    tar -xzf cmctl.tar.gz -C /usr/local/bin cmctl && \
-    chmod +x /usr/local/bin/cmctl && \
-    rm -f cmctl.tar.gz checksums.txt checksums.txt.cosign.bundle
-
-# =============================================================================
-# AGENTGATEWAY — install agctl CLI
-# =============================================================================
-FROM scratch AS agentgateway-download-amd64
-ARG TARGETARCH
-ARG AGENTGATEWAY_VERSION
-ADD --checksum=sha256:64475a4c713e0ac97f5184f4a761395992365db19336e67d241501d9fa6313ef --chmod=0755 \
-    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-amd64 /download/agctl
-
-FROM scratch AS agentgateway-download-arm64
-ARG TARGETARCH
-ARG AGENTGATEWAY_VERSION
-ADD --checksum=sha256:ee5bca870c8f794389844d946ea0628677a0c59a47a9b567e4153b7272fb7a44 --chmod=0755 \
-    https://github.com/agentgateway/agentgateway/releases/download/v${AGENTGATEWAY_VERSION}/agctl-linux-arm64 /download/agctl
-
-# hadolint ignore=DL3006
-FROM agentgateway-download-${TARGETARCH} AS agentgateway-download
-
-FROM downloader AS agentgateway-install
-COPY --from=agentgateway-download /download/agctl /usr/local/bin/agctl
-
-# =============================================================================
 # MCP-CLI — install mcp-cli from GitHub release
 # =============================================================================
 FROM downloader AS mcp-cli-install
@@ -716,12 +672,6 @@ COPY --from=kubectl-linstor-install /usr/local/bin/kubectl-linstor /usr/local/bi
 FROM scratch AS cloudnative-pg-artifacts
 COPY --from=cloudnative-pg-install /usr/local/bin/kubectl-cnpg /usr/local/bin/
 
-FROM scratch AS cert-manager-artifacts
-COPY --from=cert-manager-install /usr/local/bin/cmctl /usr/local/bin/
-
-FROM scratch AS agentgateway-artifacts
-COPY --from=agentgateway-install /usr/local/bin/agctl /usr/local/bin/
-
 FROM scratch AS mcp-cli-artifacts
 COPY --from=mcp-cli-install /usr/local/bin/mcp-cli /usr/local/bin/
 
@@ -793,10 +743,6 @@ COPY --link --from=kubectl-linstor-artifacts / /
 # hadolint ignore=DL3067
 COPY --link --from=cloudnative-pg-artifacts / /
 # hadolint ignore=DL3067
-COPY --link --from=cert-manager-artifacts / /
-# hadolint ignore=DL3067
-COPY --link --from=agentgateway-artifacts / /
-# hadolint ignore=DL3067
 COPY --link --from=github-cli-artifacts / /
 # hadolint ignore=DL3067
 COPY --link --from=mcp-cli-artifacts / /
@@ -826,7 +772,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     echo '{"hosts":{}}' > /root/.local/share/forgejo-cli/keys.json && \
     mkdir -p /etc/bash_completion.d /usr/share/fish/vendor_completions.d /usr/share/zsh/site-functions && \
     # Bash completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl herdr nono; do \
+    for tool in cosign fj kubectl-cnpg herdr nono; do \
       $tool completion bash > "/etc/bash_completion.d/$tool" 2>/dev/null || true; \
     done && \
     gh completion -s bash > /etc/bash_completion.d/gh 2>/dev/null || true && \
@@ -835,7 +781,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     /opt/fnm/fnm completions --shell bash > /etc/bash_completion.d/fnm 2>/dev/null || true && \
     uv generate-shell-completion bash > /etc/bash_completion.d/uv 2>/dev/null || true && \
     # Fish completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl buildah herdr nono; do \
+    for tool in cosign fj kubectl-cnpg buildah herdr nono; do \
       $tool completion fish > "/usr/share/fish/vendor_completions.d/${tool}.fish" 2>/dev/null || true; \
     done && \
     gh completion -s fish > /usr/share/fish/vendor_completions.d/gh.fish 2>/dev/null || true && \
@@ -844,7 +790,7 @@ RUN mkdir -p /root/.local/share/forgejo-cli && \
     /opt/fnm/fnm completions --shell fish > /usr/share/fish/vendor_completions.d/fnm.fish 2>/dev/null || true && \
     uv generate-shell-completion fish > /usr/share/fish/vendor_completions.d/uv.fish 2>/dev/null || true && \
     # Zsh completions
-    for tool in cosign fj kubectl-cnpg cmctl agctl buildah herdr nono; do \
+    for tool in cosign fj kubectl-cnpg buildah herdr nono; do \
       $tool completion zsh > "/usr/share/zsh/site-functions/_$tool" 2>/dev/null || true; \
     done && \
     gh completion -s zsh > /usr/share/zsh/site-functions/_gh 2>/dev/null || true && \
