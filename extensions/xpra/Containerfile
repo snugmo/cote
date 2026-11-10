@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Xpra remote X11 desktop extension image
 # Adds Xpra ("screen for X", https://xpra.org) on top of the cote
 # base image, together with the X11 dependencies and the xpra-html5

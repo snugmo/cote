@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Hermes Agent extension image with ACP support
 # Installs Hermes agent as a coding agent with Agent Communication Protocol (ACP)
 # for IDE integration (VS Code, Zed, JetBrains).

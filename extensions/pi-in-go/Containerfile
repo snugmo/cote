@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # PiG (Pi in Go) extension image
 # Installs PiG (https://pi-in-go.dev, github.com/MichaelKinsy/PiG) — a faithful
 # Go implementation of the Pi coding agent — on top of the cote base

@@ -1,10 +1,17 @@
+# syntax=docker/dockerfile:1
 # Base development environment image for DevWorkspaces Operator
 # Provides universal toolchain: compilers, package managers, shell utils, LSP servers
 # IDEs are excluded — they are added as separate Devfile components (e.g., Eclipse Che plugins)
+# NOTE: the syntax directive is read only by BuildKit (the CI publish pipeline).
+# buildah (local build.sh) ignores it and uses its own parser, which must itself
+# understand COPY --link — support for the flag landed in buildah after v1.32
+# (not yet supported in v1.32.0: buildah#5096). The dev environment ships buildah
+# 1.43.4, which handles it.
 #
 # Build strategy: per-arch download stages → parallel install stages → scratch artifact stages → final assembly.
 # Each toolchain installs to standard paths, then a FROM scratch stage captures
-# only the files needed. Final image assembles via single COPY --link per toolchain.
+# only the files needed. Final image assembles via single COPY --link per
+# toolchain (the flag is understood by both buildah and BuildKit).
 
 ARG TARGETARCH
 # Pinned tool versions for the per-arch download stages (overridable at build)
@@ -754,10 +761,14 @@ COPY --from=nono-install /usr/local/bin/nono /usr/local/bin/
 # hadolint ignore=DL3007
 FROM base AS final
 
-# Assemble toolchains from artifact stages. Each artifact stage is a full
-# root filesystem (base image + its tool), so merging them means one
-# full-filesystem COPY per stage — deliberate: the cote image ships a full
-# OS environment, not a scratch attack surface (docs/base-image.md).
+# Assemble toolchains from artifact stages. Each artifact stage is FROM
+# scratch, so its root filesystem contains only that toolchain's files and
+# one root-merge COPY per stage is the complete merge. --link is understood
+# by both buildah and BuildKit; in BuildKit it still copies the stage data
+# rather than merging the snapshot (moby/buildkit#7375), which is fine at
+# release-build frequency. The final image itself is a full OS environment
+# (FROM base) — the scratch stages are an assembly device, not an
+# attack-surface reduction (docs/base-image.md).
 # hadolint ignore=DL3067
 COPY --link --from=crush-artifacts / /
 # hadolint ignore=DL3067

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Pi coding agent extension image
 # Installs the Pi coding agent (https://pi.dev, github.com/earendil-works/pi)
 # as a global npm package on top of the cote base image.
