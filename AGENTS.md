@@ -55,18 +55,18 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 - Uses Devfile schema `2.2.0`.
 - The `tools` container mounts source code and provides the shared toolchain; IDE components are commented out by default (uncomment per-team).
 - Env vars (`GOPATH`, `CARGO_HOME`, `RUSTUP_HOME`, `JAVA_HOME`, `PATH`) are baked into the image — no `env` block needed.
-- The `image` field in the `tools` component defaults to `ghcr.io/snugmo/cote:latest-base`.
+- The `image` field in the `tools` component defaults to `quay.io/snugmo/cote:latest-base`.
 
 ### Self-hosting Devfile (`.devfile.yaml`)
 
 - Opens this repository itself as a DevWorkspaces workspace.
-- References the pre-built base image at `ghcr.io/snugmo/cote:0.38.0-base` (bump the tag when a new base image is released).
+- References the pre-built base image at `quay.io/snugmo/cote:0.38.0-base` (bump the tag when a new base image is released).
 
 ### Build Script (`base-image/build.sh`)
 
 - Uses `buildah` (not `docker`) — rootless, no Docker daemon needed; the script is for local builds (the CI publish pipeline uses BuildKit/docker buildx instead).
-- The tag is the git-describe version (`git describe --tags --always --dirty`, leading `v` stripped, falls back to `latest`) plus a `-base` suffix, so the image ref is `ghcr.io/snugmo/cote:<tag>-base` — e.g. `0.38.0-base`.
-- Registry defaults to `ghcr.io/snugmo`; `./base-image/build.sh push` publishes to GitHub Container Registry. For local dev use `DEV_REGISTRY=localhost:5000`.
+- The tag is the git-describe version (`git describe --tags --always --dirty`, leading `v` stripped, falls back to `latest`) plus a `-base` suffix, so the image ref is `quay.io/snugmo/cote:<tag>-base` — e.g. `0.38.0-base`.
+- Registry defaults to `quay.io/snugmo`; `./base-image/build.sh push` publishes to Quay. For local dev use `DEV_REGISTRY=localhost:5000`.
 
 ### CI Publishing (`.github/workflows/publish.yaml`)
 

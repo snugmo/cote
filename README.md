@@ -10,7 +10,7 @@
 `cote` is the base image for the [Snugmo](https://github.com/snugmo) agent development environment.
 It provides the shell, tools, and context your agents need to work.
 
-[![ghcr.io/snugmo/cote](https://ghcr.io/api/v1/snugmo/cote/ocis)](https://ghcr.io/snugmo/cote)
+[![quay.io/snugmo/cote](https://img.shields.io/badge/quay.io%2Fsnugmo%2Fcote-2c7a7b?style=flat)](https://quay.io/repository/snugmo/cote)
 
 ## What's inside
 
@@ -116,7 +116,7 @@ podman run -d --replace --name=cote \
   -v ~/workspace:/projects/ -w /projects \
   --device=/dev/fuse \
   -v dev-home:/home/user \
-  ghcr.io/snugmo/cote:latest-base
+  quay.io/snugmo/cote:latest-base
 ```
 
 With no command the container runs `catatonit -P` — a pause container that just stays alive — so `exec` into it to start a shell inside the container namespace:

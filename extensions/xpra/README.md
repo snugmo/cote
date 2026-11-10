@@ -25,7 +25,7 @@ What the image adds (all inside the container build, base image untouched):
 
 | Variable         | Default                  | Description          |
 | ---------------- | ------------------------ | -------------------- |
-| `DEV_REGISTRY`   | `ghcr.io/snugmo`          | Target registry      |
+| `DEV_REGISTRY`   | `quay.io/snugmo`          | Target registry      |
 | `DEV_IMAGE_NAME` | `cote-xpra`     | Image name           |
 | `DEV_VERSION`    | git tag                  | Image tag            |
 | `DEV_BASE_IMAGE` | auto                     | Base image reference |

@@ -10,7 +10,7 @@
 # Usage in Devfile:
 #   image: <registry>/cote-pi:<tag>
 
-ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
+ARG BASE_IMAGE=quay.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
 
 # Both named users exist in the image (root is universal, user is created in
@@ -45,7 +45,7 @@ USER user
 ARG VERSION=latest
 ARG REVISION=unknown
 ARG CREATED=
-ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
+ARG BASE_IMAGE=quay.io/snugmo/cote:latest-base
 
 LABEL org.opencontainers.image.title="cote-pi" \
       org.opencontainers.image.description="cote dev workspace with Pi coding agent for terminal, RPC, and SDK integrations and a built-in keyless example LLM provider" \

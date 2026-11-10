@@ -17,7 +17,7 @@ usage() {
 }
 
 # Configurable via environment or defaults
-REGISTRY="${DEV_REGISTRY:-ghcr.io/snugmo}"
+REGISTRY="${DEV_REGISTRY:-quay.io/snugmo}"
 IMAGE_NAME="${DEV_IMAGE_NAME:-cote-xpra}"
 VERSION="${DEV_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --always --dirty 2>/dev/null || echo 'latest')}"
 # Values for the org.opencontainers.image.* well-known labels (see Containerfile)

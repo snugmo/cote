@@ -31,7 +31,7 @@ components:
   # ------------------------------------------------------------------
   - name: tools
     container:
-      image: "ghcr.io/snugmo/cote:latest-base"
+      image: "quay.io/snugmo/cote:latest-base"
       mountSources: true
       memoryRequest: "512M"
       memoryLimit: "2Gi"

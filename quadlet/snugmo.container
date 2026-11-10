@@ -30,7 +30,7 @@ Description=cote base dev container (snugmo)
 # Default here is the cote base image; change it as needed.
 # Must stay a *fully-qualified* reference (registry/repo:tag) because
 # AutoUpdate below requires it.
-Image=ghcr.io/snugmo/cote:latest-base
+Image=quay.io/snugmo/cote:latest-base
 
 # Mark the image as updatable from the registry
 # (--label io.containers.autoupdate=registry). With the moving

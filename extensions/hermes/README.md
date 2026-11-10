@@ -26,7 +26,7 @@ ACP enables Hermes to run as a stdio-based agent server that IDEs can connect to
 
 | Variable         | Default                | Description          |
 | ---------------- | ---------------------- | -------------------- |
-| `DEV_REGISTRY`   | `ghcr.io/snugmo`        | Target registry      |
+| `DEV_REGISTRY`   | `quay.io/snugmo`        | Target registry      |
 | `DEV_IMAGE_NAME` | `cote-hermes` | Image name           |
 | `DEV_VERSION`    | git tag                | Image tag            |
 | `DEV_BASE_IMAGE` | auto                   | Base image reference |

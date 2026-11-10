@@ -14,7 +14,7 @@
 # Usage in Devfile:
 #   image: <registry>/cote-xpra:<tag>
 
-ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
+ARG BASE_IMAGE=quay.io/snugmo/cote:latest-base
 FROM ${BASE_IMAGE}
 
 # Both named users exist in the image (root is universal, user is created in
@@ -116,7 +116,7 @@ ENV XDG_RUNTIME_DIR=/tmp/xdg-runtime-1000
 ARG VERSION=latest
 ARG REVISION=unknown
 ARG CREATED=
-ARG BASE_IMAGE=ghcr.io/snugmo/cote:latest-base
+ARG BASE_IMAGE=quay.io/snugmo/cote:latest-base
 
 LABEL org.opencontainers.image.title="cote-xpra" \
       org.opencontainers.image.description="cote dev workspace with Xpra remote X11 desktop and HTML5 web client" \
