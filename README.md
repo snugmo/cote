@@ -65,6 +65,7 @@ It provides the shell, tools, and context your agents need to work.
 | [shellcheck](https://github.com/koalaman/shellcheck)       | Bash, Shell                                       | `.sh`, `.bash`, `.zsh`, `.fish`               |
 | [shfmt](https://github.com/mvdan/sh)                       | Shell (formatter)                                 | `.sh`, `.bash`, `.zsh`                        |
 | [hadolint](https://github.com/hadolint/hadolint)           | Dockerfile                                        | `Dockerfile`, `Containerfile`, `.dockerfile`  |
+| [actionlint](https://github.com/rhysd/actionlint)          | GitHub Actions workflows                          | `.yml`, `.yaml`                               |
 | [golangci-lint](https://github.com/golangci/golangci-lint) | Go                                                | `.go`                                         |
 | [eslint](https://github.com/eslint/eslint)                 | JavaScript, TypeScript                            | `.js`, `.jsx`, `.ts`, `.tsx`                  |
 | [prettier](https://github.com/prettier/prettier)           | JavaScript, TypeScript, JSON, YAML, Markdown, CSS | `.js`, `.ts`, `.json`, `.yaml`, `.md`, `.css` |
