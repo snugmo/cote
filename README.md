@@ -76,7 +76,7 @@ It provides the shell, tools, and context your agents need to work.
 
 **Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.41.2), `kubectl-cnpg` (1.30.1), `kubectl-linstor` (0.3.2), `cmctl` (2.6.2), `agctl` (1.7.0), `mcp-cli` (0.3.0), `fj` (0.7.0), `gh` (2.103.3), `kubeconform` (0.8.0).
 
-**Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `bat`, `glow`, `tmux`, `herdr` (0.9.5), `age`, `gnupg2`, `ImageMagick`, `librsvg2-tools`, `libsixel-utils`, `potrace`, `exif`, `exiv2`.
+**Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `xmlstarlet`, `xq`, `bat`, `glow`, `tmux`, `herdr` (0.9.5), `age`, `gnupg2`, `ImageMagick`, `librsvg2-tools`, `libsixel-utils`, `potrace`, `exif`, `exiv2`.
 
 ## Extensions
 
