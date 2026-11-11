@@ -15,7 +15,7 @@
 
 ARG TARGETARCH
 # Pinned tool versions for the per-arch download stages (overridable at build)
-ARG GO_VERSION=1.27.3
+ARG GO_VERSION=1.27.4
 ARG UV_VERSION=0.13.7
 ARG GH_VERSION=2.103.3
 ARG KUBECTL_LINSTOR_VERSION=0.3.2
@@ -214,13 +214,13 @@ COPY --from=bun-bin /usr/local/bin/bun /usr/local/bin/
 FROM scratch AS go-download-amd64
 ARG TARGETARCH
 ARG GO_VERSION
-ADD --checksum=sha256:65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40 \
+ADD --checksum=sha256:7226736c2339719cda28fbf3a54d71aa63bcefe376e98cef00034268dab24840 \
     https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz /download/go.tar.gz
 
 FROM scratch AS go-download-arm64
 ARG TARGETARCH
 ARG GO_VERSION
-ADD --checksum=sha256:a06e99309dbcbdca1a8ccd2282c3ee146e55930886e26b4f1193269587165f49 \
+ADD --checksum=sha256:3392582988a273a87ab5043ee1b2c9c17a2c3c00580bf9326c47a2e0aaaeac92 \
     https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz /download/go.tar.gz
 
 # hadolint ignore=DL3006
