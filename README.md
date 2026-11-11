@@ -22,7 +22,7 @@ It provides the shell, tools, and context your agents need to work.
 
 | Language / Tool                                                    | Version         | Source                                                    |
 | ------------------------------------------------------------------ | --------------- | --------------------------------------------------------- |
-| **[Go](https://go.dev)**                                           | 1.27.3          | go.dev/dl                                                 |
+| **[Go](https://go.dev)**                                           | 1.27.4          | go.dev/dl                                                 |
 | **[Node.js](https://nodejs.org)**                                  | 26              | [fnm](https://github.com/Schniz/fnm)                      |
 | **[Bun](https://bun.sh)**                                          | latest          | [oven-sh/bun](https://github.com/oven-sh/bun) (OCI image) |
 | **[Python](https://python.org)**                                   | Fedora 45 stock | dnf                                                       |
@@ -34,7 +34,7 @@ It provides the shell, tools, and context your agents need to work.
 | **[Crush CLI](https://github.com/charmbracelet/crush)**            | 0.100.0         | GitHub release, cosign verified                           |
 | **[uv](https://github.com/astral-sh/uv)**                          | 0.13.7          | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                   | 3.1.4           | OCI image                                                 |
-| **[SimpleX Chat CLI](https://simplex.chat/docs/cli.html)**         | 7.0.3           | GitHub release (SHA-256 in release notes)                 |
+| **[SimpleX Chat CLI](https://simplex.chat/docs/cli.html)**         | 7.1.2           | GitHub release (SHA-256 in release notes)                 |
 | **[nono](https://github.com/nolabs-ai/nono)**                      | 0.81.0          | GitHub release (SHA-256SUMS.txt)                          |
 | **[Lola](https://docs.getlola.dev)**                               | latest          | PyPI (`lola-ai`)                                          |
 
