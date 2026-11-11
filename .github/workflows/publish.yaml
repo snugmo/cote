@@ -5,7 +5,6 @@ name: Publish
 #
 # Images and tags:
 #   <registry>/<namespace>/cote            base image         <v>-base, latest-base
-#   <registry>/<namespace>/cote-hermes     Hermes agent       <v>, latest
 #   <registry>/<namespace>/cote-pi         Pi coding agent    <v>, latest
 #   <registry>/<namespace>/cote-pi-in-go   PiG coding agent   <v>, latest
 #   <registry>/<namespace>/cote-xpra       Xpra desktop       <v>, latest
@@ -23,7 +22,7 @@ name: Publish
 #
 # Secrets:
 #   REGISTRY_USERNAME   quay.io robot account name
-#   REGISTRY_PASSWORD   quay.io robot token (write access to all five repos)
+#   REGISTRY_PASSWORD   quay.io robot token (write access to all four repos)
 #
 # Strategy: each arch is built natively on a matching GitHub-hosted runner
 # (no qemu cross-emulation, so the dnf-heavy base stage runs at native
@@ -163,14 +162,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: cote-hermes
-            dir: extensions/hermes
-            arch: amd64
-            runner: ubuntu-26.04
-          - image: cote-hermes
-            dir: extensions/hermes
-            arch: arm64
-            runner: ubuntu-26.04-arm
           - image: cote-pi
             dir: extensions/pi
             arch: amd64
@@ -224,7 +215,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [cote-hermes, cote-pi, cote-pi-in-go, cote-xpra]
+        image: [cote-pi, cote-pi-in-go, cote-xpra]
     steps:
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
