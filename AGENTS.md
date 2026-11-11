@@ -11,7 +11,6 @@ base-image/
   Containerfile        # Base dev toolchain OCI image (Fedora 45, no IDEs)
   build.sh             # Buildah wrapper with registry/tag config
 extensions/
-  hermes/              # Hermes agent + ACP support extension
   pi/                  # Pi coding agent extension
   pi-in-go/            # PiG (Pi in Go) coding agent extension
   xpra/                # Xpra remote X11 desktop extension
@@ -40,7 +39,7 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 ### Commit Conventions
 
 - Make small, logically contained commits; one per meaningful change, committed as you go.
-- Subject: `<emoji> <type>: <summary>` — a conventional type prefix (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, …), optionally with a scope naming the affected component when the change is component-specific (`(base-image)`, `(hermes)`, `(pi)`, `(pi-in-go)`, `(quadlet)`, …), and a summary under 72 characters. `feat` adds a new capability (a new language, tool, or package); `chore` covers maintenance such as version bumps and internal adjustments. The single emoji is chosen per change to capture what actually changed; there is no fixed set of allowed emojis.
+- Subject: `<emoji> <type>: <summary>` — a conventional type prefix (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, …), optionally with a scope naming the affected component when the change is component-specific (`(base-image)`, `(pi)`, `(pi-in-go)`, `(quadlet)`, …), and a summary under 72 characters. `feat` adds a new capability (a new language, tool, or package); `chore` covers maintenance such as version bumps and internal adjustments. The single emoji is chosen per change to capture what actually changed; there is no fixed set of allowed emojis.
 - End commit messages with an `Assisted-by: <agent>:<model>` trailer, where `<agent>` is the coding agent doing the committing (no "generated with" line).
 ### Base Image (`base-image/Containerfile`)
 
@@ -70,16 +69,15 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 
 ### CI Publishing (`.github/workflows/publish.yaml`)
 
-- Publishes the base image and all four extensions to `quay.io/snugmo` as multi-arch manifests (linux/amd64 + linux/arm64): each arch builds natively on a matching GitHub-hosted runner, pushes a per-arch tag (`<v>-base-<arch>` / `<v>-<arch>`), and a final job merges them with `docker buildx imagetools create`.
+- Publishes the base image and all three extensions to `quay.io/snugmo` as multi-arch manifests (linux/amd64 + linux/arm64): each arch builds natively on a matching GitHub-hosted runner, pushes a per-arch tag (`<v>-base-<arch>` / `<v>-<arch>`), and a final job merges them with `docker buildx imagetools create`.
 - Triggers: a `vX.Y.Z` tag push (publishes `<v>` / `<v>-base` and moves `latest` / `latest-base`) and manual workflow_dispatch runs (git-describe version, does not touch `latest`).
-- Requires the secrets `REGISTRY_SERVER`, `REGISTRY_NAMESPACE`, `REGISTRY_USERNAME`, `REGISTRY_PASSWORD` (a quay.io robot account with write access to all five image repos).
-- All five Containerfiles lead with `# syntax=docker/dockerfile:1`, which tells BuildKit to pull the latest stable Dockerfile frontend (newer than its bundled default) so the parser is new enough for `COPY --link`. buildah (local `build.sh`) ignores the directive and uses its own parser, so the same file must stay buildable by both — keep it free of tool-specific syntax; `COPY --link` is the one shared extension both parsers accept.
+- Requires the secrets `REGISTRY_SERVER`, `REGISTRY_NAMESPACE`, `REGISTRY_USERNAME`, `REGISTRY_PASSWORD` (a quay.io robot account with write access to all four image repos).
+- All four Containerfiles lead with `# syntax=docker/dockerfile:1`, which tells BuildKit to pull the latest stable Dockerfile frontend (newer than its bundled default) so the parser is new enough for `COPY --link`. buildah (local `build.sh`) ignores the directive and uses its own parser, so the same file must stay buildable by both — keep it free of tool-specific syntax; `COPY --link` is the one shared extension both parsers accept.
 
 ### Extensions (`extensions/`)
 
 Extensions add capabilities on top of the base image without polluting it. To use one, point the Devfile `tools` image at the extension image.
 
-- **Hermes** (`extensions/hermes/`) — Hermes agent with ACP support (VS Code, Zed, JetBrains).
 - **Pi** (`extensions/pi/`) — terminal coding agent (npm `@earendil-works/pi-coding-agent`), keyless `example` default.
 - **PiG / Pi in Go** (`extensions/pi-in-go/`) — Go port of Pi (npm `@pi-in-go/pig`), single native binary, keyless `example` default.
 - **Xpra** (`extensions/xpra/`) — headless X11 desktop + xpra-html5 browser client.
@@ -94,7 +92,7 @@ Full detail, build/publish, and credential notes: see [docs/extensions.md](docs/
 4. **Devfile schema version**: The schema version (`2.2.0`) must match what your DevWorkspaces Operator supports. Check with `kubectl get devworkspace -o yaml` to see the operator's schema.
 5. **Memory limits**: LSP servers (especially rust-analyzer and TypeScript) are memory-intensive. The default `2Gi` limit on the tools container is a minimum — increase for Rust-heavy projects.
 6. **Two devfiles, two purposes**: `devfiles/devfile.yaml` is the reusable template for end users. `.devfile.yaml` is for developing this repo itself. Don't confuse them.
-7. **Extension credentials**: the agent extensions (Hermes, Pi, PiG) each need credentials configured or a keyless default — see [docs/extensions.md](docs/extensions.md) → *Credentials / gotchas*.
+7. **Extension credentials**: the agent extensions (Pi, PiG) each need credentials configured or a keyless default — see [docs/extensions.md](docs/extensions.md) → *Credentials / gotchas*.
 
 ## Adding New Components
 
@@ -110,4 +108,4 @@ This file holds only the context useful for *any* work in this repo. The detaile
 - **[docs/base-image.md](docs/base-image.md)** — building/editing the base image: Containerfile stage architecture, `build.sh`, base/devfile specifics, verifying artifact stages.
 - **[docs/adding-a-binary-tool.md](docs/adding-a-binary-tool.md)** — adding a new binary or language tool to the base image.
 - **[docs/updating-tool-versions.md](docs/updating-tool-versions.md)** — bumping a pinned tool to a newer release: lookup commands, hash recompute, the release flow.
-- **[docs/extensions.md](docs/extensions.md)** — working on an extension image (Hermes, Pi, PiG, Xpra) or its credentials.
+- **[docs/extensions.md](docs/extensions.md)** — working on an extension image (Pi, PiG, Xpra) or its credentials.
