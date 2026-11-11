@@ -418,21 +418,6 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86_64; else ARCH=arm64; fi && \
     rm -f kubectl-cnpg.tar.gz multiple.intoto.jsonl
 
 # =============================================================================
-# MCP-CLI — install mcp-cli from GitHub release
-# =============================================================================
-FROM downloader AS mcp-cli-install
-ARG TARGETARCH
-ARG MCP_CLI_VERSION=0.3.0
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x64; else ARCH=arm64; fi && \
-    curl -fsSL "https://github.com/philschmid/mcp-cli/releases/download/v${MCP_CLI_VERSION}/mcp-cli-linux-${ARCH}" -o /usr/local/bin/mcp-cli && \
-    curl -fsSL "https://github.com/philschmid/mcp-cli/releases/download/v${MCP_CLI_VERSION}/checksums.txt" -o checksums.txt && \
-    EXPECTED=$(awk -v f="mcp-cli-linux-${ARCH}" '$0 ~ (f "$") { print $1; exit }' checksums.txt) && \
-    printf '%s\n' "${EXPECTED}  /usr/local/bin/mcp-cli" > expected.sum && \
-    sha256sum -c expected.sum && rm -f expected.sum && \
-    chmod +x /usr/local/bin/mcp-cli && \
-    rm -f checksums.txt
-
-# =============================================================================
 # MARKSMAN — install Markdown LSP from GitHub release
 # =============================================================================
 FROM scratch AS marksman-download-amd64
@@ -674,9 +659,6 @@ COPY --from=kubectl-linstor-install /usr/local/bin/kubectl-linstor /usr/local/bi
 FROM scratch AS cloudnative-pg-artifacts
 COPY --from=cloudnative-pg-install /usr/local/bin/kubectl-cnpg /usr/local/bin/
 
-FROM scratch AS mcp-cli-artifacts
-COPY --from=mcp-cli-install /usr/local/bin/mcp-cli /usr/local/bin/
-
 FROM scratch AS marksman-artifacts
 COPY --from=marksman-install /usr/local/bin/marksman /usr/local/bin/
 
@@ -746,8 +728,6 @@ COPY --link --from=kubectl-linstor-artifacts / /
 COPY --link --from=cloudnative-pg-artifacts / /
 # hadolint ignore=DL3067
 COPY --link --from=github-cli-artifacts / /
-# hadolint ignore=DL3067
-COPY --link --from=mcp-cli-artifacts / /
 # hadolint ignore=DL3067
 COPY --link --from=marksman-artifacts / /
 # hadolint ignore=DL3067
