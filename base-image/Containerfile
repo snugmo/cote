@@ -27,7 +27,7 @@ ARG HERDR_VERSION=0.9.5
 ARG AST_GREP_VERSION=0.51.2
 ARG SHFMT_VERSION=3.14.1
 ARG KUBECONFORM_VERSION=0.8.0
-ARG SIMPLEX_CHAT_VERSION=7.0.3
+ARG SIMPLEX_CHAT_VERSION=7.1.2
 ARG NONO_VERSION=0.81.0
 
 # Cosign binary from upstream image (defined first so downloader can reference it)
@@ -606,13 +606,13 @@ RUN tar -xzf /download/kubeconform.tar.gz -C /usr/local/bin kubeconform && \
 FROM scratch AS simplex-chat-download-amd64
 ARG TARGETARCH
 ARG SIMPLEX_CHAT_VERSION
-ADD --checksum=sha256:5afb1d25efe5ccf564a1ab124bc7f410a7a73171c974a4d8b7f4d8f2e3d62e77 --chmod=0755 \
+ADD --checksum=sha256:e29301d140f462e751be51c0ee8d14cf08f714f200a8f21871822d65c31f00a2 --chmod=0755 \
     https://github.com/simplex-chat/simplex-chat/releases/download/v${SIMPLEX_CHAT_VERSION}/simplex-chat-ubuntu-22_04-x86_64 /download/simplex-chat
 
 FROM scratch AS simplex-chat-download-arm64
 ARG TARGETARCH
 ARG SIMPLEX_CHAT_VERSION
-ADD --checksum=sha256:91f332edc813cab78a848da7ba75ed91bcb8d09abf1fc92eca74330dc29ec970 --chmod=0755 \
+ADD --checksum=sha256:d10407bee29b791d55d74693d4c7c8c81be25aaa0b76e9513610e4e669368e7d --chmod=0755 \
     https://github.com/simplex-chat/simplex-chat/releases/download/v${SIMPLEX_CHAT_VERSION}/simplex-chat-ubuntu-22_04-aarch64 /download/simplex-chat
 
 # hadolint ignore=DL3006
