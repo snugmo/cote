@@ -59,7 +59,7 @@ Build overrides: `DEV_VERSION=`, `DEV_IMAGE_NAME=`, `DEV_REGISTRY=`, `DEV_JOBS=`
 ### Self-hosting Devfile (`.devfile.yaml`)
 
 - Opens this repository itself as a DevWorkspaces workspace.
-- References the pre-built base image at `quay.io/snugmo/cote:0.39.0-base` (bump the tag when a new base image is released).
+- References the pre-built base image at `quay.io/snugmo/cote:0.40.0-base` (bump the tag when a new base image is released).
 
 ### Build Script (`base-image/build.sh`)
 

@@ -2,7 +2,7 @@ schemaVersion: 2.2.0
 components:
   - name: tools
     container:
-      image: "quay.io/snugmo/cote:0.39.0-base"
+      image: "quay.io/snugmo/cote:0.40.0-base"
       mountSources: true
       memoryRequest: "4Gi"
       memoryLimit: "8Gi"
