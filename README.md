@@ -77,7 +77,7 @@ It provides the shell, tools, and context your agents need to work.
 
 **Container tooling**: `podman`, `buildah`, `skopeo`, `bubblewrap`, `fuse-overlayfs`, plus the Docker CLI stack — `docker` (29.9.2), `docker buildx` (0.38.1), `docker compose` (5.6.0), `buildkitd`/`buildctl`, `containerd` (2.4.2), `crun` (1.30.1), `runc` (1.5.2), `rootlesskit` (3.3.0), `tini-static` (0.19.0), `catatonit` (0.2.1).
 
-**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.41.2), `kubectl-cnpg` (1.30.1), `kubectl-linstor` (0.3.2), `mcp-cli` (0.3.0), `fj` (0.7.0), `gh` (2.103.3), `kubeconform` (0.8.0).
+**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.41.2), `kubectl-cnpg` (1.30.1), `kubectl-linstor` (0.3.2), `fj` (0.7.0), `gh` (2.103.3), `kubeconform` (0.8.0).
 
 **Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `xmlstarlet`, `xq`, `bat`, `glow`, `tmux`, `herdr` (0.9.5), `age`, `gnupg2`, `ImageMagick`, `librsvg2-tools`, `libsixel-utils`, `potrace`, `exif`, `exiv2`.
 

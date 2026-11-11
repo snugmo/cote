@@ -33,7 +33,6 @@ These apply whenever an agent session needs network access — both for version 
 | `KUBESEAL_VERSION`        | `gh api repos/bitnami/sealed-secrets/releases/latest --jq .tag_name` (verified with cosign signature, no hash to update)                                                   |
 | `KUBECTL_LINSTOR_VERSION` | `gh api repos/piraeusdatastore/kubectl-linstor/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                     |
 | `CLOUDNATIVE_PG_VERSION`  | `gh api repos/cloudnative-pg/cloudnative-pg/releases/latest --jq .tag_name`                                                                                                |
-| `MCP_CLI_VERSION`         | `gh api repos/philschmid/mcp-cli/releases/latest --jq .tag_name` (no linux-arm64 asset upstream; build-time `checksums.txt` fallback)                                      |
 | `MARKSMAN_VERSION`        | `gh api repos/artempyanykh/marksman/releases/latest --jq .tag_name` (date-based tag, `2026-02-08`; used bare in the URL, no `v`; hash pinned in ADD, recompute on bump)    |
 | `HELM_LS_VERSION`         | `gh api repos/mrjosh/helm-ls/releases/latest --jq .tag_name` (hash pinned in ADD; recompute on bump)                                                                       |
 | `TOFU_LS_VERSION`         | `gh api repos/opentofu/tofu-ls/releases/latest --jq .tag_name` (hash pinned in ADD; update from the upstream checksum file on bump)                                        |
