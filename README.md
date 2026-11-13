@@ -31,8 +31,8 @@ It provides the shell, tools, and context your agents need to work.
 | **[Java](https://adoptium.net/temurin/releases)**                  | 25              | dnf (Adoptium Temurin repo)                               |
 | **[Maven](https://maven.apache.org)**                              | Fedora 45 stock | dnf                                                       |
 | **[GCC](https://gcc.gnu.org) / [Clang](https://clang.llvm.org)**   | Fedora 45 stock | dnf                                                       |
-| **[Crush CLI](https://github.com/charmbracelet/crush)**            | 0.100.0         | GitHub release, cosign verified                           |
-| **[uv](https://github.com/astral-sh/uv)**                          | 0.13.7          | GitHub release                                            |
+| **[Crush CLI](https://github.com/charmbracelet/crush)**            | 0.101.0         | GitHub release, cosign verified                           |
+| **[uv](https://github.com/astral-sh/uv)**                          | 0.13.8          | GitHub release                                            |
 | **[cosign](https://github.com/sigstore/cosign)**                   | 3.1.4           | OCI image                                                 |
 | **[SimpleX Chat CLI](https://simplex.chat/docs/cli.html)**         | 7.1.2           | GitHub release (SHA-256 in release notes)                 |
 | **[nono](https://github.com/nolabs-ai/nono)**                      | 0.81.0          | GitHub release (SHA-256SUMS.txt)                          |
@@ -77,7 +77,7 @@ It provides the shell, tools, and context your agents need to work.
 
 **Container tooling**: `podman`, `buildah`, `skopeo`, `bubblewrap`, `fuse-overlayfs`, plus the Docker CLI stack — `docker` (29.9.2), `docker buildx` (0.38.1), `docker compose` (5.6.0), `buildkitd`/`buildctl`, `containerd` (2.4.2), `crun` (1.30.1), `runc` (1.5.2), `rootlesskit` (3.3.0), `tini-static` (0.19.0), `catatonit` (0.2.1).
 
-**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.41.2), `kubectl-cnpg` (1.30.1), `kubectl-linstor` (0.3.2), `fj` (0.7.0), `gh` (2.103.3), `kubeconform` (0.8.0).
+**Kubernetes / cloud tools**: `kubectl`, `helm`, `kustomize`, `opentofu`, `awscli2`, `kubeseal` (0.41.2), `kubectl-cnpg` (1.30.1), `kubectl-linstor` (0.3.2), `fj` (0.7.0), `gh` (2.104.0), `kubeconform` (0.8.0).
 
 **Shell utilities**: `git`, `ripgrep`, `fd-find`, `jq`, `yq`, `xmlstarlet`, `xq`, `bat`, `glow`, `tmux`, `herdr` (0.9.5), `age`, `gnupg2`, `ImageMagick`, `librsvg2-tools`, `libsixel-utils`, `potrace`, `exif`, `exiv2`.
 
