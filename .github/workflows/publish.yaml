@@ -38,6 +38,9 @@ name: Publish
 #     complicate imagetools merging and consumer tooling.
 #   - The Containerfiles must stay buildable by both buildah (local dev)
 #     and BuildKit (this workflow) — they share one file.
+#   - build-push-action v7 does not split the build-args input on commas, so
+#     build args are written one per line; a comma-joined one-liner would be
+#     passed to buildx as a single garbled --build-arg and break FROM parsing.
 
 on:
   push:
@@ -125,7 +128,13 @@ jobs:
           provenance: false
           sbom: false
           tags: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/cote:${{ needs.meta.outputs.version }}-base-${{ matrix.arch }}
-          build-args: VERSION=${{ needs.meta.outputs.version }},REVISION=${{ github.sha }},CREATED=${{ steps.stamp.outputs.created }}
+          # One KEY=VALUE per line: build-push-action v7 passes build-args
+          # through without comma splitting, so a comma-joined string would be
+          # handed to buildx as a single garbled build arg.
+          build-args: |
+            VERSION=${{ needs.meta.outputs.version }}
+            REVISION=${{ github.sha }}
+            CREATED=${{ steps.stamp.outputs.created }}
 
   merge-base:
     name: Publish base manifest
@@ -205,7 +214,14 @@ jobs:
           provenance: false
           sbom: false
           tags: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ matrix.image }}:${{ needs.meta.outputs.version }}-${{ matrix.arch }}
-          build-args: BASE_IMAGE=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/cote:${{ needs.meta.outputs.version }}-base-${{ matrix.arch }},VERSION=${{ needs.meta.outputs.version }},REVISION=${{ github.sha }},CREATED=${{ steps.stamp.outputs.created }}
+          # One KEY=VALUE per line (see build-base above); BASE_IMAGE is the
+          # per-arch base tag built by build-base, resolved by the Containerfile's
+          # FROM ${BASE_IMAGE}.
+          build-args: |
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/cote:${{ needs.meta.outputs.version }}-base-${{ matrix.arch }}
+            VERSION=${{ needs.meta.outputs.version }}
+            REVISION=${{ github.sha }}
+            CREATED=${{ steps.stamp.outputs.created }}
 
   merge-ext:
     name: Publish ${{ matrix.image }} manifest
