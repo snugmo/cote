@@ -3,15 +3,16 @@ name: Publish
 # Build and publish the cote images to the configured registry (quay.io)
 # as multi-arch manifests (linux/amd64 + linux/arm64).
 #
-# Images and tags:
-#   <registry>/<namespace>/cote            base image         <v>-base, latest-base
-#   <registry>/<namespace>/cote-pi         Pi coding agent    <v>, latest
-#   <registry>/<namespace>/cote-pi-in-go   PiG coding agent   <v>, latest
-#   <registry>/<namespace>/cote-xpra       Xpra desktop       <v>, latest
+# All images are published to the single <registry>/<namespace>/cote repo;
+# extension images are distinguished by a tag suffix:
+#   base image           (base-image/)        <v>-base,        latest-base
+#   Pi coding agent      (extensions/pi)      <v>-pi,          latest-pi
+#   PiG coding agent     (extensions/pi-in-go) <v>-pi-in-go,   latest-pi-in-go
+#   Xpra desktop         (extensions/xpra)    <v>-xpra,        latest-xpra
 #
 # Triggers:
 #   - push of a release tag (vX.Y.Z): publishes <v> (plus <v>-base for the
-#     base image) and moves the latest / latest-base pointers.
+#     base image) and moves the latest-base / latest-<ext> pointers.
 #   - manual workflow_dispatch: publishes the version from the input (default:
 #     git describe, e.g. 0.38.0-3-gabc123) without touching latest, so dev
 #     builds never clobber a release pointer.
@@ -22,14 +23,14 @@ name: Publish
 #
 # Secrets:
 #   REGISTRY_USERNAME   quay.io robot account name
-#   REGISTRY_PASSWORD   quay.io robot token (write access to all four repos)
+#   REGISTRY_PASSWORD   quay.io robot token (write access to the cote repo)
 #
 # Strategy: each arch is built natively on a matching GitHub-hosted runner
 # (no qemu cross-emulation, so the dnf-heavy base stage runs at native
-# speed), pushes a per-arch tag (<v>-base-<arch> / <v>-<arch>), and a final
-# job merges the two per-arch images into the multi-arch manifest with
-# `docker buildx imagetools create`. Extension images pull the matching
-# per-arch base tag, so they only depend on the base builds.
+# speed), pushes a per-arch tag (<v>-base-<arch> / <v>-<ext>-<arch>), and a
+# final job merges the two per-arch images into the multi-arch manifest
+# with `docker buildx imagetools create`. Extension images pull the
+# matching per-arch base tag, so they only depend on the base builds.
 #
 # Notes:
 #   - ARM64 GitHub-hosted runners are free for public repos; for private
@@ -163,7 +164,7 @@ jobs:
             "${image}:${version}-base-arm64"
 
   build-ext:
-    name: Build ${{ matrix.image }} (${{ matrix.arch }})
+    name: Build cote:${{ matrix.suffix }} (${{ matrix.arch }})
     needs: [meta, build-base]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
@@ -171,27 +172,27 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: cote-pi
+          - suffix: pi
             dir: extensions/pi
             arch: amd64
             runner: ubuntu-26.04
-          - image: cote-pi
+          - suffix: pi
             dir: extensions/pi
             arch: arm64
             runner: ubuntu-26.04-arm
-          - image: cote-pi-in-go
+          - suffix: pi-in-go
             dir: extensions/pi-in-go
             arch: amd64
             runner: ubuntu-26.04
-          - image: cote-pi-in-go
+          - suffix: pi-in-go
             dir: extensions/pi-in-go
             arch: arm64
             runner: ubuntu-26.04-arm
-          - image: cote-xpra
+          - suffix: xpra
             dir: extensions/xpra
             arch: amd64
             runner: ubuntu-26.04
-          - image: cote-xpra
+          - suffix: xpra
             dir: extensions/xpra
             arch: arm64
             runner: ubuntu-26.04-arm
@@ -213,7 +214,7 @@ jobs:
           push: true
           provenance: false
           sbom: false
-          tags: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ matrix.image }}:${{ needs.meta.outputs.version }}-${{ matrix.arch }}
+          tags: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/cote:${{ needs.meta.outputs.version }}-${{ matrix.suffix }}-${{ matrix.arch }}
           # One KEY=VALUE per line (see build-base above); BASE_IMAGE is the
           # per-arch base tag built by build-base, resolved by the Containerfile's
           # FROM ${BASE_IMAGE}.
@@ -224,14 +225,14 @@ jobs:
             CREATED=${{ steps.stamp.outputs.created }}
 
   merge-ext:
-    name: Publish ${{ matrix.image }} manifest
+    name: Publish cote:${{ matrix.suffix }} manifest
     needs: [meta, build-ext]
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        image: [cote-pi, cote-pi-in-go, cote-xpra]
+        suffix: [pi, pi-in-go, xpra]
     steps:
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
@@ -241,14 +242,15 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Create multi-arch manifest
         run: |
-          image="${REGISTRY}/${NAMESPACE}/${{ matrix.image }}"
+          image="${REGISTRY}/${NAMESPACE}/cote"
           version="${{ needs.meta.outputs.version }}"
+          suffix="${{ matrix.suffix }}"
           latest=()
           if [ "${{ needs.meta.outputs.is-release }}" = "true" ]; then
-            latest=(-t "${image}:latest")
+            latest=(-t "${image}:latest-${suffix}")
           fi
           docker buildx imagetools create \
-            -t "${image}:${version}" \
+            -t "${image}:${version}-${suffix}" \
             "${latest[@]}" \
-            "${image}:${version}-amd64" \
-            "${image}:${version}-arm64"
+            "${image}:${version}-${suffix}-amd64" \
+            "${image}:${version}-${suffix}-arm64"
