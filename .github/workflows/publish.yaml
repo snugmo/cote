@@ -5,14 +5,15 @@ name: Publish
 #
 # All images are published to the single <registry>/<namespace>/cote repo;
 # extension images are distinguished by a tag suffix:
-#   base image           (base-image/)        <v>-base,        latest-base
-#   Pi coding agent      (extensions/pi)      <v>-pi,          latest-pi
-#   PiG coding agent     (extensions/pi-in-go) <v>-pi-in-go,   latest-pi-in-go
-#   Xpra desktop         (extensions/xpra)    <v>-xpra,        latest-xpra
+#   base image       (base-image/)          <v> (= <v>-base), latest-base
+#   Pi coding agent  (extensions/pi)        <v>-pi,           latest-pi
+#   PiG coding agent (extensions/pi-in-go)  <v>-pi-in-go,     latest-pi-in-go
+#   Xpra desktop     (extensions/xpra)      <v>-xpra,         latest-xpra
 #
 # Triggers:
-#   - push of a release tag (vX.Y.Z): publishes <v> (plus <v>-base for the
-#     base image) and moves the latest-base / latest-<ext> pointers.
+#   - push of a release tag (vX.Y.Z): publishes <v> (same image as <v>-base)
+#     and <v>-<ext> for each extension, and moves the latest-base /
+#     latest-<ext> pointers.
 #   - manual workflow_dispatch: publishes the version from the input (default:
 #     git describe, e.g. 0.38.0-3-gabc123) without touching latest, so dev
 #     builds never clobber a release pointer.
@@ -158,6 +159,7 @@ jobs:
             latest=(-t "${image}:latest-base")
           fi
           docker buildx imagetools create \
+            -t "${image}:${version}" \
             -t "${image}:${version}-base" \
             "${latest[@]}" \
             "${image}:${version}-base-amd64" \
