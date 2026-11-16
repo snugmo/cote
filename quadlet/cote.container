@@ -30,11 +30,11 @@ Description=cote base dev container
 # Default here is the cote base image; change it as needed.
 # Must stay a *fully-qualified* reference (registry/repo:tag) because
 # AutoUpdate below requires it.
-Image=quay.io/snugmo/cote:latest-base
+Image=quay.io/snugmo/cote:latest
 
 # Mark the image as updatable from the registry
 # (--label io.containers.autoupdate=registry). With the moving
-# latest-base tag, `podman auto-update --user` re-pulls it in place;
+# latest tag, `podman auto-update --user` re-pulls it in place;
 # add --upgrade to have it restart this unit afterwards. Distro
 # packages sometimes bundle a podman-auto-update timer for doing
 # this on a schedule instead of manually.
