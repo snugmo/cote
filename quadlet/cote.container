@@ -1,29 +1,29 @@
-# snugmo.container
+# cote.container
 #
 # Quadlet (Podman) unit that runs the cote base dev image as a *user* systemd
 # service. Install location on your host:
-#     ~/.config/containers/systemd/snugmo.container
+#     ~/.config/containers/systemd/cote.container
 # (or $XDG_CONFIG_HOME/containers/systemd/ when XDG_CONFIG_HOME is set)
 #
-# It generates the user service "snugmo.service", which owns a rootless
-# podman container of the same name -- `podman exec snugmo ...` is how you
+# It generates the user service "cote.service", which owns a rootless
+# podman container of the same name -- `podman exec cote ...` is how you
 # get a shell in the workspace.
 #
 # The systemd-ified equivalent of this manual one-liner:
-#   podman run -d --replace --name=snugmo --hostname=snugmo \
+#   podman run -d --replace --name=cote --hostname=cote \
 #     --userns=keep-id:uid=1000,gid=1000 \
 #     -v dev-projects:/projects/ -w /projects -v dev-home:/home/user \
 #     -e TERM=xterm-256color -e COLORTERM=truecolor <image>:<tag>
 #
 # From now on you don't run `podman run` yourself -- you drive it with systemd:
-#     systemctl --user start   snugmo
-#     systemctl --user stop    snugmo
-#     systemctl --user restart snugmo
+#     systemctl --user start   cote
+#     systemctl --user stop    cote
+#     systemctl --user restart cote
 # (Quadlet injects -d --sdnotify=conmon --replace --rm --cgroups=split into the
 #  underlying podman command automatically; see the [Container] note below.)
 
 [Unit]
-Description=cote base dev container (snugmo)
+Description=cote base dev container
 
 [Container]
 # <image>:<tag> -- set this to the image you actually run.
@@ -41,8 +41,8 @@ Image=quay.io/snugmo/cote:latest-base
 AutoUpdate=registry
 
 # --name / --hostname
-ContainerName=snugmo
-HostName=snugmo
+ContainerName=cote
+HostName=cote
 
 # --userns  (rootless keep-id: map host 1000:1000 -> container 1000:1000)
 UserNS=keep-id:uid=1000,gid=1000
@@ -84,11 +84,11 @@ Environment=COLORTERM=truecolor
 
 # Lifecycle flags: Quadlet *always* appends to the generated `podman run`:
 #     --replace --rm --cgroups=split --sdnotify=conmon -d
-#   * --replace : if a previous `snugmo` container is still around (e.g. a
+#   * --replace : if a previous `cote` container is still around (e.g. a
 #                 failed stop), it is removed and recreated on start.
 #                 Note that a container with a *different* name (such as an
 #                 older manually-created `dev-llm`) is NOT touched; remove
-#                 it yourself (`podman rm dev-llm`) once snugmo is running --
+#                 it yourself (`podman rm dev-llm`) once cote is running --
 #                 the dev-projects / dev-home *named* volumes are shared, so
 #                 all data carries over.
 #   * --rm / -d / --sdnotify=conmon : clean, systemd-managed start/stop
