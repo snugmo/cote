@@ -108,4 +108,5 @@ This file holds only the context useful for *any* work in this repo. The detaile
 - **[docs/base-image.md](docs/base-image.md)** — building/editing the base image: Containerfile stage architecture, `build.sh`, base/devfile specifics, verifying artifact stages.
 - **[docs/adding-a-binary-tool.md](docs/adding-a-binary-tool.md)** — adding a new binary or language tool to the base image.
 - **[docs/updating-tool-versions.md](docs/updating-tool-versions.md)** — bumping a pinned tool to a newer release: lookup commands, hash recompute, the release flow.
+- **`.agents/skills/update-tool-versions/SKILL.md`** — the agent skill wrapping that playbook for version-bump sessions (one tool at a time, minimal-output lookups, one commit per tool, no push).
 - **[docs/extensions.md](docs/extensions.md)** — working on an extension image (Pi, PiG, Xpra) or its credentials.
