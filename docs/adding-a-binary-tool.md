@@ -21,7 +21,7 @@ The Containerfile is structured as **per-arch download stages → parallel insta
 
 ### 2. Pick the verification method
 
-1. **Upstream publishes per-arch SHA-256s** (`.sha256` sidecars, `checksums.txt`, `CHECKSUMS`) → pin the hashes in per-arch `FROM scratch` download stages so a build only downloads the selected arch. This is the standard pattern (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, marksman, helm-ls, ast-grep, gh, herdr):
+1. **Upstream publishes per-arch SHA-256s** (`.sha256` sidecars, `checksums.txt`, `CHECKSUMS`) → pin the hashes in per-arch `FROM scratch` download stages so a build only downloads the selected arch. This is the standard pattern (go, uv, kubectl-linstor, tofu-ls, protols, kubeconform, marksman, helm-ls, ast-grep, gh, herdr, simplex-chat, nono):
 
    ```dockerfile
    FROM scratch AS <tool>-download-amd64
@@ -52,7 +52,7 @@ The Containerfile is structured as **per-arch download stages → parallel insta
    echo "${EXPECTED}  <downloaded-file>" | sha256sum -c -
    ```
 3. **Release is cosign-signed or SLSA-attested → verify the signature instead of hashes** (crush, kubeseal, cloudnative-pg).
-4. **No verification available → say so explicitly** in a stage comment (forgejo-cli, fnm).
+4. **No verification available → say so explicitly** in a stage comment (forgejo-cli, fnm, the curlimages/curl downloader image).
 
 ### 3. Extract release tarballs safely
 
@@ -72,7 +72,7 @@ tar -xzf tool.tar.gz -C /usr/local/bin <bin>
    ```
 
 2. **Final assembly**: add a `COPY --link --from=<tool>-artifacts / /` line to the `final` stage next to the other toolchains.
-3. **Shell completions**: if the tool has a `completion` subcommand, add it to the completion-generation loops in the `final` stage (currently covers cosign, fj, kubectl-cnpg, gh, bun, fnm, uv, buildah, herdr, nono).
+3. **Shell completions**: if the tool has a `completion` subcommand, add it to the completion-generation loops in the `final` stage (the common `completion` loop currently covers cosign, fj, kubectl-cnpg, herdr, nono; gh, bun, lola, fnm, and uv have dedicated lines for their different invocation forms).
 
 ### 5. Sync the docs (all surfaces)
 
