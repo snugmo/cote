@@ -64,7 +64,8 @@ Volume=dev-home:/home/user
 # is actually writable -- a plain --tmpfs would be root-owned.
 Tmpfs=/run:U
 Tmpfs=/run/user/1000:U
-Tmpfs=/tmp:U
+# /tmp additionally gets mode=1777 (sticky bit set) to match the host /tmp.
+Tmpfs=/tmp:U,mode=1777
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
 # The XDG base directories, spelled out at their spec defaults. Tools that
