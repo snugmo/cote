@@ -13,7 +13,7 @@
 #   podman run -d --replace --name=cote --hostname=cote \
 #     --userns=keep-id:uid=1000,gid=1000 \
 #     -v dev-projects:/projects/ -w /projects -v dev-home:/home/user \
-#     -e TERM=xterm-256color -e COLORTERM=truecolor <image>:<tag>
+#     -v /var/tmp -e TERM=xterm-256color -e COLORTERM=truecolor <image>:<tag>
 #
 # From now on you don't run `podman run` yourself -- you drive it with systemd:
 #     systemctl --user start   cote
@@ -54,6 +54,11 @@ WorkingDir=/projects
 Volume=dev-projects:/projects
 # -v dev-home:/home/user      (named volume; persists config across upgrades)
 Volume=dev-home:/home/user
+# -v /var/tmp                 (anonymous volume; fresh each start, wiped with
+# the container). Keep /var/tmp off the container's overlay root: tools like
+# buildah that try to mount a nested overlayfs there get EINVAL from the
+# kernel (overlay-on-overlay is not allowed) and fail outright.
+Volume=/var/tmp
 
 # --tmpfs: fresh (wiped on every start) runtime dirs inside the container.
 # /run and /tmp keep volatile runtime state out of the image's overlay
