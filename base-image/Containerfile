@@ -31,7 +31,7 @@ ARG SIMPLEX_CHAT_VERSION=7.1.4
 ARG NONO_VERSION=0.82.0
 
 # Cosign binary from upstream image (defined first so downloader can reference it)
-FROM ghcr.io/sigstore/cosign/cosign:v3.1.4 AS cosign-bin
+FROM ghcr.io/sigstore/cosign/cosign:v3.1.6 AS cosign-bin
 
 # =============================================================================
 # DOWNLOADER — curl-only base for download-based install stages
